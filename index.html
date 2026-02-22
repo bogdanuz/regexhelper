@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Инструмент для работы с регулярными выражениями">
+    <title>RegexHelper</title>
+
+    <!-- Favicon -->
+   <link rel="icon" type="image/x-icon" href="assets/images/favicon/favicon.ico">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="core/css/common.css">
+    <link rel="stylesheet" href="core/css/responsive.css">
+    <link rel="stylesheet" href="tools/converter/css/converter.css">
+    <link rel="stylesheet" href="tools/converter/css/badges.css">
+    <link rel="stylesheet" href="tools/converter/css/modals.css">
+    <link rel="stylesheet" href="tools/converter/css/history.css">
+    <link rel="stylesheet" href="tools/converter/css/tooltips.css">
+    <link rel="stylesheet" href="tools/converter/css/zones.css">
+    <link rel="stylesheet" href="tools/converter/css/linkedBuilder.css">
+    <link rel="stylesheet" href="tools/visualizer/css/visualizer.css">
+    <!-- Regexper-static (визуализатор): подключать после копирования бандла в assets/libs/regexper/ -->
+    <link rel="stylesheet" href="assets/libs/regexper/regexper.css" id="regexper-css">
+    <link rel="stylesheet" href="tools/visualizer/css/regexper-overrides.css">
+    <!-- Восстановление глобальных стилей после reset внутри regexper.css -->
+    <link rel="stylesheet" href="tools/visualizer/css/regexper-reset.css">
+    <link rel="stylesheet" href="tools/case/css/case.css">
+    <link rel="stylesheet" href="tools/tester/css/tester.css">
+</head>
+<body>
+<div class="page-wrapper">
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--                      HEADER (ШАПКА)                         -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <header class="main-header" id="top">
+        <div class="header-container">
+            <!-- Логотип -->
+            <a href="#top" class="logo-link" title="Прокрутить наверх">
+                <img src="assets/images/logo.png" alt="RegexHelper" class="logo-img">
+            </a>
+
+            <!-- Навигация -->
+            <nav class="header-nav">
+                <a href="#converter-section" class="nav-link active">Конвертер</a>
+                <a href="#visualizer" class="nav-link">Визуализатор</a>
+                <a href="#tester" class="nav-link">Тестер</a>
+                <a href="#history-section" class="nav-link">История</a>
+                <button type="button" class="nav-link nav-link-button" id="nav-register-btn" title="Открыть инструмент «Регистр»">Регистр</button>
+            </nav>
+
+            <!-- Кнопки действий -->
+            <div class="header-actions">
+                <button id="wiki-btn" class="btn-secondary btn-wiki" title="Помощь — подробная инструкция по использованию RegexHelper">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Помощь
+                </button>
+                <button id="feedback-btn" class="btn-secondary btn-feedback" title="Обратная связь — сообщить об ошибке или предложить улучшение">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Фидбек
+                </button>
+                <button id="reset-btn" class="btn-secondary btn-ghost btn-reset" title="Сбросить все панели и параметры (история сохраняется)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Сбросить
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--              CONVERTER SECTION (100vh layout)               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <section id="converter-section">
+        <main class="converter-main">
+
+            <!-- Подсказка для новых пользователей (закрываемая) -->
+            <div class="first-time-hint" id="first-time-hint" role="status" aria-live="polite">
+                <div class="first-time-hint-content">
+                    <strong>Быстрый старт:</strong> Используйте «Связанные триггеры» для последовательностей или переключитесь на «Простые триггеры» (клик по заголовку). Нажмите <strong>Конвертировать</strong> — результат появится ниже.
+                </div>
+                <button type="button" class="first-time-hint-close" id="first-time-hint-close" title="Закрыть подсказку" aria-label="Закрыть"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!--              ПЕРЕКЛЮЧАЕМАЯ ПАНЕЛЬ (Простые / Связанные)       -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="panel triggers-panel" id="triggers-panel" data-mode="linked">
+                <!-- Шапка с переключателем -->
+                <div class="panel-header panel-header-compact panel-header-switchable" id="triggers-panel-header">
+                    <button type="button" class="panel-mode-switch" id="panel-mode-switch" title="Триггеры со сложными связями в группах и подгруппах, с разными соединителями. Нажмите, чтобы переключить на простые.">
+                        <span class="panel-mode-icon" id="panel-mode-icon">
+                            <!-- Иконка связанных триггеров -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </span>
+                        <h2 class="panel-title panel-title-compact" id="panel-mode-title">Связанные триггеры</h2>
+                        <span class="panel-switch-icon" title="Переключить режим">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4"/></svg>
+                        </span>
+                    </button>
+                    <p class="panel-hint panel-hint-compact" id="panel-mode-hint">Конструктор регулярных выражений со сложными связями. Добавляйте триггеры, группируйте их и настраивайте соединители.</p>
+                    <button type="button" class="btn-header-clear btn-danger" id="clear-simple-panel-btn" style="display: none;" title="Очистить панель: удаляет все триггеры из поля ввода и сбрасывает все параметры">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <span>Очистить панель</span>
+                    </button>
+                    <button type="button" class="btn-header-action btn-secondary" id="import-pattern-btn" title="Импорт паттерна: разобрать готовое регулярное выражение в конструктор">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Импорт паттерна</span>
+                    </button>
+                    <button type="button" class="btn-header-clear btn-danger" id="clear-linked-panel-btn" title="Очистить панель: удаляет все триггеры и группы">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <span>Очистить панель</span>
+                    </button>
+                </div>
+
+                <!-- Контент связанных триггеров (новый конструктор) -->
+                <div class="panel-content panel-content-linked" id="panel-content-linked">
+                    <!-- Контейнер для LinkedBuilder — заполняется через JS -->
+                    <div id="linked-builder-root"></div>
+                </div>
+
+                <!-- Контент простых триггеров (скрыт по умолчанию) -->
+                <div class="panel-content panel-content-simple" id="panel-content-simple" style="display: none;">
+                    <div class="simple-triggers-inline">
+                        <div class="simple-triggers-input-section">
+                            <textarea
+                                id="simple-triggers-textarea"
+                                class="simple-triggers-textarea"
+                                placeholder="Каждое слово — с новой строки"
+                            ></textarea>
+                        </div>
+                        <div class="simple-triggers-params-section">
+                            <div class="simple-params-row">
+                                <button type="button" class="param-card-inline" data-param="latinCyrillic" title="Лат/Кир: заменяет визуально похожие буквы. Пример: a → [аa], о → [оo]. Для полной транслитерации используйте «Транслит».">Лат/Кир</button>
+                                <button type="button" class="param-card-inline" data-param="transliteration" title="Транслитерация: заменяет каждую букву на кириллический и латинский варианты. Пример: roblox → [рr][оo][бb][лl][оo](кс|x). Ловит слово независимо от раскладки: roblox, роблокс и смешанные варианты.">Транслит</button>
+                                <button type="button" class="param-card-inline param-card-popup" data-param="declensions" title="Склонения: автоматически (существительные, прилагательные, причастия) или точные окончания. Глаголы и краткие формы не поддерживаются — используйте точные окончания или \w.">Склонения</button>
+                                <button type="button" class="param-card-inline param-card-popup" data-param="optionalChars" title="Опциональные символы (?): делает выбранные символы необязательными. Пример: пасс?ивный. Несовместим с Лат/Кир, Транслит, Склонения, \w.">(?)</button>
+                                <button type="button" class="param-card-inline param-card-popup" data-param="wildcard" title="Любой символ (\w): добавляет \w (1 символ) или \w{min,max} (диапазон) после триггера. Пример: доставк\w{1,3} → доставка, доставки, доставкой.">(\w)</button>
+                                <button type="button" class="param-card-inline" data-param="wordBoundaries" title="Границы слова (\b): указывает границу слова в regex. Пример: дом → \bдом\b. При использовании со склонениями или \w — граница только в начале (\bдом…).">(\b)</button>
+                                <button type="button" class="param-card-inline" data-param="requireSpaceAfter" title="Пробел после (\s): добавляет \s после триггера. Пример: дом → дом\s. Совпадёт с пробелом, табуляцией или переводом строки после слова.">(\s)</button>
+                            </div>
+                            <div class="simple-triggers-actions-row">
+                                <button class="btn-primary btn-convert-simple" id="convert-simple-btn" title="Конвертировать простые триггеры">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Конвертировать
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="simple-triggers-cards-section">
+                        <div class="triggers-section-header">
+                            <span class="triggers-title">Триггеры</span>
+                            <div class="triggers-actions">
+                                <button type="button" class="btn-pool-action" id="pool-select-all">Выбрать все</button>
+                                <button type="button" class="btn-pool-action" id="pool-deselect-all">Снять все</button>
+                                <button type="button" class="btn-pool-action" id="pool-clear-all-params" title="Сбрасывает параметры у всех триггеров, но не удаляет сами триггеры">Сбросить параметры</button>
+                            </div>
+                        </div>
+                        <div class="triggers-grid" id="simple-triggers-grid">
+                            <!-- Карточки триггеров генерируются динамически -->
+                        </div>
+                        <p class="modal-hint triggers-empty-hint" id="triggers-empty-hint">Введите триггеры в поле слева — карточки появятся здесь.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!--                      ПАНЕЛЬ РЕЗУЛЬТАТА                       -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <div class="panel output-panel" id="result-panel">
+                <div class="panel-header panel-header-compact">
+                    <h2 class="panel-title panel-title-compact"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Результат</h2>
+                    <p class="panel-hint panel-hint-compact" id="output-hint">Нажмите «Конвертировать» для получения regex.</p>
+                </div>
+
+                <div class="panel-body panel-body-compact">
+                    <textarea
+                        id="result-textarea"
+                        class="output-textarea"
+                        placeholder="Результат появится здесь"
+                    ></textarea>
+
+                    <p id="result-stats" class="panel-hint result-stats"></p>
+
+                    <div class="panel-actions output-actions">
+                        <button class="btn-primary btn-convert" id="convert-btn" title="Конвертировать триггеры в regex">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Конвертировать
+                        </button>
+                        <button class="btn-secondary btn-copy" id="copy-result-btn" title="Скопировать результат в буфер обмена">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать
+                        </button>
+                        <button class="btn-secondary btn-to-tester" id="to-tester-btn" title="Вставить результат в поле regex тестера и перейти к нему">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> В тестер
+                        </button>
+                        <button class="btn-secondary btn-to-visualizer" id="to-visualizer-btn" title="Вставить результат в визуализатор и перейти к нему">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg> В визуализатор
+                        </button>
+                        <button type="button" class="btn-header-clear btn-danger" id="clear-result-btn" title="Очистить результат: удаляет regex из поля результата">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            <span>Очистить</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--              VISUALIZER SECTION (отдельная секция)          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <section id="visualizer" class="visualizer-section">
+        <div class="visualizer-container">
+            <div class="panel visualizer-panel">
+                <div class="panel-header panel-header-compact visualizer-panel-header">
+                    <div class="visualizer-header-text">
+                        <h2 class="panel-title panel-title-compact"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg> Визуализатор</h2>
+                        <p class="panel-hint panel-hint-compact">Введите регулярное выражение и нажмите «Визуализировать» для построения диаграммы.</p>
+                    </div>
+                    <button type="button" class="btn-header-clear btn-danger" id="visualizer-clear-btn" title="Очистить панель: удаляет regex из поля ввода и диаграмму">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <span>Очистить</span>
+                    </button>
+                </div>
+                <!-- Regexper ищет document.body.querySelector('#content .application') — нужен .application внутри #content -->
+                <div id="content">
+                    <div class="application">
+                    <div class="panel-body visualizer-body">
+                        <form id="regexp-form" class="visualizer-input-row" aria-label="Регулярное выражение">
+                            <div class="visualizer-input-wrap">
+                                <textarea id="regexp-input" class="visualizer-regex-input" placeholder="Введите регулярное выражение, напр.: (a|b)+ или \d+" rows="2" name="regexp" autocomplete="off"></textarea>
+                            </div>
+                            <div class="visualizer-input-actions">
+                                <button type="button" class="btn-secondary" id="visualizer-paste-btn" title="Вставить из буфера">Вставить</button>
+                                <button type="submit" class="btn-primary" id="visualizer-visualize-btn" title="Построить диаграмму">Визуализировать</button>
+                            </div>
+                            <!-- Ссылки для regexper updateLinks() (скрыты, наши кнопки экспорта дублируют действие) -->
+                            <ul class="visualizer-regexper-links" id="visualizer-regexper-links" aria-hidden="true">
+                                <li><a href="#" data-action="download-svg" download="diagram.svg">SVG</a></li>
+                                <li><a href="#" data-action="download-png" download="diagram.png">PNG</a></li>
+                                <li><a href="#" data-action="permalink">Permalink</a></li>
+                            </ul>
+                        </form>
+                        <div id="error" class="visualizer-regexper-error" role="alert" aria-live="assertive"></div>
+                        <div id="warnings" class="visualizer-regexper-warnings" aria-hidden="true"></div>
+                        <div class="visualizer-diagram-area" id="visualizer-diagram-area">
+                            <div class="visualizer-diagram-placeholder" id="visualizer-diagram-placeholder">Диаграмма появится здесь после нажатия «Визуализировать».</div>
+                            <div class="visualizer-loading" id="visualizer-loading" aria-hidden="true" aria-label="Построение диаграммы" role="status">
+                                <span class="visualizer-loading-dot"></span>
+                                <span class="visualizer-loading-dot"></span>
+                                <span class="visualizer-loading-dot"></span>
+                            </div>
+                            <div class="visualizer-diagram-viewport" id="visualizer-diagram-viewport" style="display:none;">
+                                <div class="visualizer-diagram-scroll" id="visualizer-diagram-scroll">
+                                    <div class="visualizer-diagram-scroll-wrap">
+                                        <div class="visualizer-diagram-inner" id="regexp-render"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="visualizer-toolbar visualizer-export-actions" id="visualizer-export-actions" style="display:none;">
+                            <div class="visualizer-toolbar-export visualizer-download-dropdown">
+                                <button type="button" class="btn-secondary" id="visualizer-download-btn" title="Скачать диаграмму" aria-expanded="false" aria-haspopup="true">Скачать</button>
+                                <div class="visualizer-download-menu" id="visualizer-download-menu" role="menu" aria-label="Формат скачивания" aria-hidden="true">
+                                    <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-svg" title="Скачать SVG">SVG</button>
+                                    <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-png" title="Скачать PNG">PNG</button>
+                                </div>
+                            </div>
+                            <div class="visualizer-diagram-zoom-controls">
+                                <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-out" title="Уменьшить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Уменьшить">−</button>
+                                <span class="visualizer-zoom-value" id="visualizer-zoom-value">100%</span>
+                                <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-in" title="Увеличить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Увеличить">+</button>
+                                <button type="button" class="btn-secondary visualizer-toolbar-btn visualizer-fullscreen-btn-text" id="visualizer-fullscreen-btn" title="Раскрыть на весь экран" aria-label="Раскрыть на весь экран">Раскрыть на весь экран</button>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Модальное окно: диаграмма на весь экран (зум, экспорт, пан) -->
+        <div class="visualizer-fullscreen-overlay" id="visualizer-fullscreen-overlay" aria-hidden="true">
+            <div class="visualizer-fullscreen-modal" id="visualizer-fullscreen-modal">
+                <div class="visualizer-fullscreen-header">
+                    <span class="visualizer-fullscreen-title">Диаграмма</span>
+                    <div class="visualizer-fullscreen-header-actions">
+                        <div class="visualizer-toolbar-export">
+                            <button type="button" class="btn-secondary" id="visualizer-modal-export-svg" title="Скачать SVG">SVG</button>
+                            <button type="button" class="btn-secondary" id="visualizer-modal-export-png" title="Скачать PNG">PNG</button>
+                        </div>
+                        <div class="visualizer-diagram-zoom-controls">
+                            <button type="button" class="btn-icon btn-secondary" id="visualizer-modal-zoom-out" title="Уменьшить" aria-label="Уменьшить">−</button>
+                            <span class="visualizer-zoom-value" id="visualizer-modal-zoom-value">100%</span>
+                            <button type="button" class="btn-icon btn-secondary" id="visualizer-modal-zoom-in" title="Увеличить" aria-label="Увеличить">+</button>
+                        </div>
+                        <button type="button" class="btn-icon btn-secondary visualizer-fullscreen-close" id="visualizer-fullscreen-close" title="Закрыть" aria-label="Закрыть">×</button>
+                    </div>
+                </div>
+                <div class="visualizer-fullscreen-scroll" id="visualizer-fullscreen-scroll">
+                    <div class="visualizer-fullscreen-scroll-wrap">
+                        <div class="visualizer-fullscreen-inner" id="visualizer-fullscreen-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--              TESTER SECTION (Тестер regex)                   -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <section id="tester" class="tester-section">
+        <div class="tester-container">
+            <div class="panel tester-panel">
+                <div class="panel-header panel-header-compact tester-panel-header">
+                    <div class="tester-header-top">
+                        <h2 class="panel-title panel-title-compact" id="tester-title" title="Python (emulated) — поведение приближено к Python re. Реализовано в браузере через JavaScript."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Тестер</h2>
+                        <div class="tester-flags-dropdown-wrap">
+                            <button type="button" class="btn-secondary tester-flags-toggle" id="tester-flags-toggle" aria-expanded="false" aria-haspopup="true" title="Открыть список флагов регулярных выражений">Флаги</button>
+                            <div class="tester-flags-dropdown" id="tester-flags-dropdown" role="group" aria-label="Regex flags" hidden>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-g" checked> <span class="tester-flag-name">global</span> <span class="tester-flag-desc">Don't return after first match</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-m" checked> <span class="tester-flag-name">multiline</span> <span class="tester-flag-desc">^ and $ match start/end of line</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-i"> <span class="tester-flag-name">insensitive</span> <span class="tester-flag-desc">Case insensitive match</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-s"> <span class="tester-flag-name">single line</span> <span class="tester-flag-desc">Dot matches newline</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-u"> <span class="tester-flag-name">unicode</span> <span class="tester-flag-desc">Match with full unicode</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-x"> <span class="tester-flag-name">extended</span> <span class="tester-flag-desc">Ignore whitespace in pattern</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-a"> <span class="tester-flag-name">ascii</span> <span class="tester-flag-desc">\w \d \s ASCII only</span></label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary tester-lowercase-btn tester-lowercase-btn-on" id="tester-lowercase-btn" title="Включить или выключить автоматическое приведение тестового текста к нижнему регистру">
+                            <span class="tester-lowercase-label">Нижний регистр тестируемого текста</span>
+                            <span class="tester-lowercase-state" aria-live="polite">включен</span>
+                        </button>
+                        <button type="button" class="btn-header-clear btn-danger" id="tester-clear-btn" title="Очистить панель: удаляет regex и тестовый текст">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            <span>Очистить</span>
+                        </button>
+                    </div>
+                    <p class="panel-hint panel-hint-compact">Введите регулярное выражение и тестовый текст — совпадения подсветятся. Flavor: Python (emulated).</p>
+                </div>
+                <div class="panel-body tester-panel-body">
+                    <div class="tester-regex-row">
+                        <label class="tester-label" for="tester-regex-input">Регулярное выражение</label>
+                        <div class="tester-regex-wrap tester-regex-overlay-wrap">
+                            <div class="tester-regex-highlight-layer" id="tester-regex-highlight-layer" aria-hidden="true"></div>
+                            <textarea id="tester-regex-input" class="tester-regex-input tester-regex-input-overlay" placeholder="Введите регулярное выражение" spellcheck="false" autocomplete="off" rows="4"></textarea>
+                        </div>
+                        <div class="tester-regex-error" id="tester-regex-error" role="alert" aria-live="polite" hidden></div>
+                    </div>
+                    <div class="tester-test-row">
+                        <label class="tester-label" for="tester-test-input">Тестовый текст</label>
+                        <div class="tester-test-wrap tester-test-overlay-wrap">
+                            <div class="tester-highlight-layer" id="tester-highlight-layer" aria-hidden="true"></div>
+                            <textarea id="tester-test-input" class="tester-textarea tester-textarea-overlay" placeholder="Введите тестовый текст" rows="18" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                    <div class="tester-loading" id="tester-loading" aria-live="polite" aria-busy="false" hidden>
+                        <span class="tester-loading-spinner" aria-hidden="true"></span>
+                        <span class="tester-loading-text">Подождите...</span>
+                    </div>
+                    <div class="tester-error" id="tester-error" role="alert" aria-live="assertive" hidden></div>
+                    <div class="tester-match-info-wrap">
+                        <label class="tester-label">Совпадения</label>
+                        <div class="tester-match-info" id="tester-match-info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--              HISTORY SECTION (отдельная секция)             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <section id="history-section">
+        <div class="history-container">
+            <div class="history-header">
+                <h2 class="history-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> История конвертаций</h2>
+                <div class="history-header-actions">
+                    <button class="btn-toggle-history" id="toggle-history-btn" title="Свернуть/развернуть панель истории">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <button class="btn-secondary btn-show-all-history btn-small" title="Открыть модальное окно со всей историей (300 записей)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg> Показать всё
+                    </button>
+                </div>
+            </div>
+
+            <div class="history-grid-wrapper" id="history-grid-wrapper">
+                <div class="history-grid" id="history-container">
+                    <div class="history-empty" id="history-empty">
+                        <p class="history-empty-text">История пуста. Выполните конвертацию, чтобы увидеть результаты.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--                      FOOTER (ПОДВАЛ)                        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <footer class="main-footer">
+    <div class="footer-container">
+        <p class="footer-text">
+            RegexHelper ·
+            <a href="https://github.com/bogdanuz/regexhelper" class="footer-link" target="_blank" rel="noopener noreferrer" title="GitHub">
+                <svg class="footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> GitHub
+            </a>
+        </p>
+        </div>
+        </footer>
+ 
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--                 МОДАЛЬНЫЕ ОКНА (HTML структуры)             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Модальное окно: Настройки простых триггеров создаётся в settingsUI.js при клике "⚙️ Настройки параметров" -->
+
+    <!-- Модальное окно: Подтверждение действия (удаление группы/подгруппы и т.д.) -->
+    <div class="modal-overlay" id="confirm-modal-overlay">
+        <div class="modal modal-confirm" id="confirm-modal" role="dialog" aria-modal="true">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirm-modal-title">Подтвердите действие</h3>
+                <button class="btn-icon btn-close-modal" id="confirm-modal-close" title="Закрыть" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-modal-message" id="confirm-modal-message">Вы уверены?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="confirm-modal-cancel">Отмена</button>
+                <button class="btn-primary" id="confirm-modal-ok">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Модальное окно: WIKI (IDs для modals.js) -->
+    <div class="modal-overlay" id="wiki-modal-overlay" style="display: none;">
+        <div class="modal modal-extra-large" id="wiki-modal" role="dialog" aria-modal="true" aria-labelledby="wiki-title">
+            <div class="modal-header">
+                <h3 class="modal-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Помощь — руководство по конвертеру</h3>
+                <button class="btn-icon btn-close-modal" title="Закрыть" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body modal-scrollable">
+                <div id="wiki-content">
+                    <p>Загрузка WIKI...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary btn-modal-close">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Вся история (300 записей) -->
+    <div class="modal-overlay" id="modal-full-history">
+        <div class="modal modal-extra-large" id="modal-full-history-window">
+            <div class="modal-header modal-header-with-actions">
+                <h3 class="modal-title modal-title-history"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Полная история (<span id="history-count">0</span> записей)</h3>
+                <div class="modal-header-actions">
+                    <button class="btn-secondary btn-danger btn-small" id="clear-full-history-btn" title="Удалить ВСЕ записи из истории (действие необратимо!)">Очистить</button>
+                </div>
+                <button class="btn-icon btn-close-modal" title="Закрыть" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body modal-scrollable">
+                <div class="history-grid" id="history-grid-full">
+                    <!-- Карточки из localStorage -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary btn-modal-close">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Обратная связь (Feedback) -->
+    <div class="modal-overlay" id="feedback-modal-overlay" aria-hidden="true">
+        <div class="modal modal-feedback" id="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+            <div class="modal-header feedback-modal-header">
+                <div class="feedback-modal-header-text">
+                    <h3 class="modal-title" id="feedback-modal-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Обратная связь</h3>
+                    <p class="feedback-modal-hint">Нашли ошибку? Есть предложение? Напишите — я обязательно прочитаю!</p>
+                </div>
+                <button type="button" class="btn-icon btn-close-modal" id="feedback-modal-close" title="Закрыть" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <form id="feedback-form" class="modal-body modal-body-feedback">
+                <div class="feedback-type-row">
+                    <label class="feedback-label">Тип сообщения</label>
+                    <div class="feedback-type-buttons" id="feedback-type-buttons" role="group" aria-label="Тип сообщения">
+                        <button type="button" class="feedback-type-btn active" data-type="bug" title="Сообщить об ошибке">🐛 Баг</button>
+                        <button type="button" class="feedback-type-btn" data-type="suggestion" title="Предложить улучшение">💡 Предложение</button>
+                        <button type="button" class="feedback-type-btn" data-type="question" title="Задать вопрос">❓ Вопрос</button>
+                        <button type="button" class="feedback-type-btn" data-type="other" title="Другое">📝 Другое</button>
+                    </div>
+                </div>
+                <div class="feedback-message-row">
+                    <label class="feedback-label" for="feedback-message">Сообщение <span class="feedback-required">*</span></label>
+                    <textarea id="feedback-message" class="feedback-textarea" placeholder="Опишите проблему или предложение..." rows="5" required minlength="5"></textarea>
+                    <p class="feedback-hint">Минимум 5 символов</p>
+                </div>
+                <div class="feedback-email-row">
+                    <label class="feedback-label" for="feedback-email">Email <span class="feedback-optional">(необязательно)</span></label>
+                    <input type="email" id="feedback-email" class="feedback-input" placeholder="your@email.com — если хотите получить ответ">
+                </div>
+                <!-- Honeypot field (hidden from users, visible to bots) -->
+                <input type="text" name="website" id="feedback-website" class="feedback-honeypot" tabindex="-1" autocomplete="off">
+                <input type="hidden" id="feedback-page" value="">
+            </form>
+            <div class="modal-footer feedback-modal-footer">
+                <button type="button" class="btn-secondary btn-modal-close" id="feedback-modal-cancel">Отмена</button>
+                <button type="submit" form="feedback-form" class="btn-primary" id="feedback-submit-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Отправить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Регистр (конвертер регистра) -->
+    <div class="modal-overlay" id="case-modal-overlay" aria-hidden="true">
+        <div class="modal modal-large modal-case" id="case-modal" role="dialog" aria-modal="true" aria-labelledby="case-modal-title">
+            <div class="modal-header case-modal-header">
+                <div class="case-modal-header-text">
+                    <h3 class="modal-title" id="case-modal-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg> Регистр</h3>
+                    <p class="case-modal-hint">Измените регистр текста: введите или вставьте текст, выберите вариант — результат обновится сразу. Поддерживаются кириллица и латиница.</p>
+                </div>
+                <button type="button" class="btn-icon btn-close-modal" id="case-modal-close" title="Закрыть" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body modal-body-case">
+                <div class="case-input-row">
+                    <label class="case-label" for="case-input">Исходный текст</label>
+                    <div class="case-input-wrap">
+                        <textarea id="case-input" class="case-textarea case-input-textarea" placeholder="Введите или вставьте текст для смены регистра" rows="4"></textarea>
+                        <div class="case-input-actions">
+                            <button type="button" class="btn-secondary" id="case-paste-btn" title="Вставить из буфера (заменит текущий текст)">Вставить</button>
+                            <button type="button" class="btn-secondary btn-danger" id="case-clear-btn" title="Очистить поле ввода">Очистить</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="case-counter" id="case-counter" aria-live="polite">0 без пробелов, 0 с пробелами</p>
+                <div class="case-buttons" id="case-buttons" role="group" aria-label="Режим регистра">
+                    <button type="button" class="btn-case" data-mode="upper" title="Верхний регистр">ВЕРХНИЙ РЕГИСТР</button>
+                    <button type="button" class="btn-case" data-mode="lower" title="Нижний регистр">нижний регистр</button>
+                    <button type="button" class="btn-case" data-mode="title" title="Каждое слово с заглавной">Каждое Слово С Заглавной</button>
+                    <button type="button" class="btn-case" data-mode="sentence" title="Первое слово с заглавной">Первое слово с заглавной</button>
+                    <button type="button" class="btn-case" data-mode="inverted" title="Инвертированный регистр">иНВЕРТИРОВАННЫЙ</button>
+                </div>
+                <div class="case-output-row">
+                    <label class="case-label" for="case-output">Результат</label>
+                    <div class="case-output-wrap">
+                        <textarea id="case-output" class="case-textarea case-output-textarea" placeholder="Результат появится здесь" rows="4"></textarea>
+                        <div class="case-output-actions">
+                            <button type="button" class="btn-secondary btn-copy" id="case-copy-btn" title="Скопировать результат в буфер обмена">Копировать</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary btn-modal-close" id="case-modal-footer-close">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+
+    <template id="template-badge">
+        <span class="badge" data-param="">
+            <span class="badge-icon"></span>
+            <span class="badge-text"></span>
+        </span>
+    </template>
+
+    <template id="template-history-card">
+        <div class="history-card" data-id="" data-type="">
+            <div class="history-card-header">
+                <span class="history-date"></span>
+                <span class="history-type"></span>
+            </div>
+            <div class="history-triggers"></div>
+            <div class="history-result"><code></code></div>
+            <div class="history-actions">
+                <button class="btn-history-action btn-history-copy" data-action="copy" data-id=""><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать</button>
+                <button class="btn-history-action btn-history-delete" data-action="delete" data-id=""><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Уведомления (notifications.js использует #notifications-container) -->
+    <div id="notifications-container" class="notifications-container" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- Шаблон для regexper-static Parser (должен быть в DOM до загрузки скрипта) -->
+    <div id="svg-container-base" hidden aria-hidden="true">
+        <div class="progress"><div></div></div>
+        <div class="svg"><svg></svg></div>
+    </div>
+
+</div> <!-- /.page-wrapper -->
+
+
+
+
+
+
+
+
+<script src="assets/libs/regexper/regexper.js" id="regexper-js"></script>
+<script type="module" src="main.js"></script>
+<script src="assets/libs/russian-nouns.min.js"></script> 
+</body>
+</html>

@@ -1,0 +1,2133 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER - CONVERTER.CSS
+   100vh layout, панели, группы, подгруппы, триггеры, distance
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   HEADER (Шапка сайта)
+   ───────────────────────────────────────────────────────────────── */
+
+.main-header {
+    position: fixed; /* ← ИЗМЕНЕНО: sticky → fixed */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-header);
+    background: var(--color-header-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
+    border-image: linear-gradient(90deg, transparent, var(--color-border-default), transparent) 1;
+    box-shadow: var(--shadow-medium);
+}
+
+.header-container {
+    height: 64px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+/* Логотип */
+.logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Навигация */
+.header-nav {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-small);
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.nav-link:hover:not(.disabled) {
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.08);
+}
+
+.nav-link.active {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -17px;
+    left: 0;
+    right: 0;
+    height: 1.5px;
+    background: rgba(var(--color-primary-rgb), 0.55);
+    border-radius: 1px;
+}
+
+.nav-link.disabled {
+    color: #6B7280;
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+    position: relative;
+}
+
+.nav-link.disabled::before {
+    content: 'Скоро';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    pointer-events: none;
+}
+
+.nav-link.disabled:hover::before {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Кнопка в навигации (Регистр) — визуально как .nav-link */
+.nav-link-button {
+    background: none;
+    border: none;
+    margin: 0;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Кнопки в header */
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────
+   100VH LAYOUT - CONVERTER SECTION
+   ───────────────────────────────────────────────────────────────── */
+
+#converter-section {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 24px;
+}
+
+.converter-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 72px 24px 16px 24px;
+    overflow: visible;
+}
+
+/* Подсказка для новых пользователей */
+.first-time-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(var(--color-primary-rgb), 0.08);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.3);
+    border-radius: var(--radius-medium);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+}
+
+.first-time-hint.hidden {
+    display: none !important;
+}
+
+.first-time-hint-dismissed {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.first-time-hint-content {
+    flex: 1;
+}
+
+.first-time-hint-content strong {
+    color: var(--color-text-primary);
+}
+
+.first-time-hint-close {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-small);
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.first-time-hint-close:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.first-time-hint-close svg {
+    display: block;
+}
+
+/* Убран converter-bottom — теперь вертикальный layout: triggers-panel + result-panel */
+
+/* ─────────────────────────────────────────────────────────────────
+   ПАНЕЛИ (общие стили)
+   ───────────────────────────────────────────────────────────────── */
+
+.panel {
+    background: var(--color-bg-panel);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    position: relative;
+}
+
+/* Triggers and output panels need visible overflow for dropdown menus */
+.triggers-panel,
+.output-panel {
+    overflow: visible;
+}
+
+.panel-header {
+    padding: var(--spacing-l) var(--spacing-l);
+    border-bottom: 1px solid var(--color-border-default);
+    background: rgba(26, 35, 50, 0.5);
+    position: relative;
+    overflow: visible;
+    z-index: 5;
+}
+
+.panel-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-s);
+}
+
+.panel-hint {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-s);
+    line-height: 1.5;
+}
+
+.panel-body {
+    flex: 1;
+    padding: var(--spacing-l);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+}
+
+/* Triggers panel body — visible overflow for dropdowns */
+.triggers-panel .panel-body {
+    overflow: visible;
+}
+
+/* Output panel body: height by content so it grows when user resizes textarea (no limit) */
+.output-panel .panel-body {
+    overflow: visible;
+    flex: 0 0 auto;
+}
+
+.panel-actions {
+    display: flex;
+    gap: var(--spacing-m);
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: var(--spacing-m);
+    border-top: 1px solid var(--color-border-default);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ПЕРЕКЛЮЧАЕМАЯ ПАНЕЛЬ ТРИГГЕРОВ (Простые / Связанные)
+   ───────────────────────────────────────────────────────────────── */
+
+.triggers-panel {
+    flex: 1 1 auto;
+    min-height: 400px;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    transition: border-color 0.3s ease;
+}
+
+/* Цвет шапки зависит от режима */
+.triggers-panel[data-mode="linked"] {
+    border-top: 3px solid #6366f1; /* синий/фиолетовый для связанных */
+}
+
+.triggers-panel[data-mode="simple"] {
+    border-top: 3px solid #14b8a6; /* бирюзовый для простых */
+}
+
+/* Шапка переключателя */
+.panel-header-switchable {
+    cursor: default;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+/* Кнопка очистки в шапке панели */
+.btn-header-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: var(--radius-small);
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+.btn-header-clear:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
+.btn-header-clear svg {
+    flex-shrink: 0;
+}
+
+.panel-mode-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: var(--radius-small);
+    transition: background 0.2s ease;
+}
+
+.panel-mode-switch:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.panel-mode-switch:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.panel-mode-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-primary);
+}
+
+.panel-mode-switch .panel-title {
+    margin-bottom: 0;
+    font-size: 16px;
+}
+
+.panel-switch-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-tertiary);
+    opacity: 0.6;
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.panel-mode-switch:hover .panel-switch-icon {
+    opacity: 1;
+    color: var(--color-primary);
+}
+
+/* Fade-анимация контента */
+.panel-content {
+    animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Контент связанных триггеров */
+.panel-content-linked {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.panel-content-linked .panel-body {
+    flex: 1;
+    overflow: visible;
+}
+
+/* Контент простых триггеров */
+.panel-content-simple {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: var(--spacing-l);
+    gap: var(--spacing-l);
+}
+
+/* Inline layout для простых триггеров: ввод + параметры */
+.simple-triggers-inline {
+    display: flex;
+    gap: var(--spacing-l);
+    align-items: flex-start;
+}
+
+.simple-triggers-input-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.simple-triggers-input-section .simple-triggers-textarea {
+    width: 100%;
+    min-height: 120px;
+    max-height: 200px;
+    resize: vertical;
+}
+
+.simple-triggers-params-section {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+}
+
+.simple-params-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.param-card-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.param-card-inline:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+.param-card-inline.active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: #6366f1;
+    color: #a5b4fc;
+}
+
+.param-card-inline.partial {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: #6366f1;
+    border-style: dashed;
+    color: #818cf8;
+    opacity: 0.85;
+}
+
+/* Подсказка о выборе триггеров */
+.selection-hint {
+    font-size: 12px;
+    padding: 6px 12px;
+    margin-top: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.selection-hint.hint-empty {
+    color: var(--color-text-tertiary);
+    background: transparent;
+}
+
+.selection-hint.hint-single {
+    color: var(--color-text-secondary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.selection-hint.hint-multiple {
+    color: var(--color-text-secondary);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+.selection-hint .hint-legend {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.selection-hint .hint-all {
+    color: #a5b4fc;
+    font-weight: 500;
+}
+
+.selection-hint .hint-partial {
+    color: #818cf8;
+    border-bottom: 1px dashed #818cf8;
+}
+
+.simple-triggers-actions-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.btn-convert-simple {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Карточки триггеров */
+.simple-triggers-cards-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border-default);
+    padding-top: var(--spacing-l);
+}
+
+.triggers-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-m);
+}
+
+.triggers-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.triggers-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-pool-action {
+    font-size: 11px;
+    padding: 4px 10px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-pool-action:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text-primary);
+}
+
+.triggers-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.triggers-empty-hint {
+    color: var(--color-text-tertiary);
+    font-size: 13px;
+    text-align: center;
+    padding: var(--spacing-l);
+}
+
+/* Карточки триггеров */
+.trigger-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 80px;
+    max-width: 200px;
+}
+
+.trigger-card:hover {
+    border-color: var(--color-border-hover);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.trigger-card.selected {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: #6366f1;
+}
+
+.trigger-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    word-break: break-word;
+}
+
+.trigger-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.trigger-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Компактные заголовки и тело панелей */
+.panel-header-compact {
+    padding: 12px 16px;
+}
+
+/* Шапка панели «Связанные триггеры» — 2 ряда: заголовок + настройки */
+.panel-header-linked {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+}
+
+.panel-header-linked .panel-header-row-1 {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.panel-header-linked .panel-title-compact {
+    font-size: 15px;
+    margin: 0;
+}
+
+.panel-header-linked .panel-hint-compact {
+    font-size: 11px;
+    margin-top: 0;
+    line-height: 1.35;
+}
+
+.panel-header-linked .panel-header-row-2 {
+    margin-top: 0;
+}
+
+.panel-title-compact {
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+.panel-hint-compact {
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.link-mode-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+.link-mode-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+.common-distance-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.toggle-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+.common-distance-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+    position: relative;
+    overflow: visible;
+    z-index: 10;
+}
+
+.panel-hint-drag-inline {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin-left: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* Toggle switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--color-border-default);
+    transition: 0.3s;
+    border-radius: 20px;
+}
+.switch .slider::before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--color-text-primary);
+    transition: 0.3s;
+    border-radius: 50%;
+}
+.switch input:checked + .slider {
+    background-color: var(--color-primary);
+}
+.switch input:checked + .slider::before {
+    transform: translateX(16px);
+}
+.switch input:focus-visible + .slider {
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.panel-body-compact {
+    padding: 12px 16px;
+    gap: 12px;
+}
+
+.panel-actions-compact {
+    padding-top: 10px;
+    gap: 10px;
+}
+
+/* Визуальная иерархия: главные действия крупнее, второстепенные и опасные — приглушённее */
+
+/* Главная кнопка «Конвертировать» — крупнее, заметнее */
+.output-panel .panel-actions .btn-convert {
+    height: 40px;
+    padding: 0 24px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* «Добавить группу» — главное действие в панели, выделяем */
+.triggers-panel .btn-add-group {
+    height: 36px;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(var(--color-primary-rgb), 0.12);
+    border-color: var(--color-primary);
+}
+
+.triggers-panel .btn-add-group:hover {
+    background: rgba(var(--color-primary-rgb), 0.18);
+}
+
+/* Второстепенные и опасные кнопки — меньше, приглушённее */
+.triggers-panel .panel-actions-compact .btn-secondary:not(.btn-add-group),
+.output-panel .panel-actions .btn-secondary {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 12px;
+}
+
+.triggers-panel .btn-clear-linked,
+.triggers-panel .btn-clear-simple,
+.output-panel .btn-clear-result {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.triggers-panel .btn-clear-linked:hover,
+.triggers-panel .btn-clear-simple:hover,
+.output-panel .btn-clear-result:hover {
+    opacity: 1;
+}
+
+.add-subgroup-btn,
+.add-trigger-btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.output-panel .panel-actions .btn-icon {
+    min-width: 32px;
+    min-height: 32px;
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.hint-dragdrop-compact {
+    margin-top: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Группы по горизонтали, скролл при >5 групп */
+.groups-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 10px;
+    min-height: 0;
+    flex: 1;
+}
+
+.groups-container.scroll-start,
+.groups-container.scroll-end {
+    /* No mask - dropdowns need to float above */
+}
+
+/* Группа — шире в 1.5x для длинных триггеров и словосочетаний */
+.group {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: 12px;
+    padding: 16px 18px;
+    min-width: 420px;
+    max-width: 520px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    overflow: visible;
+    position: relative;
+    box-shadow: 0 1px 0 rgba(1, 4, 9, 0.1), 0 8px 24px rgba(140, 149, 159, 0.2);
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.group:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 4px 16px rgba(140, 149, 159, 0.2);
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border-default);
+    min-height: 40px;
+    flex-wrap: wrap;
+}
+
+.group-title-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px -2px 0;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.group-title-wrap:hover .group-name-static {
+    color: var(--color-text-primary);
+}
+
+.group-title-wrap .group-title-dropdown-arrow {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.group-title-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    min-width: 140px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+    z-index: var(--z-dropdown);
+    padding: 4px 0;
+}
+
+.group-title-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 12px;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.group-title-menu-item:hover {
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.group-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.group-name-static {
+    white-space: nowrap;
+}
+
+.group-title .group-name-input {
+    font-size: 12px;
+    padding: 4px 8px;
+    height: 28px;
+}
+
+.triggers-panel .group-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.triggers-panel .group .btn-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 12px;
+}
+
+.group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 160px;
+    overflow: visible;
+}
+
+/* Distance между группами — внизу каждой группы, хорошо видно */
+.group-distance-to-next {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--color-border-default);
+    background: rgba(var(--color-primary-rgb), 0.04);
+    border-radius: 0 0 var(--radius-medium) var(--radius-medium);
+    position: relative;
+    overflow: visible;
+    box-shadow: inset 0 1px 0 rgba(var(--color-primary-rgb), 0.08);
+}
+
+.group-distance-label {
+    display: block;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+/* Индикация соединителя: индивидуальное (жёлтое) */
+.individual-override {
+    border-color: var(--color-warning) !important;
+    border-style: solid !important;
+}
+
+.individual-override::after {
+    content: 'Индивидуальное';
+    display: inline-block;
+    font-size: 9px;
+    color: var(--color-warning);
+    background: rgba(251, 191, 36, 0.1);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Индикация соединителя: общее (синий/голубой, отличимо от индивидуального) */
+.common-distance-applied {
+    border-color: rgba(var(--color-primary-rgb), 0.6) !important;
+    border-style: solid !important;
+}
+
+.common-distance-applied::after {
+    content: 'Общее';
+    display: inline-block;
+    font-size: 9px;
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.12);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.group-distance-dropdown .distance-selector-custom {
+    width: 100%;
+}
+
+.group-distance-dropdown .distance-dropdown-toggle {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.subgroups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 6px 0;
+}
+
+.subgroups-container:empty {
+    min-height: 52px;
+    padding: 10px;
+    border: 1px dashed var(--color-border-subtle, #2A2E40);
+    border-radius: 8px;
+    background: rgba(var(--color-primary-rgb), 0.04);
+}
+.subgroups-container:empty::before {
+    content: "Перетащите сюда подгруппу";
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    display: block;
+}
+.subgroups-container:empty.drag-over-subgroup {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.12);
+}
+
+/* Divider between group triggers and subgroups */
+.group-triggers-subgroups-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-border-default), transparent);
+    margin: 4px 0;
+}
+
+/* Подгруппа — чётко выделенная */
+.subgroup {
+    background: var(--color-bg-elevated, rgba(30, 38, 55, 0.7));
+    border: 1px solid var(--color-border-default);
+    border-left: 3px solid rgba(var(--color-primary-rgb), 0.4);
+    border-radius: 8px;
+    padding: 14px;
+    margin-left: 0;
+    flex-shrink: 0;
+    min-height: 100px;
+    position: relative;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+.subgroup:hover {
+    border-color: rgba(var(--color-primary-rgb), 0.5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+.subgroup + .subgroup {
+    margin-top: 2px;
+}
+
+/* Distance between subgroups — outside subgroup cards */
+.subgroup-distance-between {
+    padding: 8px 14px;
+    background: rgba(var(--color-primary-rgb), 0.04);
+    border: 1px dashed var(--color-border-subtle, #2A2E40);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: visible;
+}
+
+.subgroup-distance-between label {
+    white-space: nowrap;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.subgroup-distance-between .distance-dropdown-container {
+    flex: 1;
+    min-width: 0;
+}
+
+.subgroup-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    flex: 1;
+}
+.subgroup-title-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px -2px 0;
+    min-width: 60px;
+}
+.subgroup-title-wrap:hover .subgroup-title-text {
+    color: var(--color-text-primary);
+}
+.subgroup-title-text {
+    pointer-events: none;
+}
+.subgroup-distance-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+.subgroup-distance-overlay .distance-dropdown-toggle {
+    visibility: hidden;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
+.subgroup-distance-overlay .distance-dropdown-container {
+    pointer-events: none;
+}
+
+/* Компактный бейдж с синтаксисом соединителя (|, [\s\S]+, .{5,10} и т.д.) */
+.subgroup-distance-badge {
+    font-size: 10px;
+    font-family: ui-monospace, monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(var(--color-primary-rgb), 0.12);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-subtle, #2A2E40);
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+/* Контейнер dropdown скрыт, открывается по клику на заголовок; кнопка невидима, но участвует в layout для позиционирования меню */
+.subgroup-distance-in-header {
+    flex-shrink: 0;
+}
+.subgroup-distance-in-header .distance-dropdown-container {
+    display: flex;
+    align-items: center;
+}
+.subgroup-distance-in-header .distance-selector-custom {
+    border: none;
+    background: transparent;
+}
+.subgroup-distance-in-header .distance-dropdown-toggle {
+    opacity: 0;
+    position: absolute;
+    inset: 0;
+    min-width: 0;
+}
+
+/* Триггеры — видны в группе, с отчётливым оформлением */
+.triggers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 88px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 8px;
+    transition: border-color var(--transition-fast);
+}
+
+/* Group-level triggers container */
+.group-triggers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.group-triggers-container:empty {
+    min-height: 44px;
+    border: 1px dashed var(--color-border-subtle, #2A2E40);
+    border-radius: 8px;
+    background: rgba(var(--color-primary-rgb), 0.04);
+}
+.group-triggers-container:empty::before {
+    content: "Триггеры";
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    display: block;
+    padding: 10px;
+}
+.group-triggers-container:empty.drag-over-triggers {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.12);
+}
+
+.triggers-container:focus-within {
+    border-color: var(--color-primary);
+}
+
+/* Зоны сброса триггеров: одна в начале (перед подгруппами), по одной между каждой парой подгрупп, одна после последней подгруппы */
+.trigger-drop-zone {
+    min-height: 24px;
+    margin: 6px 0;
+    padding: 8px 12px;
+    border: 1px dashed var(--color-border-subtle, #2A2E40);
+    border-radius: 6px;
+    background: rgba(var(--color-primary-rgb), 0.06);
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+    flex-shrink: 0;
+}
+.trigger-drop-zone-start {
+    margin-top: 0;
+    margin-bottom: 6px;
+}
+/* Контейнер слота: зона сброса + список триггеров (в начале, между подгруппами или после последней) */
+.group-triggers-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.trigger-drop-zone-between {
+    /* между двумя подгруппами — одна зона на каждый промежуток */
+}
+.trigger-drop-zone-after {
+    margin-bottom: 0;
+    min-height: 28px;
+}
+.trigger-drop-zone.drag-over-triggers {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.12) !important;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.15);
+    animation: dragDropZonePulse 1.2s ease-in-out infinite;
+}
+
+/* Усиленная обратная связь при drag & drop — подсветка зоны сброса */
+.triggers-container.drag-over-triggers,
+.group-triggers-container.drag-over-triggers,
+.group-body.drag-over-triggers {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 8px;
+    border-color: var(--color-primary) !important;
+    background: rgba(var(--color-primary-rgb), 0.12) !important;
+    box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.15);
+    animation: dragDropZonePulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dragDropZonePulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.15); }
+    50% { box-shadow: 0 0 0 8px rgba(var(--color-primary-rgb), 0.08); }
+}
+
+.trigger-item.dragging-trigger {
+    opacity: 0.6;
+}
+
+.group.dragging-group {
+    opacity: 0.7;
+}
+
+.group.drag-over-group {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-medium);
+    border-color: var(--color-primary) !important;
+    background: rgba(var(--color-primary-rgb), 0.06) !important;
+    box-shadow: 0 0 0 4px rgba(var(--color-primary-rgb), 0.12);
+}
+
+.subgroup.dragging-subgroup {
+    opacity: 0.7;
+}
+
+.subgroup.drag-over-subgroup {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-small);
+    border-color: var(--color-primary) !important;
+    background: rgba(var(--color-primary-rgb), 0.08) !important;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.group-body.drag-over-subgroup {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 8px;
+    background: rgba(var(--color-primary-rgb), 0.08) !important;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.triggers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trigger-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.trigger-input,
+.trigger-textarea {
+    flex: 1;
+    min-height: 32px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    padding: 6px 10px;
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border-default);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.trigger-input:focus,
+.trigger-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2),
+                0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+    background: var(--color-bg-page);
+}
+
+.trigger-input::placeholder {
+    color: var(--color-text-tertiary);
+    font-style: italic;
+}
+
+/* Кнопки добавления — стилизованные */
+.btn-add-group,
+.btn-add-subgroup {
+    justify-content: center;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btn-add-trigger {
+    width: 100%;
+    justify-content: center;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Кнопки в хедере группы */
+.group-header-buttons {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.group-header-buttons .btn {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.3);
+    background: rgba(var(--color-primary-rgb), 0.08);
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.group-header-buttons .btn:hover {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.18);
+    box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.15);
+}
+
+.group-header-buttons .btn svg {
+    flex-shrink: 0;
+}
+
+/* Group actions */
+.group-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.group-actions .btn-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: var(--radius-small);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-tertiary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.group-actions .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text-primary);
+}
+
+.group-actions .btn-icon[data-action="delete"]:hover {
+    color: var(--color-error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Subgroup buttons */
+.subgroup-body .add-trigger-btn {
+    height: 26px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-small);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px dashed var(--color-border-default);
+    background: transparent;
+    color: var(--color-text-tertiary);
+    margin-top: 4px;
+}
+
+.subgroup-body .add-trigger-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+    border-style: solid;
+}
+
+/* Subgroup header buttons (размер закрыть оставляем 24px, настройки — отдельно 32px) */
+.subgroup-header .btn-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    font-size: 12px;
+    border-radius: var(--radius-small);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-tertiary);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.subgroup-header .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text-primary);
+}
+
+.subgroup-header .btn-icon[data-action="delete"]:hover {
+    color: var(--color-error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Add subgroup body button */
+.add-subgroup-btn-body {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-small);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px dashed var(--color-border-default);
+    background: transparent;
+    color: var(--color-text-tertiary);
+    margin-top: 6px;
+}
+
+.add-subgroup-btn-body:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+    border-style: solid;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DISTANCE SELECTOR (соединитель между подгруппами)
+   ───────────────────────────────────────────────────────────────── */
+
+.distance-selector {
+    margin-top: var(--spacing-m);
+    padding-top: var(--spacing-m);
+    border-top: 1px solid var(--color-border-default);
+}
+
+.distance-selector label {
+    display: block;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-s);
+}
+
+.distance-dropdown {
+    width: 100%;
+    height: 36px;
+    font-size: 13px;
+}
+
+/* Custom distance поля (мин/макс) */
+.distance-custom {
+    margin-top: var(--spacing-m);
+    padding: var(--spacing-m);
+    background: rgba(var(--color-primary-rgb), 0.05);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+    border-radius: var(--radius-small);
+    display: grid;
+    grid-template-columns: auto 80px auto 80px;
+    gap: var(--spacing-m);
+    align-items: center;
+}
+
+.distance-custom label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.distance-custom input {
+    height: 36px;
+}
+
+.distance-hint {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: var(--spacing-s);
+}
+
+/* Distance selector vertical (custom dropdown container) — компактно */
+.distance-selector-vertical {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--color-border-default);
+}
+
+/* Custom distance dropdown (Q8: min/max inside menu) */
+.distance-selector-custom {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+.distance-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-default);
+    border-radius: 4px;
+    background: var(--color-bg-input);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: border-color var(--transition-fast);
+}
+
+.distance-dropdown-toggle:hover {
+    border-color: var(--color-border-hover);
+}
+
+.distance-dropdown-menu {
+    position: fixed;
+    z-index: 9990;
+    min-width: 280px;
+    padding: var(--spacing-s);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Выпадающие меню всегда наружу — наивысший слой */
+.triggers-panel .distance-dropdown-menu {
+    z-index: 9995;
+}
+
+.distance-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-s);
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: var(--radius-small);
+    transition: background var(--transition-fast);
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    font-size: 13px;
+}
+
+.distance-option:hover {
+    background: rgba(var(--color-primary-rgb), 0.08);
+    border-color: rgba(var(--color-primary-rgb), 0.2);
+}
+
+.distance-option input[type="radio"] {
+    accent-color: var(--color-primary);
+}
+
+.distance-option input[type="radio"]:checked + .distance-option-label {
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.distance-option-custom {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    background: rgba(var(--color-primary-rgb), 0.03);
+    border: 1px dashed rgba(var(--color-primary-rgb), 0.2);
+}
+
+.distance-option-label {
+    flex: 1;
+    color: var(--color-text-primary);
+}
+
+.custom-inputs-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-s);
+    margin-top: var(--spacing-s);
+    padding-left: 24px;
+}
+
+.custom-inputs-inline input[type="number"] {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    background: var(--color-bg-input);
+    color: var(--color-text-primary);
+}
+
+/* Trigger item row (textarea + ⚙️ + ✖) — компактно */
+.trigger-item .trigger-input-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.trigger-textarea {
+    min-height: 36px;
+    max-height: 100px;
+    resize: vertical;
+}
+
+.trigger-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.trigger-badges .badge {
+    font-size: 12px;
+    padding: 2px 4px;
+}
+
+/* Компактный бейдж соединителя у триггера (как у подгрупп: |, [\s\S]+, .{1,10}) */
+.trigger-badges .trigger-distance-badge {
+    font-size: 10px;
+    font-family: ui-monospace, monospace;
+    padding: 2px 6px;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Trigger settings modal */
+.trigger-settings-modal-body .trigger-param-label {
+    display: block;
+    margin: var(--spacing-s) 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TEXTAREA ДЛЯ ПРОСТЫХ ТРИГГЕРОВ
+   ───────────────────────────────────────────────────────────────── */
+
+.simple-triggers-textarea {
+    min-height: 60px;
+    max-height: none;
+    flex: 1;
+    resize: vertical;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-y: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ПАНЕЛЬ "ВЫВОД РЕЗУЛЬТАТА" — под панелью триггеров
+   ───────────────────────────────────────────────────────────────── */
+
+.output-panel {
+    flex: 0 0 auto;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    border-top: 3px solid var(--color-success);
+    position: relative;
+}
+
+.output-textarea {
+    min-height: 60px;
+    height: 140px;
+    max-height: none;
+    resize: vertical;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background: var(--color-bg-page);
+    color: var(--color-success);
+    overflow-y: auto;
+    display: block;
+    box-sizing: border-box;
+}
+
+.output-textarea:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
+}
+
+.output-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-m);
+    align-items: center;
+}
+
+.output-actions .btn-convert,
+.output-actions .btn-copy,
+.output-actions .btn-to-tester,
+.output-actions .btn-to-visualizer {
+    flex-shrink: 0;
+    height: 36px;
+}
+
+.output-actions .btn-header-clear {
+    margin-left: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGES CONTAINER (в группах/подгруппах)
+   ───────────────────────────────────────────────────────────────── */
+
+.badges-container {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+/* Badge стили в badges.css */
+
+/* ─────────────────────────────────────────────────────────────────
+   FOOTER (подвал сайта)
+   ───────────────────────────────────────────────────────────────── */
+
+.main-footer {
+    background: var(--color-bg-panel);
+    border-top: 1px solid var(--color-border-default);
+    padding: 20px 40px;
+}
+
+.footer-container {
+    text-align: center;
+    padding: 0 40px;
+}
+
+.footer-text {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.footer-link {
+    font-size: 13px;
+    color: var(--color-primary); /* Ссылки цветом primary */
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.footer-icon {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin: 0 2px;
+    opacity: 0.8;
+}
+
+.footer-link:hover .footer-icon {
+    opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   STATES & INTERACTIONS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Drag over state */
+.drag-over {
+    background: rgba(91, 141, 239, 0.1);
+    border-color: var(--color-primary);
+}
+
+/* Focus within group/subgroup */
+.group:focus-within,
+.subgroup:focus-within {
+    border-color: var(--color-border-hover);
+}
+
+/* Empty state — подсказка по центру области панели
+   Показываем, когда нет ни одной .group (в том числе если контейнер не строго :empty). */
+.groups-container:empty,
+.groups-container:not(:has(.group)) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.groups-container:empty::after,
+.groups-container:not(:has(.group))::after {
+    content: 'Нажмите "+ Добавить группу", чтобы начать';
+    display: block;
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--color-text-tertiary);
+    font-size: 14px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ANIMATIONS & MICRO-INTERACTIONS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Мягкий pulse отключён — меньше отвлекает */
+
+.distance-custom,
+.prefix-exact-input {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   GENERAL POLISH — transitions, hover effects, focus-visible
+   ───────────────────────────────────────────────────────────────── */
+
+/* All panels — consistent border-radius and shadow */
+.panel {
+    transition: box-shadow var(--transition-normal);
+}
+
+.panel:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+/* Subgroup hover */
+.subgroup {
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast),
+                transform var(--transition-fast);
+}
+
+/* Group body — allow overflow for subgroup distance dropdowns */
+.group-body {
+    overflow: visible;
+}
+
+/* All interactive elements: smooth transitions */
+.btn-add-group,
+.btn-add-subgroup,
+.add-subgroup-btn-body,
+.add-trigger-btn,
+.btn-group-settings,
+.btn-subgroup-settings {
+    transition: all var(--transition-fast);
+}
+
+/* Focus-visible ring for accessibility */
+.group:focus-visible,
+.subgroup:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Distance dropdown toggle hover */
+.distance-dropdown-toggle:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Consistent icon sizes; настройки — крупнее и заметнее */
+.group-actions .btn-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.group-actions .btn-group-settings {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.group-actions .btn-group-settings svg {
+    width: 18px;
+    height: 18px;
+}
+
+.subgroup-header .btn-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.subgroup-header .btn-subgroup-settings {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+.subgroup-header .btn-subgroup-settings svg {
+    width: 18px;
+    height: 18px;
+}
+
+.trigger-item .btn-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Trigger double-click hint — заметнее, в стиле сайта */
+.trigger-dblclick-hint {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    padding: 4px 0;
+    user-select: none;
+    text-align: center;
+}
+
+.trigger-dblclick-hint svg {
+    width: 10px;
+    height: 10px;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
+/* Expanded trigger settings popup */
+.trigger-action-choice-popup {
+    min-width: 280px;
+    max-width: 340px;
+}
+
+.trigger-params-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.trigger-param-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    transition: background var(--transition-fast);
+}
+
+.trigger-param-check:hover {
+    background: rgba(91, 141, 239, 0.06);
+}
+
+.trigger-param-check input[type="checkbox"] {
+    accent-color: var(--color-primary);
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.trigger-params-divider {
+    height: 1px;
+    background: var(--color-border-default);
+    margin: 4px 0 8px;
+}
+
+.trigger-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.trigger-action-buttons .btn-block {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.trigger-action-buttons .btn-configured {
+    border-color: rgba(52, 211, 153, 0.3);
+    color: var(--color-success);
+}
+
+/* Clickable badges on triggers */
+.trigger-badges .badge {
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.trigger-badges .badge:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Subgroup body improvements */
+.subgroup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.subgroup-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.1);
+    flex-wrap: wrap;
+}
+/* Блок «Корень» и кнопка закрыть — у правого края */
+.subgroup-header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+

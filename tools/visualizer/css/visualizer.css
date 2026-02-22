@@ -1,0 +1,528 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER - VISUALIZER.CSS
+   Панель визуализатора railroad-диаграмм
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Скролл по якорю #visualizer: панель с заголовком остаётся видимой под фиксированным хедером */
+#visualizer.visualizer-section {
+  scroll-margin-top: 80px;
+}
+
+/* Горизонтальные отступы как у конвертера: section 24px + main 24px = 48px с каждой стороны */
+.visualizer-section {
+  margin-top: var(--spacing-xxl);
+  padding: 0 48px var(--spacing-xl);
+}
+
+.visualizer-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.visualizer-panel {
+  border-top: 3px solid var(--color-info);
+  overflow: visible;
+}
+
+/* Шапка визуализатора: заголовок и подсказка слева, кнопка «Очистить» справа */
+.visualizer-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-m);
+}
+
+.visualizer-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.visualizer-panel-header .btn-header-clear {
+  flex-shrink: 0;
+}
+
+.visualizer-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.visualizer-input-row {
+  display: flex;
+  gap: var(--spacing-m);
+  align-items: center;
+}
+
+.visualizer-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.visualizer-regex-input {
+  width: 100%;
+  min-height: 56px;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 18px 12px;
+  resize: vertical;
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-small);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.visualizer-regex-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.visualizer-regex-input:hover {
+  border-color: var(--color-border-hover);
+}
+
+.visualizer-input-actions {
+  display: flex;
+  gap: var(--spacing-s);
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.visualizer-input-actions .btn-primary,
+.visualizer-input-actions .btn-secondary {
+  height: 40px;
+  min-width: 0;
+  padding-left: var(--spacing-l);
+  padding-right: var(--spacing-l);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.visualizer-input-actions .btn-primary {
+  min-width: 160px;
+}
+
+.visualizer-input-actions .btn-secondary {
+  min-width: 96px;
+}
+
+/* Область диаграммы: до построения — по размеру экрана (адаптивно); после — большая для просмотра */
+.visualizer-diagram-area {
+  position: relative;
+  background: var(--color-bg-panel);
+  border: none;
+  border-radius: var(--radius-medium);
+  min-height: min(280px, 35vh);
+  max-height: 60vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+/* С диаграммой: высота ~3× для удобного просмотра больших диаграмм */
+.visualizer-diagram-area.has-diagram {
+  min-height: min(960px, 75vh);
+  max-height: min(1260px, 85vh);
+}
+
+/* Приветственный экран (диаграммы ещё нет): светлый текст на тёмном фоне */
+.visualizer-diagram-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+/* Скрыть индикатор загрузки regexper (.progress) внутри нашей области */
+.visualizer-diagram-area .progress {
+  display: none !important;
+}
+
+.visualizer-diagram-placeholder.hidden {
+  display: none !important;
+}
+
+/* Загрузка: три пульсирующие точки по центру белого поля диаграммы */
+.visualizer-loading {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 1;
+}
+
+.visualizer-loading-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: visualizer-loading-pulse 1.2s ease-in-out infinite both;
+}
+
+.visualizer-loading-dot:nth-child(1) { animation-delay: 0s; }
+.visualizer-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.visualizer-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes visualizer-loading-pulse {
+  0%, 100% {
+    transform: scale(0.75);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.visualizer-diagram-viewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: visible;
+  background: #fff;
+}
+
+.visualizer-diagram-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  cursor: grab;
+  user-select: none;
+  background: #fff;
+}
+
+.visualizer-diagram-scroll:active {
+  cursor: grabbing;
+}
+
+/* Обёртка задаёт область прокрутки; при зуме размер задаётся из JS */
+.visualizer-diagram-scroll-wrap {
+  min-width: 100%;
+  min-height: 100%;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+/* При зуме размеры задаются из JS, снимаем CSS min-width/min-height и fit-content */
+.visualizer-diagram-scroll-wrap.visualizer-scroll-wrap--zoomed {
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Ширина по содержимому, чтобы flex-родитель мог центрировать диаграмму */
+.visualizer-diagram-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 36px;
+  min-width: min-content;
+  min-height: min-content;
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+/* При зуме диаграмма выровнена по верхнему левому углу, не обрезать */
+.visualizer-diagram-inner.visualizer-diagram-inner--zoomed {
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow: visible;
+  max-width: none;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+.visualizer-diagram-inner.visualizer-diagram-inner--zoomed .svg {
+  overflow: visible;
+}
+
+.visualizer-diagram-inner svg {
+  display: block;
+}
+
+/* Панель под диаграммой: экспорт (SVG/PNG) слева, зум справа */
+.visualizer-toolbar.visualizer-export-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+  padding-top: var(--spacing-m);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.visualizer-toolbar-export {
+  display: flex;
+  gap: var(--spacing-s);
+  align-items: center;
+}
+
+.visualizer-toolbar-export .btn-secondary {
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Кнопка «Скачать» и выпадающее меню SVG/PNG — три кнопки в ряд, равные отступы, без обводки контейнера */
+.visualizer-download-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: var(--spacing-s);
+}
+.visualizer-download-dropdown > .btn-secondary {
+  height: 40px;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+.visualizer-download-menu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: var(--spacing-s);
+  padding: 0;
+  min-height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--spacing-s);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.visualizer-download-menu.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.visualizer-download-menu .btn-secondary {
+  justify-content: center;
+  min-width: 64px;
+  text-align: center;
+  padding-left: var(--spacing-m);
+  padding-right: var(--spacing-m);
+}
+
+/* Кнопки панели (масштаб, раскрыть): одного размера с кнопкой «Скачать» */
+.visualizer-toolbar-btn {
+  height: 40px;
+  min-height: 40px;
+  padding-left: var(--spacing-m);
+  padding-right: var(--spacing-m);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.visualizer-diagram-zoom-controls .btn-icon.visualizer-toolbar-btn {
+  min-width: 40px;
+  width: 40px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 0;
+}
+/* Кнопка «Раскрыть на весь экран» снизу: текст внутри обводки, не выходит за границы */
+.visualizer-fullscreen-btn-text {
+  white-space: nowrap;
+  text-align: center;
+  min-width: 200px;
+  padding-left: var(--spacing-l);
+  padding-right: var(--spacing-l);
+  box-sizing: border-box;
+}
+
+.visualizer-diagram-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.visualizer-diagram-zoom-controls .btn-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.visualizer-zoom-value {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Скрытые элементы для regexper-static (form links, error, warnings) */
+.visualizer-regexper-links {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.visualizer-regexper-error,
+.visualizer-regexper-warnings {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Модальное окно «на весь экран» */
+.visualizer-fullscreen-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.visualizer-fullscreen-overlay.is-open {
+  display: flex;
+}
+.visualizer-fullscreen-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  /* Та же тёмная панель, что и .panel (панель визуализатора) */
+  background: var(--color-bg-panel);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+.visualizer-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-m);
+  flex-shrink: 0;
+  padding: var(--spacing-m) var(--spacing-l);
+  border-bottom: 1px solid var(--color-border-default);
+  /* Тот же тёмный фон, что у .panel-header (панели визуализатора/конвертера) */
+  background: rgba(26, 35, 50, 0.5);
+}
+.visualizer-fullscreen-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.visualizer-fullscreen-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-m);
+  flex-wrap: wrap;
+}
+.visualizer-fullscreen-close {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 24px;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.visualizer-fullscreen-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-m);
+  padding: var(--spacing-m) var(--spacing-l);
+  border-bottom: 1px solid var(--color-border-default);
+  flex-shrink: 0;
+}
+.visualizer-fullscreen-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  cursor: grab;
+  background: #fff;
+}
+.visualizer-fullscreen-scroll:active {
+  cursor: grabbing;
+}
+.visualizer-fullscreen-scroll-wrap {
+  min-width: 100%;
+  min-height: 100%;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+.visualizer-fullscreen-scroll-wrap.visualizer-scroll-wrap--zoomed {
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.visualizer-fullscreen-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 36px;
+  min-width: min-content;
+  min-height: min-content;
+  background: #fff;
+  flex: 0 0 auto;
+}
+.visualizer-fullscreen-inner.visualizer-fullscreen-inner--zoomed {
+  justify-content: flex-start;
+  align-items: flex-start;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+.visualizer-fullscreen-inner svg {
+  display: block;
+}

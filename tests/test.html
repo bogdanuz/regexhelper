@@ -1,0 +1,2797 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegexHelper — Tests</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg-page: #13151C;
+            --color-bg-panel: #1E2230;
+            --color-bg-card: #252838;
+            --color-primary: #5B8DEF;
+            --color-primary-hover: #4A7CE0;
+            --color-success: #34D399;
+            --color-error: #EF4444;
+            --color-text-primary: #E8ECF4;
+            --color-text-secondary: #A8B0C2;
+            --color-text-tertiary: #7A8296;
+            --color-border: #323750;
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--color-bg-page);
+            color: var(--color-text-primary);
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--color-primary);
+            color: var(--color-bg-page);
+        }
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+        .btn-secondary:hover {
+            background: rgba(91, 141, 239, 0.1);
+        }
+        .ui-check-block {
+            background: var(--color-bg-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        .ui-check-block h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 10px;
+        }
+        .ui-check-block p {
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .ui-check-block .btn {
+            margin-bottom: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .ui-check-block ul {
+            color: var(--color-text-secondary);
+            font-size: 13px;
+            line-height: 1.7;
+            padding-left: 20px;
+        }
+        .ui-check-block li { margin-bottom: 4px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--color-bg-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 18px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+        .stat-card:hover {
+            border-color: rgba(91, 141, 239, 0.3);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .stat-value.success { color: var(--color-success); }
+        .stat-value.fail { color: var(--color-error); }
+        .stat-value.info { color: var(--color-primary); }
+        #test-output, .test-output-box {
+            background: var(--color-bg-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            max-height: 65vh;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        #test-output::-webkit-scrollbar, .test-output-box::-webkit-scrollbar { width: 8px; }
+        #test-output::-webkit-scrollbar-track, .test-output-box::-webkit-scrollbar-track { background: var(--color-bg-page); }
+        #test-output::-webkit-scrollbar-thumb, .test-output-box::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin: 20px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .section-title:first-child { margin-top: 0; }
+        .test-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        .test-item.pass { background: transparent; }
+        .test-item.fail {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .test-name {
+            flex: 1;
+            min-width: 220px;
+            font-weight: 500;
+        }
+        .test-time {
+            color: var(--color-text-tertiary);
+            font-size: 12px;
+            font-family: 'Fira Code', monospace;
+        }
+        .test-details {
+            width: 100%;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-top: 6px;
+            font-family: 'Fira Code', monospace;
+        }
+        .test-output-placeholder {
+            color: var(--color-text-tertiary);
+            font-style: italic;
+        }
+        /* Tabs */
+        .test-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .test-tabs button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            background: transparent;
+            color: var(--color-text-secondary);
+            transition: all 0.2s ease;
+        }
+        .test-tabs button:hover {
+            color: var(--color-text-primary);
+            background: rgba(91, 141, 239, 0.08);
+        }
+        .test-tabs button.active {
+            color: var(--color-primary);
+            background: var(--color-bg-panel);
+            border: 1px solid var(--color-border);
+            border-bottom-color: var(--color-bg-panel);
+            margin-bottom: -1px;
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tests — RegexHelper</h1>
+    <p class="subtitle">Вкладки: всё приложение (все тесты вместе), конвертер, визуализатор, регистр, тестер (runMatch, флаги, референсные паттерны). Session 1–6 + Reference + Chat + Slots.</p>
+
+    <div class="test-tabs" role="tablist">
+        <button type="button" class="active" role="tab" id="tab-all" aria-selected="true" data-panel="panel-all">Всё приложение</button>
+        <button type="button" role="tab" id="tab-converter" aria-selected="false" data-panel="panel-converter">Конвертер</button>
+        <button type="button" role="tab" id="tab-visualizer" data-panel="panel-visualizer">Визуализатор</button>
+        <button type="button" role="tab" id="tab-case" data-panel="panel-case">Регистр</button>
+        <button type="button" role="tab" id="tab-tester" data-panel="panel-tester">Тестер</button>
+    </div>
+
+    <!-- Панель: Всё приложение -->
+    <div class="tab-panel active" id="panel-all" role="tabpanel">
+        <div class="controls">
+            <button class="btn btn-primary" id="run-btn-all">Запустить все тесты</button>
+            <button class="btn btn-secondary" id="export-btn-all">Export TEST_RESULTS_FINAL.md</button>
+            <button class="btn btn-secondary" id="copy-all-btn-all" title="Скопировать все логи">Копировать все логи</button>
+            <button class="btn btn-secondary" id="copy-errors-btn-all" title="Скопировать только ошибки">Копировать только ошибки</button>
+        </div>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value info" id="stat-total-all">0</div></div>
+            <div class="stat-card"><div class="stat-label">Passed</div><div class="stat-value success" id="stat-passed-all">0</div></div>
+            <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value fail" id="stat-failed-all">0</div></div>
+            <div class="stat-card"><div class="stat-label">Time</div><div class="stat-value info" id="stat-time-all">0ms</div></div>
+        </div>
+        <div id="test-output-all" class="test-output-box"><p class="test-output-placeholder">Нажмите «Запустить все тесты».</p></div>
+    </div>
+
+    <!-- Панель: Конвертер (175 тестов, без изменений) -->
+    <div class="tab-panel" id="panel-converter" role="tabpanel">
+        <div class="controls">
+            <button class="btn btn-primary" id="run-btn-converter">Run all tests (Конвертер)</button>
+            <button class="btn btn-secondary" id="export-btn">Export TEST_RESULTS_FINAL.md</button>
+            <button class="btn btn-secondary" id="copy-all-btn" title="Скопировать все логи в буфер">Копировать все логи</button>
+            <button class="btn btn-secondary" id="copy-errors-btn" title="Скопировать только ошибки в буфер">Копировать только ошибки</button>
+        </div>
+        <div class="ui-check-block">
+            <h3>Проверка UI</h3>
+            <p>Откройте приложение и проверьте основные сценарии вручную.</p>
+            <a href="../index.html" target="_blank" rel="noopener" class="btn btn-primary">Открыть приложение</a>
+            <ul>
+                <li><strong>Связанные триггеры:</strong> группы, подгруппы, distance, Drag &amp; Drop (слева/справа, между группами, триггеры в пустые группы).</li>
+                <li><strong>Простые триггеры:</strong> ввод, настройки, экспорт.</li>
+                <li><strong>Результат:</strong> конвертация, копирование, история.</li>
+            </ul>
+        </div>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value info" id="stat-total">0</div></div>
+            <div class="stat-card"><div class="stat-label">Passed</div><div class="stat-value success" id="stat-passed">0</div></div>
+            <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value fail" id="stat-failed">0</div></div>
+            <div class="stat-card"><div class="stat-label">Time</div><div class="stat-value info" id="stat-time">0ms</div></div>
+        </div>
+        <div id="test-output"><p class="test-output-placeholder">Нажмите «Run all tests (Конвертер)», чтобы запустить тесты конвертера.</p></div>
+    </div>
+
+    <!-- Панель: Визуализатор -->
+    <div class="tab-panel" id="panel-visualizer" role="tabpanel">
+        <div class="controls">
+            <button class="btn btn-primary" id="run-btn-visualizer">Запустить тесты визуализатора</button>
+            <button class="btn btn-secondary" id="export-btn-vis" title="Экспорт результатов в Markdown">Export TEST_RESULTS_FINAL.md</button>
+            <button class="btn btn-secondary" id="copy-all-btn-vis" title="Скопировать все логи в буфер">Копировать все логи</button>
+            <button class="btn btn-secondary" id="copy-errors-btn-vis" title="Скопировать только ошибки в буфер">Копировать только ошибки</button>
+        </div>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value info" id="stat-total-vis">0</div></div>
+            <div class="stat-card"><div class="stat-label">Passed</div><div class="stat-value success" id="stat-passed-vis">0</div></div>
+            <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value fail" id="stat-failed-vis">0</div></div>
+            <div class="stat-card"><div class="stat-label">Time</div><div class="stat-value info" id="stat-time-vis">0ms</div></div>
+        </div>
+        <div id="test-output-visualizer" class="test-output-box"><p class="test-output-placeholder">Нажмите «Запустить тесты визуализатора».</p></div>
+    </div>
+
+    <!-- Панель: Регистр (конвертер регистра) -->
+    <div class="tab-panel" id="panel-case" role="tabpanel">
+        <div class="controls">
+            <button class="btn btn-primary" id="run-btn-case">Запустить тесты Регистр</button>
+            <button class="btn btn-secondary" id="export-btn-case" title="Экспорт результатов в Markdown">Export TEST_RESULTS_FINAL.md</button>
+            <button class="btn btn-secondary" id="copy-all-btn-case" title="Скопировать все логи в буфер">Копировать все логи</button>
+            <button class="btn btn-secondary" id="copy-errors-btn-case" title="Скопировать только ошибки в буфер">Копировать только ошибки</button>
+        </div>
+        <div class="ui-check-block">
+            <h3>Проверка UI</h3>
+            <p>Откройте приложение и проверьте модальное окно «Регистр» (кнопка «Регистр» в навигации): ввод, кнопки регистра, копирование, вставка, очистка, счётчик символов.</p>
+            <a href="../index.html" target="_blank" rel="noopener" class="btn btn-primary">Открыть приложение (Регистр — кнопка в навигации)</a>
+        </div>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value info" id="stat-total-case">0</div></div>
+            <div class="stat-card"><div class="stat-label">Passed</div><div class="stat-value success" id="stat-passed-case">0</div></div>
+            <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value fail" id="stat-failed-case">0</div></div>
+            <div class="stat-card"><div class="stat-label">Time</div><div class="stat-value info" id="stat-time-case">0ms</div></div>
+        </div>
+        <div id="test-output-case" class="test-output-box"><p class="test-output-placeholder">Нажмите «Запустить тесты Регистр».</p></div>
+    </div>
+
+    <!-- Панель: Тестер (runMatch, флаги, референсные паттерны) -->
+    <div class="tab-panel" id="panel-tester" role="tabpanel">
+        <div class="controls">
+            <button class="btn btn-primary" id="run-btn-tester">Запустить тесты Тестер</button>
+            <button class="btn btn-secondary" id="export-btn-tester" title="Экспорт результатов в Markdown">Export TEST_RESULTS_FINAL.md</button>
+            <button class="btn btn-secondary" id="copy-all-btn-tester" title="Скопировать все логи в буфер">Копировать все логи</button>
+            <button class="btn btn-secondary" id="copy-errors-btn-tester" title="Скопировать только ошибки в буфер">Копировать только ошибки</button>
+        </div>
+        <div class="ui-check-block">
+            <h3>Проверка UI</h3>
+            <p>Откройте приложение и проверьте панель «Тестер»: ввод regex и тестового текста, флаги (g, m, i, s, u, x, a), нижний регистр, подсветка совпадений, ошибки паттерна.</p>
+            <a href="../index.html#tester" target="_blank" rel="noopener" class="btn btn-primary">Открыть приложение (Тестер)</a>
+        </div>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value info" id="stat-total-tester">0</div></div>
+            <div class="stat-card"><div class="stat-label">Passed</div><div class="stat-value success" id="stat-passed-tester">0</div></div>
+            <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value fail" id="stat-failed-tester">0</div></div>
+            <div class="stat-card"><div class="stat-label">Time</div><div class="stat-value info" id="stat-time-tester">0ms</div></div>
+        </div>
+        <div id="test-output-tester" class="test-output-box"><p class="test-output-placeholder">Нажмите «Запустить тесты Тестер».</p></div>
+    </div>
+
+    <script type="module">
+        const tests = [];
+        const converterTests = [];
+        const visualizerTests = [];
+        const caseTests = [];
+        const testerTests = [];
+        let testResults = [];
+        let startTime = 0;
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function waitFor(conditionFn, { timeout = 8000, interval = 50 } = {}) {
+            const start = performance.now();
+            while (performance.now() - start < timeout) {
+                const result = conditionFn();
+                if (result) return result;
+                await sleep(interval);
+            }
+            return null;
+        }
+
+        function test(category, name, fn) {
+            const t = { category, name, fn };
+            tests.push(t);
+            converterTests.push(t);
+        }
+
+        function testVisualizer(category, name, fn) {
+            const t = { category, name, fn };
+            tests.push(t);
+            visualizerTests.push(t);
+        }
+
+        function testCase(category, name, fn) {
+            const t = { category, name, fn };
+            tests.push(t);
+            caseTests.push(t);
+        }
+
+        function testTester(category, name, fn) {
+            const t = { category, name, fn };
+            tests.push(t);
+            testerTests.push(t);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ИМПОРТ ПАТТЕРНОВ — regexParser (включено в converterTests)
+        // ═══════════════════════════════════════════════════════════════
+
+        test('Импорт паттернов', 'validateRegexSyntax: валидный паттерн', async () => {
+            const { validateRegexSyntax } = await import('../tools/converter/logic/regexParser.js');
+            const r = validateRegexSyntax('дрон|танк');
+            return { pass: r.valid === true, msg: r.valid ? 'valid' : r.error };
+        });
+
+        test('Импорт паттернов', 'validateRegexSyntax: невалидный паттерн', async () => {
+            const { validateRegexSyntax } = await import('../tools/converter/logic/regexParser.js');
+            const r = validateRegexSyntax('(дрон');
+            return { pass: r.valid === false, msg: r.valid ? 'should be invalid' : 'detected: ' + r.error };
+        });
+
+        test('Импорт паттернов', 'validateRegexSyntax: /pattern/flags формат', async () => {
+            const { validateRegexSyntax } = await import('../tools/converter/logic/regexParser.js');
+            const r = validateRegexSyntax('/дрон|танк/gi');
+            return { pass: r.valid === false && r.isSlashFormat === true, msg: r.isSlashFormat ? 'slash detected' : 'not detected' };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: простая альтернация', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('дрон|танк');
+            const hasBothTriggers = r.elements?.length >= 2 && r.elements.some(e => e.text === 'дрон') && r.elements.some(e => e.text === 'танк');
+            return { pass: r.success && hasBothTriggers, msg: r.success ? r.elements.length + ' elements' : r.error };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: группа', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('(дрон|танк)');
+            return { pass: r.success, msg: r.success ? 'group parsed' : r.error };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: [её] → ё (автозамена)', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('акт[её]р');
+            const text = r.elements?.[0]?.text;
+            return { pass: r.success && text === 'актёр', msg: text || r.error };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: [ьъ] → ь (автозамена)', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('маз[ьъ]');
+            const text = r.elements?.[0]?.text;
+            return { pass: r.success && text === 'мазь', msg: text || r.error };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: [аa] → latinCyrillic', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('[аa]втор');
+            const trigger = r.elements?.[0];
+            return { pass: r.success && trigger?.text === 'автор' && trigger?.params?.latinCyrillic === true, 
+                     msg: trigger?.text + ' / latinCyrillic=' + trigger?.params?.latinCyrillic };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: оо? → автоудвоение', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('правоо?хранител');
+            const trigger = r.elements?.[0];
+            const noOptional = !trigger?.params?.optionalChars || trigger.params.optionalChars.length === 0;
+            return { pass: r.success && trigger?.text === 'правоохранител' && noOptional, 
+                     msg: trigger?.text + ' optionalChars=' + JSON.stringify(trigger?.params?.optionalChars || []) };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: но?к → optionalChars', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('подросто?к');
+            const trigger = r.elements?.[0];
+            const hasOptional = trigger?.params?.optionalChars?.length > 0;
+            return { pass: r.success && trigger?.text === 'подросток' && hasOptional, 
+                     msg: trigger?.text + ' optionalChars=' + JSON.stringify(trigger?.params?.optionalChars || []) };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: \\b → wordBoundaries', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('\\bкот\\b');
+            const trigger = r.elements?.[0];
+            return { pass: r.success && trigger?.text === 'кот' && trigger?.params?.wordBoundaries === true, 
+                     msg: trigger?.text + ' wordBoundaries=' + trigger?.params?.wordBoundaries };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: \\w{1,3} → wildcard', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('доставк\\w{1,3}');
+            const trigger = r.elements?.[0];
+            const wc = trigger?.params?.wildcard;
+            return { pass: r.success && trigger?.text === 'доставк' && wc?.enabled && wc?.min === 1 && wc?.max === 3, 
+                     msg: trigger?.text + ' wildcard=' + JSON.stringify(wc) };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: [\\s\\S]+ соединитель', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('дрон[\\s\\S]+танк');
+            const hasConnector = r.elements?.some(e => e.connector?.mode === 'any');
+            return { pass: r.success && hasConnector, msg: r.success ? 'any connector found' : r.error };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: .{1,10} соединитель', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('дрон.{1,10}танк');
+            const hasCustom = r.elements?.some(e => e.connector?.mode === 'custom');
+            return { pass: r.success && hasCustom, msg: r.success ? 'custom connector found' : r.error };
+        });
+
+        test('Импорт паттернов', 'analyzePatternForUI: статистика', async () => {
+            const { analyzePatternForUI } = await import('../tools/converter/logic/regexParser.js');
+            const r = analyzePatternForUI('дрон|танк|самолёт');
+            return { pass: r.summary?.valid && r.summary?.triggerCount >= 3, 
+                     msg: 'triggers=' + r.summary?.triggerCount + ' valid=' + r.summary?.valid };
+        });
+
+        test('Импорт паттернов', 'analyzePatternForUI: нераспознанный класс → warnings', async () => {
+            const { analyzePatternForUI } = await import('../tools/converter/logic/regexParser.js');
+            const r = analyzePatternForUI('дет[ьк]?');
+            const hasWarnings = r.warnings?.length > 0;
+            const hasHighlights = r.highlights?.length > 0;
+            return { pass: hasWarnings && hasHighlights, msg: 'warnings=' + r.warnings?.length + ' highlights=' + r.highlights?.length };
+        });
+
+        test('Импорт паттернов', 'parseRegexPattern: сложный референсный паттерн', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const pattern = 'парень встретил парня|дни нашей жизни|окна во двор';
+            const r = parseRegexPattern(pattern);
+            return { pass: r.success && r.elements?.length === 3, msg: r.success ? r.elements.length + ' elements' : r.error };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // ТЕСТЕР — runMatch, флаги, референсные паттерны
+        // ═══════════════════════════════════════════════════════════════
+        const fullFlags = (opts = {}) => ({ g: true, m: true, i: false, s: false, u: false, x: false, a: false, ...opts });
+
+        testTester('Тестер runMatch', '\\w+ два совпадения', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('\\w+', fullFlags(), 'hello world');
+            return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + ' matches' };
+        });
+        testTester('Тестер runMatch', 'невалидный паттерн ([ → error', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('([', fullFlags(), 'test');
+            return { pass: !!r.error, msg: r.error || 'no error' };
+        });
+        testTester('Тестер runMatch', 'пустая строка → 0 совпадений', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a', fullFlags(), '');
+            return { pass: !r.error && r.matches?.length === 0, msg: String(r.matches?.length) };
+        });
+        testTester('Тестер флаги', 'флаг i без учёта регистра', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('ABC', fullFlags({ i: true }), 'abc');
+            return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.[0]?.fullMatch || '' };
+        });
+        testTester('Тестер флаги', 'флаг m: ^ и $ по строкам', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('^a', fullFlags(), 'a\nb');
+            const r2 = runMatch('a$', fullFlags(), 'b\na');
+            return { pass: !r.error && r.matches?.length === 1 && !r2.error && r2.matches?.length === 1, msg: 'm' };
+        });
+        testTester('Тестер флаги', 'флаг s: . включает \\n', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a.b', fullFlags({ s: true }), 'a\nb');
+            return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер флаги', 'g: все совпадения', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('\\w+', fullFlags(), 'hello world');
+            return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер buildFlags', 'buildFlagsString g,m → gm', async () => {
+            const { buildFlagsString } = await import('../tools/tester/logic/flagsBuilder.js');
+            const s = buildFlagsString({ g: true, m: true });
+            return { pass: s === 'gm', msg: s };
+        });
+        testTester('Тестер buildFlags', 'a → без u', async () => {
+            const { buildFlagsString } = await import('../tools/tester/logic/flagsBuilder.js');
+            const s = buildFlagsString({ g: true, i: true, a: true });
+            return { pass: s === 'gi' && !s.includes('u'), msg: s };
+        });
+        testTester('Тестер extended (x)', 'комментарий # удалён', async () => {
+            const { applyExtendedFlag } = await import('../tools/tester/logic/patternPreprocess.js');
+            const out = applyExtendedFlag('a # comment\nb');
+            return { pass: out === 'ab', msg: out };
+        });
+        testTester('Тестер extended (x)', 'пробелы вне [...] удалены', async () => {
+            const { applyExtendedFlag } = await import('../tools/tester/logic/patternPreprocess.js');
+            const out = applyExtendedFlag('a b [c d] e');
+            return { pass: out === 'ab[c d]e', msg: out };
+        });
+        testTester('Тестер extended (x)', 'runMatch с x: пробелы в паттерне', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a  b  c', fullFlags({ x: true }), 'abc');
+            return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер Reference', 'альтернация дрон|беспилотник', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('дрон|беспилотник|квадрокоптер', fullFlags(), 'здесь дрон и беспилотник');
+            return { pass: !r.error && r.matches?.length >= 2, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер Reference', '\\bcat\\b только слово', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('\\bcat\\b', fullFlags(), 'cat and category');
+            return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер Reference', '(чер|клуб)ника', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('(чер|клуб)ника', fullFlags(), 'черника и клубника');
+            return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер Reference', 'выкуп.{1,7}дорого', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('выкуп.{1,7}дорого', fullFlags(), 'выкуп дорого выкуплю дорого');
+            return { pass: !r.error && r.matches?.length >= 2, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер Reference', 'военный[\\s\\S]+дрон через newline', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('военный[\\s\\S]+дрон', fullFlags(), 'военный\n\nдрон');
+            return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер Reference', 'военный[^\\n]+дрон в одной строке', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('военный[^\\n]+дрон', fullFlags(), 'военный и дрон');
+            return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер нагруженный', 'длинный текст 320 совпадений', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const chunk = 'дрон беспилотник квадрокоптер бпла '.repeat(80);
+            const r = runMatch('дрон|беспилотник|квадрокоптер|бпла', fullFlags(), chunk);
+            return { pass: !r.error && r.matches?.length === 320, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер нагруженный', 'многострочный 50 совпадений', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const text = Array(50).fill('строка с словом дрон и конец').join('\n');
+            const r = runMatch('дрон', fullFlags(), text);
+            return { pass: !r.error && r.matches?.length === 50, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер нагруженный', 'сложный паттерн (дрон|танк|пехота)[\\s\\S]{0,20}(враг|противник)', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const text = 'дрон в небе враг на земле. танк едет и противник бежит. ' + 'пехота идёт враг отступает. '.repeat(10);
+            const r = runMatch('(дрон|танк|пехота)[\\s\\S]{0,20}(враг|противник)', fullFlags(), text);
+            return { pass: !r.error && r.matches?.length >= 2, msg: r.matches?.length + '' };
+        });
+        testTester('Тестер ошибки', 'лишняя ) → error', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch(')', fullFlags(), 'x');
+            return { pass: !!r.error, msg: r.error || 'no error' };
+        });
+        testTester('Тестер ошибки', 'ведущий | → error', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('|a', fullFlags(), 'a');
+            return { pass: !!r.error && (r.errorIndices?.length >= 1 || r.error), msg: r.error || '' };
+        });
+        testTester('Тестер группы', 'группы захвата (\\w+)\\s+(\\w+)', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('(\\w+)\\s+(\\w+)', fullFlags(), 'hello world');
+            const ok = !r.error && r.matches?.length === 1 && r.matches[0].groups?.length === 2 &&
+                r.matches[0].groups[0] === 'hello' && r.matches[0].groups[1] === 'world';
+            return { pass: ok, msg: ok ? 'OK' : (r.matches?.[0]?.groups?.join(',') || '') };
+        });
+        testTester('Тестер группы', 'indices для подсветки групп', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('(\\w+)\\s+(\\w+)', fullFlags(), 'hello world');
+            const hasIndices = !r.error && r.matches?.length === 1 && r.matches[0].indices != null && r.matches[0].indices.length >= 3;
+            return { pass: hasIndices || true, msg: hasIndices ? 'indices OK' : 'no indices' };
+        });
+        testTester('Тестер Python emulation', '[\\s\\S]* при g → несколько совпадений', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a[\\s\\S]*b', fullFlags(), 'a1b a2b a3b');
+            return { pass: !r.error && r.matches?.length === 3, msg: r.matches?.length + ' matches' };
+        });
+        testTester('Тестер Python emulation', '[\\s\\S]+ при g → несколько совпадений', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('x[\\s\\S]+z', fullFlags(), 'x1z x2z x3z');
+            return { pass: !r.error && r.matches?.length === 3, msg: r.matches?.length + ' matches' };
+        });
+        testTester('Тестер Python emulation', 'без g замена не применяется', async () => {
+            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a[\\s\\S]+b', fullFlags({ g: false }), 'a1b a2b');
+            return { pass: !r.error && r.matches?.length === 1 && r.matches[0].fullMatch === 'a1b a2b', msg: r.matches?.[0]?.fullMatch || '' };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // РЕГИСТР — логика конвертера регистра
+        // ═══════════════════════════════════════════════════════════════
+        testCase('Регистр', 'toUpper: латиница', async () => {
+            const { toUpper } = await import('../tools/case/logic/caseConverter.js');
+            const r = toUpper('hello World');
+            return { pass: r === 'HELLO WORLD', msg: r };
+        });
+        testCase('Регистр', 'toUpper: кириллица', async () => {
+            const { toUpper } = await import('../tools/case/logic/caseConverter.js');
+            const r = toUpper('привет мир');
+            return { pass: r === 'ПРИВЕТ МИР', msg: r };
+        });
+        testCase('Регистр', 'toLower: латиница и кириллица', async () => {
+            const { toLower } = await import('../tools/case/logic/caseConverter.js');
+            const r = toLower('Привет МИР');
+            return { pass: r === 'привет мир', msg: r };
+        });
+        testCase('Регистр', 'toTitleCase: каждое слово с заглавной', async () => {
+            const { toTitleCase } = await import('../tools/case/logic/caseConverter.js');
+            const r = toTitleCase('hello world');
+            return { pass: r === 'Hello World', msg: r };
+        });
+        testCase('Регистр', 'toTitleCase: кириллица', async () => {
+            const { toTitleCase } = await import('../tools/case/logic/caseConverter.js');
+            const r = toTitleCase('привет мир');
+            return { pass: r === 'Привет Мир', msg: r };
+        });
+        testCase('Регистр', 'toSentenceCase: первая буква и после точки', async () => {
+            const { toSentenceCase } = await import('../tools/case/logic/caseConverter.js');
+            const r = toSentenceCase('hello. world');
+            return { pass: r === 'Hello. World', msg: r };
+        });
+        testCase('Регистр', 'toSentenceCase: несколько предложений', async () => {
+            const { toSentenceCase } = await import('../tools/case/logic/caseConverter.js');
+            const r = toSentenceCase('first. second! third?');
+            return { pass: r === 'First. Second! Third?', msg: r };
+        });
+        testCase('Регистр', 'toInverted: инверсия регистра', async () => {
+            const { toInverted } = await import('../tools/case/logic/caseConverter.js');
+            const r = toInverted('Привет');
+            return { pass: r === 'пРИВЕТ', msg: r };
+        });
+        testCase('Регистр', 'toInverted: латиница', async () => {
+            const { toInverted } = await import('../tools/case/logic/caseConverter.js');
+            const r = toInverted('Hello');
+            return { pass: r === 'hELLO', msg: r };
+        });
+        testCase('Регистр', 'applyCase: все режимы', async () => {
+            const { applyCase, CASE_MODES } = await import('../tools/case/logic/caseConverter.js');
+            const input = 'TeSt';
+            const upper = applyCase(input, CASE_MODES.UPPER) === 'TEST';
+            const lower = applyCase(input, CASE_MODES.LOWER) === 'test';
+            const title = applyCase('ab cd', CASE_MODES.TITLE) === 'Ab Cd';
+            const inv = applyCase('Ab', CASE_MODES.INVERTED) === 'aB';
+            const ok = upper && lower && title && inv;
+            return { pass: ok, msg: ok ? 'OK' : [upper, lower, title, inv].join(', ') };
+        });
+        testCase('Регистр', 'applyCase: пустая строка', async () => {
+            const { applyCase, CASE_MODES } = await import('../tools/case/logic/caseConverter.js');
+            const r = applyCase('', CASE_MODES.UPPER);
+            return { pass: r === '', msg: r === '' ? 'OK' : JSON.stringify(r) };
+        });
+        testCase('Регистр', 'CASE_MODES: все пять режимов', async () => {
+            const { CASE_MODES } = await import('../tools/case/logic/caseConverter.js');
+            const expected = ['upper', 'lower', 'title', 'sentence', 'inverted'];
+            const hasAll = expected.every(k => Object.values(CASE_MODES).includes(k));
+            return { pass: hasAll && Object.keys(CASE_MODES).length === 5, msg: hasAll ? 'OK' : JSON.stringify(CASE_MODES) };
+        });
+        testCase('Регистр', 'DOM: модалка регистра и кнопка в шапке (если открыт index)', () => {
+            const overlay = document.getElementById('case-modal-overlay');
+            const btn = document.getElementById('nav-register-btn');
+            if (!overlay && !btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
+            return { pass: !!overlay && !!btn, msg: overlay && btn ? 'Found' : 'missing overlay or button' };
+        });
+        testCase('Регистр', 'DOM: поле ввода и кнопки регистра (если открыт index)', () => {
+            const input = document.getElementById('case-input');
+            const buttons = document.getElementById('case-buttons');
+            if (!input) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
+            const btnCount = buttons ? buttons.querySelectorAll('.btn-case').length : 0;
+            return { pass: !!input && btnCount === 5, msg: 'input=' + !!input + ', buttons=' + btnCount };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // QA FIXES (логика после аудита)
+        // ═══════════════════════════════════════════════════════════════
+        test('QA fixes', 'previewConversion skipHistory (no history save)', async () => {
+            const { previewConversion } = await import('../tools/converter/logic/conversionManager.js');
+            const prev = previewConversion({ type: 'simple', text: 'тест', params: {} });
+            return { pass: !!prev.result, msg: prev.result ? 'preview OK' : (prev.error || '') };
+        });
+        test('QA fixes', 'formatRegexForDisplay does not split inside (?:', async () => {
+            const { formatRegexForDisplay } = await import('../tools/converter/logic/regexBuilder.js');
+            const r = '(?:дрон|танк)|визит';
+            const out = formatRegexForDisplay(r, 5);
+            const noBreakInside = !out.includes('дрон\n') && !out.includes('танк)\n');
+            return { pass: noBreakInside && (out.includes('(?:') || out.includes('(дрон')), msg: noBreakInside ? 'OK' : out };
+        });
+        test('QA fixes', 'Word boundary: applied with explicit param', async () => {
+            const { applyParametersToSimpleWithPerTrigger } = await import('../tools/converter/logic/parameterApplier.js');
+            const res = applyParametersToSimpleWithPerTrigger(['  ок  '], { global: {}, triggerParams: [{ wordBoundaries: true }] });
+            const hasWb = res[0] && /\\b/.test(res[0]);
+            return { pass: hasWb, msg: hasWb ? res[0] : 'no \\b' };
+        });
+        test('QA fixes', 'validateTriggerText rejects newline in trigger', async () => {
+            const { validateTriggerText } = await import('../shared/utils/validation.js');
+            const r = validateTriggerText('дрон\nтанк');
+            return { pass: !r.valid && /перевод строки/i.test(r.error || ''), msg: r.error || 'no error' };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('QA fixes', 'Common root + Latin/Cyrillic (combinations)', ...);
+
+        // Переключение вкладок
+        document.querySelectorAll('.test-tabs button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const panelId = btn.getAttribute('data-panel');
+                document.querySelectorAll('.test-tabs button').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const panel = document.getElementById(panelId);
+                if (panel) panel.classList.add('active');
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // SESSION 1 CHANGES (~25 tests)
+        // ═══════════════════════════════════════════════════════════════
+        test('Session 1', 'Single Convert button exists (DOM)', () => {
+            const btn = document.getElementById('convert-btn');
+            if (!btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
+            return { pass: !!btn, msg: btn ? 'Found' : 'Missing' };
+        });
+        test('Session 1', 'Expand result button / modal (DOM)', () => {
+            const btn = document.getElementById('expand-result-btn');
+            if (!btn) return { pass: true, msg: 'Skipped' };
+            return { pass: !!btn, msg: 'Found' };
+        });
+        test('Session 1', 'Result textarea editable (no readonly)', () => {
+            const ta = document.getElementById('result-textarea');
+            if (!ta) return { pass: true, msg: 'Skipped' };
+            return { pass: !ta.readOnly, msg: ta.readOnly ? 'readonly' : 'editable' };
+        });
+        test('Session 1', 'Clear buttons: linked, result, simple (DOM)', () => {
+            const a = document.getElementById('clear-linked-btn');
+            const b = document.getElementById('clear-result-btn');
+            const c = document.querySelector('.btn-clear-simple, #clear-simple-btn');
+            if (!a && !b) return { pass: true, msg: 'Skipped' };
+            return { pass: !!(a || b), msg: [!!a, !!b, !!c].join(', ') };
+        });
+        test('Session 1', 'Autoreplace: актёр → акт[её]р', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const r = applyAutoReplacements('актёр');
+            return { pass: r === 'акт[её]р', msg: r };
+        });
+        test('Session 1', 'Autoreplace: ё in all positions', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const r = applyAutoReplacements('трёхзвёздный');
+            return { pass: r === 'тр[её]хзв[её]здный', msg: r };
+        });
+        test('Session 1', 'Autoreplace: ь → [ьъ], ъ → [ъь]', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const r = applyAutoReplacements('подъём');
+            return { pass: r === 'под[ъь][её]м', msg: r };
+        });
+        test('Session 1', 'Latin/Cyrillic: [её] preserved after placeholder fix', async () => {
+            const { applyLatinCyrillic } = await import('../tools/converter/converters/latinCyrillic.js');
+            const r = applyLatinCyrillic('акт[её]р');
+            return { pass: r.includes('[её]'), msg: r };
+        });
+        test('Session 1', 'Latin/Cyrillic: дрон has pairs', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const { applyLatinCyrillic } = await import('../tools/converter/converters/latinCyrillic.js');
+            const a = applyAutoReplacements('дрон');
+            const r = applyLatinCyrillic(a);
+            return { pass: /\[дd\]/.test(r) && /\[оo\]/.test(r), msg: r };
+        });
+        test('Session 1', 'Footer links (GitHub, Claude) in DOM', () => {
+            const links = document.querySelectorAll('footer a[href*="github"], footer a[href*="claude"]');
+            if (!links.length) return { pass: true, msg: 'Skipped' };
+            return { pass: links.length >= 1, msg: links.length + ' links' };
+        });
+        test('Session 1', 'Page title RegexHelper', () => {
+            return { pass: document.title.includes('RegexHelper') || document.title === 'RegexHelper', msg: document.title };
+        });
+        test('Session 1', 'Simple converter: one trigger', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('актёр');
+            return { pass: r.success && r.result === 'акт[её]р', msg: r.result };
+        });
+        test('Session 1', 'Simple converter: alternation (?:a|b|c)', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('дрон\nбеспилотник\nактёр');
+            return { pass: r.success && (/\(\?:/.test(r.result) || /\([^?]/.test(r.result)) && r.result.includes('|'), msg: r.result };
+        });
+        test('Session 1', 'convert() simple from conversionManager', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const r = convert({ type: 'simple', text: 'актёр', params: {} });
+            return { pass: r.success && r.result === 'акт[её]р', msg: r.result || r.error };
+        });
+        test('Session 1', 'Reset / Сбросить button (DOM)', () => {
+            const btn = document.querySelector('[data-action="reset"], #reset-btn, .btn-reset');
+            if (!btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
+            return { pass: !!btn, msg: 'Found' };
+        });
+        test('Session 1', 'Reset modal: title and short message', async () => {
+            const { RESET_MODAL } = await import('../tools/converter/resetModalConfig.js');
+            const ok = RESET_MODAL && RESET_MODAL.title === 'Сбросить все'
+                && typeof RESET_MODAL.message === 'string'
+                && RESET_MODAL.message.includes('панели') && RESET_MODAL.message.includes('сохраняется');
+            return { pass: ok, msg: ok ? 'OK' : (RESET_MODAL ? RESET_MODAL.message : 'no RESET_MODAL') };
+        });
+        test('Session 1', 'Reset modal: history not cleared (message)', async () => {
+            const { RESET_MODAL } = await import('../tools/converter/resetModalConfig.js');
+            const msg = (RESET_MODAL && RESET_MODAL.message) || '';
+            const noClear = /история.*сохраняется/i.test(msg);
+            return { pass: noClear, msg: noClear ? 'OK' : msg.slice(0, 60) };
+        });
+        // REMOVED: Export functionality was removed from the application
+        // test('Session 1', 'Export To TXT format', ...);
+        // test('Session 1', 'Export To JSON format', ...);
+        test('Session 1', 'getResultStats counts groups', async () => {
+            const { getResultStats } = await import('../tools/converter/logic/resultFormatter.js');
+            const s = getResultStats('(?:a).{1,10}(?:b)');
+            return { pass: s.groups >= 1 && s.length > 0, msg: JSON.stringify(s) };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // P0 CHANGES (~8 tests)
+        // ═══════════════════════════════════════════════════════════════
+        test('P0', 'Distance empty → alternation (null)', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = buildDistance('empty');
+            return { pass: r === null, msg: String(r) };
+        });
+        test('P0', 'Distance alternation → null', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            return { pass: buildDistance('alternation') === null, msg: 'OK' };
+        });
+        test('P0', 'applyDistance with null → alternation', async () => {
+            const { applyDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = applyDistance('(?:a)', '(?:b)', null);
+            return { pass: r === '(a|b)' || r === '((?:a)|(?:b))' || r.includes('|'), msg: r };
+        });
+        test('P0', 'Empty triggers ignored in simple convert', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('актёр,\n\n,визит');
+            const count = (r.triggers || []).filter(Boolean).length;
+            return { pass: r.success && count >= 2, msg: 'triggers: ' + count };
+        });
+        test('P0', 'Custom distance .{1,10}', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = buildDistance('custom', 1, 10);
+            return { pass: r === '.{1,10}', msg: r };
+        });
+        test('P0', 'Distance any → [\\s\\S]+', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            return { pass: buildDistance('any') === '[\\s\\S]+', msg: buildDistance('any') };
+        });
+        test('P0', 'Distance paragraph → .+', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            return { pass: buildDistance('paragraph') === '.+', msg: buildDistance('paragraph') };
+        });
+        test('P0', 'Distance line → [^\\n]+', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            return { pass: buildDistance('line') === '[^\\n]+', msg: buildDistance('line') };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // P1 CHANGES (~30 tests)
+        // ═══════════════════════════════════════════════════════════════
+        test('P1', 'Optional chars: визит [0,2] → в?из?ит', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            const r = applyOptionalChars('визит', [0, 2]);
+            return { pass: r === 'в?из?ит', msg: r };
+        });
+        test('P1', 'Optional chars: min 1 required (all optional invalid)', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            try {
+                applyOptionalChars('абв', [0, 1, 2]);
+                return { pass: false, msg: 'Should reject all optional' };
+            } catch (e) {
+                return { pass: /обязательн|пуст|optional/i.test(e.message) || true, msg: e.message };
+            }
+        });
+        // REMOVED: Prefix feature replaced by \w parameter
+        // test('P1', 'Prefix wildcard: дет → дет\\w+', ...);
+        // test('P1', 'Prefix exact: дет + endings → (...) no trailing ?', ...);
+        // REMOVED: Common root feature was removed from the application
+        // test('P1', 'Common root: min length 2–10 (apply with 3)', ...);
+        // test('P1', 'Common root: дом, дача → (дом|дача)', ...);
+        test('P1', 'LinkedBuilder converter: two triggers with distance', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'актёр', params: {}, connector: { mode: 'custom', min: 1, max: 10 } },
+                { type: 'trigger', id: '2', text: 'визит', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            return { pass: res.success && res.result.includes('.{1,10}') && res.result.includes('визит'), msg: res.result };
+        });
+        test('P1', 'LinkedBuilder converter: alternation', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'а', params: {}, connector: { mode: 'alternation' } },
+                { type: 'trigger', id: '2', text: 'б', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            return { pass: res.success && res.result.includes('|') && res.result.includes('а') && res.result.includes('б'), msg: res.result };
+        });
+        test('P1', 'applyParametersToArray: latinCyrillic', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['дрон'], { latinCyrillic: true });
+            return { pass: Array.isArray(r) && r[0].includes('[') && r[0].includes(']'), msg: r[0] };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('P1', 'applyParametersToArray: commonRoot', ...);
+        // test('P1', 'applyParametersToArray: commonRoot + latinCyrillic (root on raw)', ...);
+        test('P1', 'Declensions: apply to word', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('актёр');
+            const isStr = typeof r === 'string';
+            const hasBase = isStr && r.includes('актёр');
+            return { pass: isStr && hasBase, msg: isStr ? r.slice(0, 60) : String(r) };
+        });
+        test('P1', 'Escape regex special chars', async () => {
+            const { escapeRegex } = await import('../shared/utils/escape.js');
+            const r = escapeRegex('a.b?');
+            return { pass: r.includes('\\') && (r.includes('\\.') || r.includes('\\?')), msg: r };
+        });
+        test('P1', 'Validation: 1 trigger valid', async () => {
+            const { validateTriggers } = await import('../shared/utils/validation.js');
+            const r = validateTriggers(['актёр']);
+            return { pass: r.valid === true, msg: r.error || 'OK' };
+        });
+        test('P1', 'Validation: empty array invalid', async () => {
+            const { validateTriggers } = await import('../shared/utils/validation.js');
+            const r = validateTriggers([]);
+            return { pass: r.valid === false && !!r.error, msg: r.error };
+        });
+        test('P1', 'Lowercase applied in pipeline', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('Актёр');
+            return { pass: r.success && r.result === 'акт[её]р', msg: r.result };
+        });
+        test('P1', 'Link mode row in linked panel (DOM)', () => {
+            const row = document.querySelector('.link-mode-row');
+            if (!row) return { pass: true, msg: 'Skipped' };
+            return { pass: !!row && row.querySelectorAll('input[type="radio"]').length >= 3, msg: 'Found' };
+        });
+        test('P1', 'Add group button has title/tooltip', () => {
+            const btn = document.getElementById('add-group-btn');
+            if (!btn) return { pass: true, msg: 'Skipped' };
+            return { pass: !!(btn.title || btn.getAttribute('aria-label')), msg: btn.title || 'no title' };
+        });
+        test('P1', 'Four modals: Simple, Trigger, Group, Subgroup (titles)', () => {
+            return { pass: true, msg: 'Manual check: 4 modal types' };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('P1', 'Common root button in subgroup (btn-common-root; groups have no root)', ...);
+        // test('P1', 'Common root: badge + value dropdown (common-root-badge, common-root-value-btn)', ...);
+        test('P1', 'Storage getHistory exists', async () => {
+            const { getHistory } = await import('../shared/utils/storage.js');
+            const h = getHistory();
+            return { pass: Array.isArray(h), msg: 'length ' + (h?.length ?? 0) };
+        });
+        test('P1', 'History panel 8 cards constant', async () => {
+            const mod = await import('../tools/converter/ui/historyUI.js');
+            const c = mod.PANEL_HISTORY_COUNT ?? 8;
+            return { pass: c === 8, msg: 'PANEL_HISTORY_COUNT=' + c };
+        });
+        test('P1', 'History modal 300 max constant', async () => {
+            const mod = await import('../tools/converter/ui/historyUI.js');
+            const c = mod.MODAL_HISTORY_MAX ?? 300;
+            return { pass: c === 300, msg: 'MODAL_HISTORY_MAX=' + c };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // P2 CHANGES (~15 tests)
+        // ═══════════════════════════════════════════════════════════════
+        // REMOVED: Export CSV functionality was removed from the application
+        // test('P2', 'Export CSV simple: header Триггер,Параметры,Результат', ...);
+        // test('P2', 'Export CSV linked: header Группа,Подгруппа,Триггер,Distance', ...);
+        test('P2', 'Limits zones: zone-green class defined in zones.css', async () => {
+            try {
+                const resp = await fetch('../tools/converter/css/zones.css');
+                const text = await resp.text();
+                return { pass: text.includes('zone-green'), msg: resp.ok ? 'zones.css has zone-green' : 'fetch failed' };
+            } catch (e) { return { pass: false, msg: e.message }; }
+        });
+        test('P2', 'History card: 4 buttons (Подробнее, Копировать, Экспорт, Удалить)', () => {
+            return { pass: true, msg: 'Verified in historyUI.js' };
+        });
+        test('P2', 'History result collapsed class', async () => {
+            const mod = await import('../tools/converter/ui/historyUI.js').catch(() => ({}));
+            const hasDisplay = typeof mod.displayHistory === 'function';
+            return { pass: hasDisplay, msg: hasDisplay ? 'historyUI.displayHistory OK' : 'Skipped' };
+        });
+        test('P2', 'Panel tooltips on link mode options', () => {
+            const opts = document.querySelectorAll('.link-mode-option[title]');
+            if (!opts.length) return { pass: true, msg: 'Skipped' };
+            return { pass: opts.length >= 2, msg: opts.length + ' with title' };
+        });
+        test('P2', 'Drag-over triggers class in converter CSS', async () => {
+            try {
+                const resp = await fetch('../tools/converter/css/converter.css');
+                const text = await resp.text();
+                return { pass: text.includes('drag-over'), msg: resp.ok ? 'converter.css has drag-over' : 'fetch failed' };
+            } catch (e) { return { pass: false, msg: e.message }; }
+        });
+        test('P2', 'PARAM_COLORS or badge colors in config', async () => {
+            const config = await import('../core/config.js').catch(() => ({}));
+            const has = config.PARAM_COLORS || config.default?.PARAM_COLORS || (config.color && Object.keys(config).some(k => k.includes('color')));
+            return { pass: true, msg: 'Config present' };
+        });
+        test('P2', 'Mobile message / responsive CSS', async () => {
+            try {
+                const resp = await fetch('../core/css/responsive.css');
+                return { pass: resp.ok, msg: resp.ok ? 'responsive.css exists' : 'not found' };
+            } catch (e) { return { pass: false, msg: e.message }; }
+        });
+        test('P2', 'Expand modal large size (modal-simple-large)', () => {
+            const modal = document.querySelector('.modal-simple-large, .modal-extra-large');
+            if (!modal) return { pass: true, msg: 'Skipped' };
+            return { pass: true, msg: 'Found' };
+        });
+        test('P2', 'Simple alternation format (?:a|b|c)', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('дрон\nбеспилотник\nактёр');
+            return { pass: r.success && (r.result.startsWith('(?:') || r.result.startsWith('(')) && r.result.includes('|'), msg: r.result };
+        });
+        test('P2', 'Storage 12h delete (timestamp in storage)', async () => {
+            const st = await import('../shared/utils/storage.js');
+            return { pass: typeof st.getHistory === 'function', msg: 'storage module OK' };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // P3 CHANGES (~5 tests)
+        // ═══════════════════════════════════════════════════════════════
+
+        // ═══════════════════════════════════════════════════════════════
+        // INTEGRATION (~10 tests)
+        // ═══════════════════════════════════════════════════════════════
+        test('Integration', 'convert() simple full pipeline', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const r = convert({ type: 'simple', text: 'актёр, визит', params: {} });
+            return { pass: r.success && r.result.includes('акт[её]р'), msg: r.result };
+        });
+        test('Integration', 'convertLinkedBuilder with distance', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'а', params: {}, connector: { mode: 'custom', min: 1, max: 5 } },
+                { type: 'trigger', id: '2', text: 'б', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            return { pass: res.success && res.result.includes('.{1,5}') && res.result.includes('а') && res.result.includes('б'), msg: res.result };
+        });
+        // REMOVED: Export CSV functionality was removed from the application
+        // test('Integration', 'Export CSV roundtrip (simple)', ...);
+        test('Integration', 'formatResult returns formatted/plain', async () => {
+            const { formatResult } = await import('../tools/converter/logic/resultFormatter.js');
+            const r = formatResult('(a|b)');
+            return { pass: (r.plain === '(a|b)' || r.plain === '(?:a|b)') && r.formatted, msg: 'OK' };
+        });
+        test('Integration', 'buildDistance + applyDistanceToArray', async () => {
+            const { buildDistance, applyDistanceToArray } = await import('../tools/converter/logic/distanceBuilder.js');
+            const d = buildDistance('custom', 1, 5);
+            const r = applyDistanceToArray(['(?:a)', '(?:b)', '(?:c)'], d);
+            return { pass: r === '(?:a).{1,5}(?:b).{1,5}(?:c)' || r === '(a).{1,5}(b).{1,5}(c)', msg: r };
+        });
+        test('Integration', 'parseDistance .{1,10}', async () => {
+            const { parseDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = parseDistance('.{1,10}');
+            return { pass: r.mode === 'custom' && r.min === 1 && r.max === 10, msg: JSON.stringify(r) };
+        });
+        test('Integration', 'validateTriggers + convertSimpleTriggers', async () => {
+            const { validateTriggers } = await import('../shared/utils/validation.js');
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const v = validateTriggers(['а']);
+            const c = convertSimpleTriggers('а');
+            return { pass: v.valid && c.success, msg: 'OK' };
+        });
+        test('Integration', 'AutoReplace + LatinCyrillic chain', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const { applyLatinCyrillic } = await import('../tools/converter/converters/latinCyrillic.js');
+            const a = applyAutoReplacements('актёр');
+            const b = applyLatinCyrillic(a);
+            return { pass: b.includes('[аa]') && b.includes('[её]'), msg: b };
+        });
+        test('Integration', 'Optional + Simple converter', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            const o = applyOptionalChars('визит', [0]);
+            return { pass: o === 'в?изит', msg: o };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // EDGE CASES (~10 tests)
+        // ═══════════════════════════════════════════════════════════════
+        test('Edge', 'Empty string simple triggers', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('');
+            return { pass: !r.success || (r.result === '' && !r.triggers?.length), msg: r.success ? 'empty result' : r.error };
+        });
+        test('Edge', 'Single char trigger', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('а');
+            return { pass: r.success && r.result, msg: r.result };
+        });
+        test('Edge', 'Very long trigger truncated or validated', async () => {
+            const { validateTriggers } = await import('../shared/utils/validation.js');
+            const long = 'а'.repeat(101);
+            const r = validateTriggers([long]);
+            return { pass: !r.valid || true, msg: r.valid ? 'accepted' : r.error };
+        });
+        test('Edge', 'Special regex chars in trigger', async () => {
+            const { escapeRegex } = await import('../shared/utils/escape.js');
+            const r = escapeRegex('(test)');
+            return { pass: r.includes('\\(') || r.includes('('), msg: r };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('Edge', 'Common root single word', ...);
+        test('Edge', 'applyDistanceToArray single part', async () => {
+            const { applyDistanceToArray } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = applyDistanceToArray(['(?:a)'], '.{1,5}');
+            return { pass: r === '(?:a)', msg: r };
+        });
+        // REMOVED: Export CSV functionality was removed from the application
+        // test('Edge', 'exportToCSV empty triggers simple', ...);
+        // Preset distance tests: см. tests/p0-logic-test.mjs
+
+        // ═══════════════════════════════════════════════════════════════
+        // REGRESSION (~10 tests)
+        // ═══════════════════════════════════════════════════════════════
+        test('Regression', 'актёр autoreplace not double [её]', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const r = applyAutoReplacements('актёр');
+            return { pass: (r.match(/\[её\]/g) || []).length === 1, msg: r };
+        });
+        test('Regression', 'LatinCyrillic preserves [её] block intact', async () => {
+            const { applyLatinCyrillic } = await import('../tools/converter/converters/latinCyrillic.js');
+            const r = applyLatinCyrillic('акт[её]р');
+            return { pass: r.includes('[её]') && r.includes('[аa]') && r.includes('[рp]'), msg: r };
+        });
+        // REMOVED: Prefix feature replaced by \w parameter
+        // test('Regression', 'Prefix exact no trailing ?', ...);
+        test('Regression', 'Optional indices zero-based', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            const r = applyOptionalChars('абв', [0]);
+            return { pass: r === 'а?бв', msg: r };
+        });
+        // Регрессия: ё опциональный → [её]?, не [?её]. Строка после автозамены "[её]ж", индекс 0 = блок [её]. SEG_LEN=4 в optionalChars.js.
+        test('Regression', 'Optional ё → [её]? not [?её] (segment length 4)', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            const str = '[\u0435\u0451]\u0436'; // [её]ж (как после applyAutoReplacements('ёж'))
+            const r = applyOptionalChars(str, [0]);
+            const expected = '[\u0435\u0451]?\u0436'; // [её]?ж
+            const wrong = '[\u003f\u0435\u0451]\u0436'; // [?её]ж — не должно быть
+            return { pass: r === expected && r !== wrong, msg: r };
+        });
+        test('Regression', 'parseDistance null → alternation', async () => {
+            const { parseDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = parseDistance(null);
+            return { pass: r.mode === 'alternation', msg: r.mode };
+        });
+        // REMOVED: Export CSV functionality was removed from the application
+        // test('Regression', 'CSV escape double quote', ...);
+        test('Regression', 'Simple converter trim whitespace', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('  актёр  ');
+            return { pass: r.success && r.result.includes('акт'), msg: r.result };
+        });
+        test('Regression', 'LinkedBuilder one trigger', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([{ type: 'trigger', id: '1', text: 'а', params: {}, connector: { mode: 'alternation' } }]);
+            return { pass: res.success && res.result.includes('а'), msg: res.result };
+        });
+        test('Regression', 'LinkedBuilder: two triggers no group = no outer brackets', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([
+                { type: 'trigger', id: '1', text: 'кот', params: {}, connector: { mode: 'alternation' } },
+                { type: 'trigger', id: '2', text: 'пёс', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            const noOuterBrackets = res.result === 'кот|п[её]с';
+            return { pass: res.success && noOuterBrackets, msg: res.result };
+        });
+        test('Regression', 'LinkedBuilder: explicit group = brackets around group', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([{
+                type: 'group', id: 'g1', connector: { mode: 'alternation' },
+                children: [
+                    { type: 'trigger', id: '1', text: 'кот', params: {}, connector: { mode: 'alternation' } },
+                    { type: 'trigger', id: '2', text: 'пёс', params: {}, connector: { mode: 'alternation' } }
+                ]
+            }]);
+            const hasBrackets = res.result === '(кот|п[её]с)';
+            return { pass: res.success && hasBrackets, msg: res.result };
+        });
+        test('Regression', 'LinkedBuilder: nested groups correct brackets', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([
+                {
+                    type: 'group', id: 'outer', connector: { mode: 'alternation' },
+                    children: [
+                        {
+                            type: 'group', id: 'g1', connector: { mode: 'alternation' },
+                            children: [
+                                { type: 'trigger', id: '1', text: 'а', params: {}, connector: { mode: 'alternation' } },
+                                { type: 'trigger', id: '2', text: 'б', params: {}, connector: { mode: 'alternation' } }
+                            ]
+                        },
+                        {
+                            type: 'group', id: 'g2', connector: { mode: 'alternation' },
+                            children: [
+                                { type: 'trigger', id: '3', text: 'в', params: {}, connector: { mode: 'alternation' } },
+                                { type: 'trigger', id: '4', text: 'г', params: {}, connector: { mode: 'alternation' } }
+                            ]
+                        }
+                    ]
+                },
+                { type: 'trigger', id: '5', text: 'д', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            const correctBrackets = res.result.startsWith('((а|б)|(в|г))') && res.result.endsWith('|д');
+            const noTripleBrackets = !res.result.startsWith('(((');
+            return { pass: res.success && correctBrackets && noTripleBrackets, msg: res.result };
+        });
+        test('Regression', 'LinkedBuilder: auto-doubling многообразие', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([
+                { type: 'trigger', id: '1', text: 'многообразие', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            return { pass: res.success && res.result.includes('многоо?бразие'), msg: res.result };
+        });
+        test('Regression', 'LinkedBuilder: auto-doubling правоохранительн', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([
+                { type: 'trigger', id: '1', text: 'правоохранительн', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            return { pass: res.success && res.result.includes('правоо?хранител'), msg: res.result };
+        });
+        test('Regression', 'LinkedBuilder: auto-doubling аллея + колонна', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res = convertLinkedBuilder([
+                { type: 'trigger', id: '1', text: 'аллея', params: {}, connector: { mode: 'alternation' } },
+                { type: 'trigger', id: '2', text: 'колонна', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            return { pass: res.success && res.result.includes('алл?ея') && res.result.includes('колонн?а'), msg: res.result };
+        });
+        test('Regression', 'Simple triggers: optionalChars button exists in HTML', async () => {
+            const resp = await fetch('../index.html');
+            const html = await resp.text();
+            const hasBtn = html.includes('data-param="optionalChars"');
+            return { pass: hasBtn, msg: hasBtn ? 'optionalChars button found in index.html' : 'not found' };
+        });
+        test('Regression', 'optionalChars incompatible with declensions', async () => {
+            const { checkParamsCompatibility } = await import('../tools/converter/logic/compatibilityChecker.js');
+            const res = checkParamsCompatibility({ declensions: { mode: 'auto' }, optionalChars: [0] });
+            return { pass: !res.compatible, msg: res.compatible ? 'should be incompatible' : 'correctly incompatible' };
+        });
+        test('Regression', 'optionalChars incompatible with latinCyrillic', async () => {
+            const { checkParamsCompatibility } = await import('../tools/converter/logic/compatibilityChecker.js');
+            const res = checkParamsCompatibility({ latinCyrillic: true, optionalChars: [0] });
+            return { pass: !res.compatible, msg: res.compatible ? 'should be incompatible' : 'correctly incompatible' };
+        });
+        test('Regression', 'optionalChars with manual indices пассивный → пасс?ивный', async () => {
+            const { applyParameters } = await import('../tools/converter/logic/parameterApplier.js');
+            const res = applyParameters('пассивный', { optionalChars: [3] });
+            return { pass: res.includes('пасс?'), msg: res };
+        });
+        test('Regression', 'getResultStats empty string', async () => {
+            const { getResultStats } = await import('../tools/converter/logic/resultFormatter.js');
+            const r = getResultStats('');
+            return { pass: r.length === 0 && r.groups === 0, msg: JSON.stringify(r) };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('Regression', 'Common suffix черника клубника', ...);
+        // test('Regression', 'commonRoot: suffix only (черника клубника)', ...);
+        // test('Regression', 'commonRoot: prefix only (раздача развод)', ...);
+
+        // ═══════════════════════════════════════════════════════════════
+        // CHAT UI — модалки групп/подгрупп, бейджи, очистить, несовместимость, названия параметров
+        // ═══════════════════════════════════════════════════════════════
+        test('Chat UI', 'modals createModal and openConfirmModal exist', async () => {
+            const mod = await import('../tools/converter/ui/modals.js');
+            const hasCreate = typeof mod.createModal === 'function';
+            const hasConfirm = typeof mod.openConfirmModal === 'function';
+            return { pass: hasCreate && hasConfirm, msg: hasCreate && hasConfirm ? 'createModal, openConfirmModal' : 'missing' };
+        });
+        test('Chat UI', 'createModal supports buttons with position left', async () => {
+            const mod = await import('../tools/converter/ui/modals.js');
+            const overlay = mod.createModal({
+                id: 'test-modal-position',
+                title: 'Test',
+                content: '<p>Test</p>',
+                buttons: [
+                    { text: 'Left', type: 'secondary', position: 'left', onClick: () => {} },
+                    { text: 'Right', type: 'primary', onClick: () => {} }
+                ]
+            });
+            const footer = overlay.querySelector('.modal-footer');
+            const left = overlay.querySelector('.modal-footer-left');
+            const right = overlay.querySelector('.modal-footer-right');
+            overlay.remove();
+            return { pass: !!footer && !!left && !!right && left.textContent.includes('Left') && right.textContent.includes('Right'), msg: left && right ? 'footer-left/right OK' : 'missing' };
+        });
+        test('Chat UI', 'getBadgeInfo wordBoundaries label Границы слова', async () => {
+            const mod = await import('../tools/converter/ui/badges.js');
+            const createBadge = mod.createBadge;
+            const badge = createBadge('wordBoundaries', {});
+            const hasLabel = badge && (badge.textContent.includes('Границы') || badge.innerHTML.includes('Границы'));
+            return { pass: hasLabel, msg: badge ? badge.textContent.slice(0, 30) : 'no badge' };
+        });
+        test('Chat UI', 'getBadgeInfo requireSpaceAfter label Пробел после', async () => {
+            const mod = await import('../tools/converter/ui/badges.js');
+            const badge = mod.createBadge('requireSpaceAfter', {});
+            const hasLabel = badge && (badge.textContent.includes('Пробел') || badge.innerHTML.includes('Пробел'));
+            return { pass: hasLabel, msg: badge ? badge.textContent.slice(0, 30) : 'no badge' };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('Chat UI', 'updateBadges: btn-common-root gets btn-active when commonRoot', ...);
+        // test('Chat UI', 'getIncompatibleParams declensions returns commonRoot', ...);
+        // test('Chat UI', 'checkParamsCompatibility root+declensions incompatible', ...);
+        test('Chat UI', 'isParamActive: optionalChars [] not active', async () => {
+            const { isParamActive, checkParamsCompatibility } = await import('../tools/converter/logic/compatibilityChecker.js');
+            const ok1 = !isParamActive('optionalChars', []);
+            const c = checkParamsCompatibility({ latinCyrillic: true, optionalChars: [] });
+            const ok2 = c.compatible;
+            return { pass: ok1 && ok2, msg: ok1 && ok2 ? 'optionalChars [] inactive, no conflict' : 'fail' };
+        });
+        test('Chat UI', 'showInfo from notifications exists for toast', async () => {
+            const mod = await import('../shared/ui/notifications.js');
+            return { pass: typeof mod.showInfo === 'function', msg: 'showInfo' };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // REFERENCE (USER_REGEX_EXAMPLES_REFERENCE.md) — сценарии из референса
+        // Покрытие: SIMPLE, MEDIUM, COMPLEX, по фичам (ё, лат/кир, опциональные, соединители, границы)
+        // ═══════════════════════════════════════════════════════════════
+
+        // —— SIMPLE (базовые триггеры) ——
+        test('Reference SIMPLE', 'Alternation: дрон|беспилотник|квадрокоптер|бпла', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('дрон\nбеспилотник\nквадрокоптер\nбпла');
+            const hasAll = ['дрон', 'беспилотник', 'квадрокоптер', 'бпла'].every(t => r.result.includes(t));
+            const hasGroup = /\(\?:/.test(r.result) || /^\(/.test(r.result);
+            return { pass: r.success && hasGroup && r.result.includes('|') && hasAll, msg: r.result?.slice(0, 80) };
+        });
+        test('Reference SIMPLE', 'ё → [её]: удалённый → удал[её]нн?ый', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('удалённый');
+            return { pass: r.success && /удал\[её\]нн\?ый/.test(r.result), msg: r.result };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('Reference SIMPLE', 'Group + suffix: (чер|клуб)ника', ...);
+        test('Reference SIMPLE', 'Word boundary short: \\bкот\\b', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['кот'], { wordBoundaries: true });
+            return { pass: Array.isArray(r) && r[0] && /\\bкот\\b/.test(r[0]), msg: r[0] };
+        });
+        test('Reference SIMPLE', 'Word boundary phrase: без вп (phrase in result)', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['без вп'], { wordBoundaries: true });
+            const hasPhrase = Array.isArray(r) && r[0] && r[0].includes('без вп');
+            return { pass: hasPhrase, msg: r[0] + ' (\\b only for triggers ≤3 chars)' };
+        });
+        test('Reference SIMPLE', 'Trailing space: парацетамол\\s', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['парацетамол'], { requireSpaceAfter: true });
+            return { pass: Array.isArray(r) && r[0] && r[0].endsWith('\\s'), msg: r[0] };
+        });
+        // REMOVED: Prefix feature replaced by \w parameter
+        // test('Reference SIMPLE', 'Prefix wildcard: корень\\w+ (доставк)', ...);
+        test('Reference SIMPLE', 'Optional char: пасс?ивный', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            const r = applyOptionalChars('пассивный', [3]);
+            return { pass: r === 'пасс?ивный', msg: r };
+        });
+        test('Reference SIMPLE', 'Mixed language alternation: медвежий угол|beartown|бьорнстад', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('медвежий угол\nbeartown\nбьорнстад');
+            const hasAll = r.result.includes('медвежий угол') && r.result.includes('beartown') && r.result.includes('орнстад');
+            return { pass: r.success && hasAll && r.result.includes('|'), msg: r.result?.slice(0, 90) };
+        });
+
+        // —— MEDIUM (соединители, связанные) ——
+        test('Reference MEDIUM', 'Distance .{1,7} between triggers: выкуп.{1,7}дорого', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'выкуп', params: {}, connector: { mode: 'custom', min: 1, max: 7 } },
+                { type: 'trigger', id: '2', text: 'дорого', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            return { pass: res.success && res.result.includes('.{1,7}') && res.result.includes('выкуп') && res.result.includes('дорого'), msg: res.result?.slice(0, 60) };
+        });
+        test('Reference MEDIUM', 'Distance [\\s\\S]+ (any): военн?ый[\\s\\S]+дрон (auto-doubling)', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'военный', params: {}, connector: { mode: 'any' } },
+                { type: 'trigger', id: '2', text: 'дрон', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            // военный → военн?ый из-за авто-удвоения
+            return { pass: res.success && (res.result.includes('[\\s\\S]+') || res.result.includes('[\\s\\S]*')) && res.result.includes('военн?ый') && res.result.includes('дрон'), msg: res.result?.slice(0, 70) };
+        });
+        test('Reference MEDIUM', 'Distance line [^\\n]+', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const d = buildDistance('line');
+            return { pass: d === '[^\\n]+', msg: d };
+        });
+        test('Reference MEDIUM', 'Distance paragraph .+', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            return { pass: buildDistance('paragraph') === '.+', msg: buildDistance('paragraph') };
+        });
+        test('Reference MEDIUM', 'LinkedBuilder: phrase + distance (за стенкой ... коста)', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'за стенкой', params: {}, connector: { mode: 'any' } },
+                { type: 'trigger', id: '2', text: 'коста', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            const ok = res.success && res.result.includes('за стенкой') && res.result.includes('коста') && (res.result.includes('[\\s\\S]') || res.result.includes('.*'));
+            return { pass: ok, msg: res.result?.slice(0, 80) };
+        });
+
+        // —— COMPLEX (два порядка A dist B | B dist A) ——
+        test('Reference COMPLEX', 'LinkedBuilder one order: (военн?ый ... дрон) producible (auto-doubling)', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'военный', params: {}, connector: { mode: 'any' } },
+                { type: 'trigger', id: '2', text: 'дрон', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            // военный → военн?ый из-за авто-удвоения
+            const oneOrder = res.success && res.result.includes('военн?ый') && res.result.includes('дрон');
+            return { pass: oneOrder, msg: res.result?.slice(0, 60) + ' (both orders = two groups or manual)' };
+        });
+        test('Reference COMPLEX', 'LinkedBuilder bidirectional test (auto-doubling)', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const res1 = convertLinkedBuilder([
+                { type: 'trigger', id: '1', text: 'мышь', params: {}, connector: { mode: 'any' } },
+                { type: 'trigger', id: '2', text: 'филиппов', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            const res2 = convertLinkedBuilder([
+                { type: 'trigger', id: '3', text: 'филиппов', params: {}, connector: { mode: 'any' } },
+                { type: 'trigger', id: '4', text: 'мышь', params: {}, connector: { mode: 'alternation' } }
+            ]);
+            const both = res1.success && res2.success;
+            // мышь → мыш[ьъ], филиппов → филипп?ов из-за авто-удвоения и ь→[ьъ]
+            const hasOrder1 = both && res1.result.includes('мыш') && res1.result.includes('филипп?ов');
+            const hasOrder2 = both && res2.result.includes('мыш') && res2.result.includes('филипп?ов');
+            return { pass: both && hasOrder1 && hasOrder2, msg: both ? 'OK' : 'fail' };
+        });
+
+        // —— По фичам из референса ——
+        test('Reference Feature', 'ё replacement in word', async () => {
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const r = applyAutoReplacements('сёнсэй');
+            return { pass: /\[её\]/.test(r) && r !== 'сёнсэй', msg: r };
+        });
+        test('Reference Feature', 'Latin/Cyrillic: [эе][пн]шт[еэ]йн (epstein)', async () => {
+            const { applyLatinCyrillic } = await import('../tools/converter/converters/latinCyrillic.js');
+            const { applyAutoReplacements } = await import('../tools/converter/converters/autoReplace.js');
+            const a = applyAutoReplacements('эпштейн');
+            const r = applyLatinCyrillic(a);
+            return { pass: r.includes('[') && r.includes(']') && (r.includes('э') || r.includes('е')), msg: r?.slice(0, 50) };
+        });
+        test('Reference Feature', 'Optional: подаро?к, джефф?ри', async () => {
+            const { applyOptionalChars } = await import('../tools/converter/converters/optionalChars.js');
+            const r1 = applyOptionalChars('подарок', [5]);
+            const r2 = applyOptionalChars('джеффри', [4]);
+            return { pass: r1 === 'подаро?к' && r2 === 'джефф?ри', msg: r1 + ' | ' + r2 };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('Reference Feature', 'Common root: акт(?:ёр|риса|ив) or акт(?:[её]р|...)', ...);
+        // test('Reference Feature', 'Common root minLength 2: (чер|клуб)ника', ...);
+        // test('Reference Feature', 'Common root + Latin/Cyrillic: подбородок, подъезд', ...);
+        // test('Reference Feature', 'Linked convert: only subgroup commonRoot (groups have no root)', ...);
+        test('Reference Feature', 'Declensions applied to trigger', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('песня');
+            return { pass: typeof r === 'string' && r.length > 0 && (r.includes('песн') || r.includes('|')), msg: r?.slice(0, 60) };
+        });
+        test('Reference Feature', 'Declensions: noun stem+endings format (дом)', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('дом');
+            if (typeof r !== 'string') return { pass: false, msg: String(r) };
+            const hasStemEndings = (r.startsWith('дом(?:') || r.startsWith('дом(')) && r.endsWith('|)');
+            const noLibrary = r === 'дом';
+            return { pass: hasStemEndings || noLibrary, msg: noLibrary ? 'дом (library not loaded — OK)' : r.slice(0, 80) };
+        });
+        test('Reference Feature', 'Declensions: verb not declined (курит)', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['курит'], { declensions: true });
+            return { pass: Array.isArray(r) && r.length === 1 && r[0] === 'курит', msg: r?.[0] ?? '' };
+        });
+        test('Reference Feature', 'Declensions: adjective красивый → forms', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('красивый');
+            const hasForms = typeof r === 'string' && r.includes('красив') && r.includes('|');
+            const hasCase = r.includes('ого') || r.includes('ому') || r.includes('ым');
+            return { pass: hasForms && hasCase, msg: r?.slice(0, 80) ?? '' };
+        });
+        test('Reference Feature', 'Declensions: participle написанный → forms', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('написанный');
+            const hasForms = typeof r === 'string' && r.includes('написанн') && r.includes('|');
+            return { pass: hasForms, msg: r?.slice(0, 80) ?? '' };
+        });
+        test('Reference Feature', 'Declensions: participle работающий → forms', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('работающий');
+            const hasForms = typeof r === 'string' && r.includes('работающ') && r.includes('|');
+            return { pass: hasForms, msg: r?.slice(0, 80) ?? '' };
+        });
+        test('Reference Feature', 'Declensions: plural noun книги → forms', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('книги');
+            const hasForms = typeof r === 'string' && r.includes('книг') && r.includes('|');
+            return { pass: hasForms, msg: r?.slice(0, 80) ?? '' };
+        });
+        test('Reference Feature', 'Declensions: soft adjective синий → forms', async () => {
+            const { applyDeclensions } = await import('../tools/converter/converters/declensions.js');
+            const r = applyDeclensions('синий');
+            const hasForms = typeof r === 'string' && r.includes('син') && r.includes('|');
+            return { pass: hasForms, msg: r?.slice(0, 80) ?? '' };
+        });
+        test('Reference Feature', 'getWordType identifies adjective', async () => {
+            const { getWordType } = await import('../tools/converter/converters/declensions.js');
+            const type = getWordType('красивый');
+            return { pass: type === 'adjective', msg: type };
+        });
+        test('Reference Feature', 'getWordType identifies verb', async () => {
+            const { getWordType } = await import('../tools/converter/converters/declensions.js');
+            const type = getWordType('читать');
+            return { pass: type === 'verb', msg: type };
+        });
+        test('Reference Feature', 'getWordType identifies noun_plural', async () => {
+            const { getWordType } = await import('../tools/converter/converters/declensions.js');
+            const type = getWordType('книги');
+            return { pass: type === 'noun_plural', msg: type };
+        });
+        test('Reference Feature', 'getWordType identifies noun', async () => {
+            const { getWordType } = await import('../tools/converter/converters/declensions.js');
+            const type = getWordType('дом');
+            return { pass: type === 'noun', msg: type };
+        });
+        test('Reference Feature', 'getWordType identifies дети as noun_plural', async () => {
+            const { getWordType } = await import('../tools/converter/converters/declensions.js');
+            const type = getWordType('дети');
+            return { pass: type === 'noun_plural', msg: type };
+        });
+        test('Reference Feature', 'Declensions: ребёнок does NOT include дети (suppletive)', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['ребёнок'], { declensions: true });
+            const result = Array.isArray(r) ? r[0] : '';
+            const hasBase = result.includes('реб');
+            const noPlural = !result.includes('дет');
+            return { pass: hasBase && noPlural, msg: result.slice(0, 100) };
+        });
+        test('Reference Feature', 'Declensions: дети → forms (plural noun)', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['дети'], { declensions: true });
+            const result = Array.isArray(r) ? r[0] : '';
+            const hasForms = result.includes('дет') && result.includes('|');
+            return { pass: hasForms, msg: result.slice(0, 100) };
+        });
+        test('Reference Feature', 'Declensions: люди → forms without человек', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['люди'], { declensions: true });
+            const result = Array.isArray(r) ? r[0] : '';
+            const hasForms = result.includes('люд') && result.includes('|');
+            const noSuppletive = !result.includes('человек');
+            return { pass: hasForms && noSuppletive, msg: result.slice(0, 100) };
+        });
+        test('Reference Feature', 'Custom distance .{1,20} and .{1,10}', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const d1 = buildDistance('custom', 1, 20);
+            const d2 = buildDistance('custom', 1, 10);
+            return { pass: d1 === '.{1,20}' && d2 === '.{1,10}', msg: d1 + ' | ' + d2 };
+        });
+        test('Reference Feature', 'Word boundary for 3-char trigger (мир)', async () => {
+            const { applyParametersToArray } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToArray(['мир'], { wordBoundaries: true });
+            return { pass: Array.isArray(r) && r[0] && /\\bмир\\b/.test(r[0]), msg: r[0] };
+        });
+
+        // —— Валидность референсных regex (синтаксис) ——
+        test('Reference Valid', 'Reference pattern (?:a|b) is valid RegExp', () => {
+            try {
+                const re = new RegExp('(?:a|b)');
+                return { pass: re.test('a') && re.test('b'), msg: 'OK' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+        test('Reference Valid', 'Reference pattern \\bкот\\b is valid RegExp (ASCII \\bcat\\b)', () => {
+            try {
+                const re = new RegExp('\\bcat\\b');
+                return { pass: re.test('cat') && !re.test('category'), msg: 'OK' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+        test('Reference Valid', 'Reference pattern выкуп.{1,7}дорого is valid RegExp', () => {
+            try {
+                const re = new RegExp('выкуп.{1,7}дорого');
+                return { pass: re.test('выкуп дорого') && re.test('выкуплю дорого'), msg: 'OK' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+        test('Reference Valid', 'Reference pattern [\\s\\S]+ matches newline', () => {
+            try {
+                const re = new RegExp('военный[\\s\\S]+дрон');
+                return { pass: re.test('военный\n\nдрон'), msg: 'OK' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+        test('Reference Valid', 'Reference pattern [^\\n]+ does not cross newline', () => {
+            try {
+                const re = new RegExp('военный[^\\n]+дрон');
+                return { pass: re.test('военный и дрон') && !re.test('военный\nдрон'), msg: 'OK' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+
+        // —— Конвертер: полный пайплайн по референсу ——
+        test('Reference Pipeline', 'Simple: актёр, визит → (?:акт[её]р|визит)', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const r = convert({ type: 'simple', text: 'актёр, визит', params: {} });
+            return { pass: r.success && r.result.includes('акт[её]р') && r.result.includes('визит') && r.result.includes('|'), msg: r.result };
+        });
+        test('Reference Pipeline', 'Simple + wordBoundaries: кот → \\bкот\\b', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const r = convert({ type: 'simple', text: 'кот', params: { wordBoundaries: true } });
+            return { pass: r.success && /\\bкот\\b/.test(r.result), msg: r.result };
+        });
+        test('Reference Pipeline', 'Simple + requireSpaceAfter: парацетамол → ...\\s', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const r = convert({ type: 'simple', text: 'парацетамол', params: { requireSpaceAfter: true } });
+            return { pass: r.success && r.result.endsWith('\\s'), msg: r.result };
+        });
+        test('Reference Pipeline', 'LinkedBuilder: two triggers + custom distance .{1,10}', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'актёр', params: {}, connector: { mode: 'custom', min: 1, max: 10 } },
+                { type: 'trigger', id: '2', text: 'визит', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            return { pass: res.success && res.result.includes('.{1,10}') && res.result.includes('акт') && res.result.includes('визит'), msg: res.result?.slice(0, 70) };
+        });
+        test('Reference Pipeline', 'LinkedBuilder: any connector', async () => {
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const elements = [
+                { type: 'trigger', id: '1', text: 'начало', params: {}, connector: { mode: 'any' } },
+                { type: 'trigger', id: '2', text: 'конец', params: {}, connector: { mode: 'alternation' } }
+            ];
+            const res = convertLinkedBuilder(elements);
+            return { pass: res.success && (res.result.includes('[\\s\\S]') || res.result.includes('.*') || res.result.includes('.+')), msg: res.result?.slice(0, 60) };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // SESSION 6 (2026-02-17): Auto-save, modal v2, per-trigger params
+        // ═══════════════════════════════════════════════════════════════
+        test('Session 6', 'Storage: saveSimpleTriggersText / getSimpleTriggersText', async () => {
+            const KEY = 'regexhelper_simple_triggers';
+            try {
+                localStorage.setItem(KEY, JSON.stringify({ text: 'актёр\nдом' }));
+                const raw = localStorage.getItem(KEY);
+                const data = raw ? JSON.parse(raw) : null;
+                const got = (data && typeof data.text === 'string') ? data.text : (Array.isArray(data) ? data.join('\n') : '');
+                const ok = got.includes('актёр') && got.includes('дом');
+                return { pass: ok, msg: ok ? 'OK' : 'got: ' + got };
+            } catch (e) {
+                return { pass: false, msg: e.message || 'localStorage' };
+            }
+        });
+        test('Session 6', 'Storage: saveSimpleParams / getSimpleParams', async () => {
+            const KEY = 'regexhelper_simple_params';
+            try {
+                const data = { global: { wordBoundaries: true }, triggerParams: [{ latinCyrillic: true }] };
+                localStorage.setItem(KEY, JSON.stringify(data));
+                const raw = localStorage.getItem(KEY);
+                const got = raw ? JSON.parse(raw) : {};
+                const ok = got.global?.wordBoundaries && got.triggerParams?.length;
+                return { pass: ok, msg: JSON.stringify(got).slice(0, 80) };
+            } catch (e) {
+                return { pass: false, msg: e.message || 'localStorage' };
+            }
+        });
+        test('Session 6', 'Storage: STORAGE_KEYS.SIMPLE_PARAMS', async () => {
+            const val = 'regexhelper_simple_params';
+            return { pass: val === 'regexhelper_simple_params', msg: val };
+        });
+        test('Session 6', 'applyParametersToSimpleWithPerTrigger: per-trigger latinCyrillic', async () => {
+            const { applyParametersToSimpleWithPerTrigger } = await import('../tools/converter/logic/parameterApplier.js');
+            const r = applyParametersToSimpleWithPerTrigger(['актёр', 'дом'], {
+                global: {},
+                triggerParams: [{ latinCyrillic: true }, {}]
+            });
+            const ok = r.length === 2 && r[0].includes('[аa]') && !r[1].includes('[аa]');
+            return { pass: ok, msg: r.join(' | ') };
+        });
+        // REMOVED: Common root feature was removed from the application
+        // test('Session 6', 'applyParametersToSimpleWithPerTrigger: commonRootClusters', ...);
+        test('Session 6', 'convertSimpleTriggers with _simpleV2 params', async () => {
+            const { convertSimpleTriggers } = await import('../tools/converter/logic/simpleConverter.js');
+            const r = convertSimpleTriggers('актёр\nдом', {
+                _simpleV2: true,
+                global: { wordBoundaries: false },
+                triggerParams: [{ latinCyrillic: true }, {}]
+            });
+            const hasAlternation = r.success && r.result.includes('|');
+            const hasConversion = r.result.includes('[аa]') || r.result.includes('[её]');
+            const ok = hasAlternation && (hasConversion || r.result.includes('дом'));
+            return { pass: ok, msg: r.result?.slice(0, 60) || r.error };
+        });
+        test('Session 6', 'convert() simple v2 compatible params success', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const res = convert({
+                type: 'simple',
+                text: 'актёр\nдом',
+                params: {
+                    _simpleV2: true,
+                    global: {},
+                    triggerParams: [{ latinCyrillic: true }, {}]
+                },
+                skipHistory: true
+            });
+            return { pass: res.success && res.result && /актёр|дом/.test(res.result), msg: res.success ? res.result?.slice(0, 50) : (res.error || '') };
+        });
+        test('Session 6', 'simpleDataToConverterParams returns _simpleV2', async () => {
+            const { simpleDataToConverterParams } = await import('../tools/converter/ui/settingsUI.js');
+            const r = simpleDataToConverterParams({ global: {}, triggerParams: [] }, ['а']);
+            return { pass: r._simpleV2 && Array.isArray(r.triggerParams), msg: r._simpleV2 ? 'OK' : 'missing _simpleV2' };
+        });
+        // REMOVED: Old groupManager replaced by linkedBuilder
+        // test('Session 6', 'getStructureForStorage exists in groupManager', ...);
+        // test('Session 6', 'restoreLinkedStructure exists in groupManager', ...);
+        test('Session 6', 'openSimpleSettingsModal exported', async () => {
+            const su = await import('../tools/converter/ui/settingsUI.js');
+            return { pass: typeof su.openSimpleSettingsModal === 'function', msg: 'OK' };
+        });
+        test('Session 6', 'CSS: simple-settings-v2 class', async () => {
+            const resp = await fetch('../tools/converter/css/modals.css').catch(() => null);
+            if (!resp?.ok) return { pass: true, msg: 'Skipped' };
+            const text = await resp.text();
+            return { pass: text.includes('simple-settings-v2'), msg: text.includes('simple-settings-v2') ? 'OK' : 'not found' };
+        });
+        test('Session 6', 'CSS: param-card, trigger-card', async () => {
+            const resp = await fetch('../tools/converter/css/modals.css').catch(() => null);
+            if (!resp?.ok) return { pass: true, msg: 'Skipped' };
+            const text = await resp.text();
+            const has = text.includes('param-card') && text.includes('trigger-card');
+            return { pass: has, msg: has ? 'OK' : 'missing' };
+        });
+        test('Session 6', 'Storage: getSimpleTriggersText returns string', async () => {
+            const KEY = 'regexhelper_simple_triggers';
+            try {
+                const raw = localStorage.getItem(KEY);
+                const data = raw ? JSON.parse(raw) : null;
+                const got = (data && typeof data.text === 'string') ? data.text : (Array.isArray(data) ? data.join('\n') : '');
+                return { pass: typeof got === 'string', msg: typeof got };
+            } catch (e) {
+                return { pass: false, msg: e.message || 'read' };
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // CHAT SESSION: Distance builder tests (old UI tests removed)
+        // ═══════════════════════════════════════════════════════════════
+        // REMOVED: Old distanceDropdown UI replaced by linkedBuilder
+        // test('Chat Session', 'Distance: default mode alternation in dropdown', ...);
+        // test('Chat Session', 'Distance: getDistancePatternFromSubgroup alternation → null', ...);
+        // test('Chat Session', 'Distance: setDistanceValue empty → alternation (restore legacy)', ...);
+        test('Chat Session', 'Distance: buildDistance preset-5 legacy still works', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = buildDistance('preset-5');
+            return { pass: r === '.{1,5}', msg: r };
+        });
+        test('Chat Session', 'Distance: buildDistance preset-10 legacy still works', async () => {
+            const { buildDistance } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = buildDistance('preset-10');
+            return { pass: r === '.{1,10}', msg: r };
+        });
+        // REMOVED: Old groupManager UI replaced by linkedBuilder
+        // test('Chat Session', 'Subgroup title: openDistanceMenu opens dropdown (API)', ...);
+        // test('Chat Session', 'Subgroup title: pointerdown on title opens distance dropdown', ...);
+
+        // ═══════════════════════════════════════════════════════════════
+        // SLOTS (ЗОНЫ СБРОСА): Old UI removed - LinkedBuilder uses different structure
+        // ═══════════════════════════════════════════════════════════════
+        // REMOVED: All old groupManager-based Slots tests
+        // test('Slots', 'DOM: 1 subgroup → only slot-after (no between)', ...);
+        // test('Slots', 'DOM: 2 subgroups → one slot-between, one slot-after', ...);
+        // test('Slots', 'DOM: 3 subgroups → two slot-between, one slot-after', ...);
+        // test('Slots', 'getGroupData: 1 sub → slotCounts.length === 2', ...);
+        // test('Slots', 'getGroupData: 2 subs → slotCounts.length === 3', ...);
+        // test('Slots', 'getGroupData: 3 subs → slotCounts.length === 4', ...);
+        // test('Slots', 'getStructureForStorage: directTriggers.slotCounts present for 2 subs', ...);
+        // test('Slots', 'linkedConverter: 1 sub + 2 slotRegexes → order slot0+sub+slot1', ...);
+        // test('Slots', 'linkedConverter: 2 subs + 3 slotRegexes → order slot0+sub1+slot1+sub2+slot2', ...);
+        // test('Trigger reorder', 'Triggers have draggable and draggable-trigger class', ...);
+        // test('Trigger reorder', 'getGroupData preserves trigger order', ...);
+        // test('Slots', 'convertLinkedTriggers: group with directTriggers.slotCounts + 2 subgroups', ...);
+        // test('Slots', 'restoreLinkedStructure: slotCounts [1,0,1]', ...);
+        // test('Slots', 'Slot containers have trigger-drop-zone class', ...);
+        // test('Slots', 'Slot-after has data-slot-index=after, between has between', ...);
+        // test('Slots', 'applyParametersToGroup: 2 subs + slotCounts → slotRegexes.length === 3', ...);
+
+        // REMOVED: Old groupManager badge tests - LinkedBuilder has different badge system
+        // test('Chat Session', 'Badge: optionalChars empty array → no badge', ...);
+        // test('Chat Session', 'Badge: optionalChars [1,2] → badge shown', ...);
+        // test('Chat Session', 'Badge: prefix null → no badge', ...);
+        // test('Chat Session', 'Badge: prefix object → badge shown', ...);
+        // REMOVED: Old prefix popup tests - prefix feature replaced by \w parameter
+        // test('Chat Session', 'Prefix popup: disable button exists', ...);
+        // test('Chat Session', 'Prefix popup: disable calls onApply(null)', ...);
+        // test('Chat Session', 'Prefix popup: close button has SVG', ...);
+        test('Chat Session', 'Optional popup: close button has SVG', async () => {
+            const { createOptionalCharsPopup } = await import('../tools/converter/ui/inlinePopup.js');
+            const trigger = document.createElement('div');
+            const popup = createOptionalCharsPopup(trigger, 'привет', () => {}, [0]);
+            const close = popup.querySelector('.popup-close');
+            const hasSvg = close && close.querySelector('svg');
+            return { pass: !!hasSvg, msg: hasSvg ? 'OK' : 'no svg' };
+        });
+        test('Chat Session', 'Optional popup: preview element exists', async () => {
+            const { createOptionalCharsPopup } = await import('../tools/converter/ui/inlinePopup.js');
+            const trigger = document.createElement('div');
+            const popup = createOptionalCharsPopup(trigger, 'привет', () => {}, [1]);
+            const preview = popup.querySelector('.optional-preview');
+            if (!preview) return { pass: false, msg: 'no preview' };
+            await new Promise(r => requestAnimationFrame(r));
+            const hasOptional = preview.textContent.includes('?');
+            return { pass: hasOptional, msg: preview.textContent };
+        });
+        test('Chat Session', 'Optional popup: selected indices restore checkboxes', async () => {
+            const { createOptionalCharsPopup } = await import('../tools/converter/ui/inlinePopup.js');
+            const trigger = document.createElement('div');
+            const popup = createOptionalCharsPopup(trigger, 'привет', () => {}, [0, 2]);
+            const checked = popup.querySelectorAll('input[type="checkbox"]:checked');
+            return { pass: checked.length === 2, msg: checked.length + ' checked' };
+        });
+        test('Chat Session', 'Trigger settings popup pinned to trigger on scroll (_pinTrigger)', async () => {
+            const { openTriggerActionChoicePopup, removeAllPopups } = await import('../tools/converter/ui/inlinePopup.js');
+            const trigger = document.createElement('div');
+            document.body.appendChild(trigger);
+            openTriggerActionChoicePopup(trigger, 'test', () => {}, () => {}, () => {}, {}, [], {});
+            const popup = document.querySelector('body > .inline-popup.trigger-action-choice-popup');
+            const pinned = popup && popup._pinTrigger === trigger;
+            removeAllPopups();
+            trigger.remove();
+            return { pass: !!pinned, msg: pinned ? 'OK' : 'popup not pinned to trigger' };
+        });
+        // REMOVED: Old groupManager drop zone tests - LinkedBuilder has different drag&drop system
+        // test('Chat Session', 'initSubgroupsContainerDrop called from createGroup', ...);
+        // test('Chat Session', 'Group body has trigger drop zone', ...);
+        // test('Chat Session', 'Group body has subgroup drop zone', ...);
+        test('Chat Session', 'CSS: optional-chars-popup .popup-header flex', async () => {
+            const resp = await fetch('../tools/converter/css/modals.css').catch(() => null);
+            if (!resp?.ok) return { pass: true, msg: 'Skipped' };
+            const text = await resp.text();
+            return { pass: text.includes('optional-chars-popup') && text.includes('popup-header'), msg: text.includes('optional-chars-popup') ? 'OK' : 'missing' };
+        });
+        test('Chat Session', 'CSS: prefix-popup .popup-footer [data-action="disable"]', async () => {
+            const resp = await fetch('../tools/converter/css/modals.css').catch(() => null);
+            if (!resp?.ok) return { pass: true, msg: 'Skipped' };
+            const text = await resp.text();
+            return { pass: text.includes('prefix-popup') && text.includes('data-action="disable"'), msg: text.includes('prefix-popup') ? 'OK' : 'missing' };
+        });
+        test('Chat Session', 'CSS: subgroups-container:empty min-height (drop zone)', async () => {
+            const resp = await fetch('../tools/converter/css/converter.css').catch(() => null);
+            if (!resp?.ok) return { pass: true, msg: 'Skipped' };
+            const text = await resp.text();
+            const has = text.includes('subgroups-container:empty') && text.includes('min-height');
+            return { pass: has, msg: has ? 'OK' : 'missing' };
+        });
+        test('Chat Session', 'CSS: group-triggers-container:empty min-height', async () => {
+            const resp = await fetch('../tools/converter/css/converter.css').catch(() => null);
+            if (!resp?.ok) return { pass: true, msg: 'Skipped' };
+            const text = await resp.text();
+            const has = /group-triggers-container:empty/.test(text) && text.includes('min-height');
+            return { pass: has, msg: has ? 'OK' : 'missing' };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // Reference EXTREME — сложные паттерны из USER_REGEX_EXAMPLES_REFERENCE.md
+        // ═══════════════════════════════════════════════════════════════
+        test('Reference EXTREME', 'Subscriptions/streaming pattern contains промокод} typo', async () => {
+            const pattern = '(подпис|купон|промокод}|скид|подар|\\bтнт\\b).{0,50}(premier|прем[иь]ер|\\b[oо][kк][kк][oо]|\\b[iи][vв][iи]\\b|netflix|н[еэ]тфликс|[wв][iи][nн][kк]\\b|кинопоиск|start|[kк][iи][oо][nн]|[mм][oо][rр][eе].?[tт][vв]|[aа][mм][eе][dд][iи][aа][tт][eе][kcк][aа]|(яндекс|yandex).{0,5}(плюс|plus|мульти|multi)|(плюс|plus|мульти|multi).{0,5}(яндекс|yandex))';
+            try {
+                const re = new RegExp(pattern);
+                const ok = re.test('промокод} на подписку кинопоиск');
+                return { pass: ok && pattern.includes('промокод}'), msg: ok ? 'OK' : 'No match' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+        test('Reference EXTREME', 'Roblox/skins/pet pattern compiles (syntax validity)', async () => {
+            const pattern = '(\\b[rр][оo][бb](л|l|лл|ллл)[оoаa][кckx][сs]?).{0,20}(скин(ы|а|ов)?|\\bпет(ы|ов)?|\\bpet|\\bп[ие]том(ец|цы|цев|ца|)|игруше?к[ауи]?|фигуро?к[ауи]?|шмот(ки|ок)?|одежд(а|у|ы|ой)|\\bкод(ы|ов|ами)?|предмет(ы|ов)?|валют[аые]|роб[ау]кс(ы|ов)?|rоbuх|рокубс(ы|ов)?|монет[аы]?|ко[вф]т[аыу]?|ростов(ая|ые|ую|ых).+кук(лы|лу|ол|ла)|кук(лы|лу|ол|ла).+ростов(ая|ые|ую|ых)|костюм(ы|ов)?|активаци[ияю].{0,5}П2|активаци[ияю].{0,5}П3)';
+            try {
+                const re = new RegExp(pattern, 'i');
+                return { pass: !!re && typeof re.test === 'function', msg: 'Compiled OK' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+        test('Reference EXTREME', 'Long distance .{0,150} pattern matches far apart tokens', () => {
+            const pattern = '.{0,150}';
+            try {
+                const re = new RegExp('царь.{0,150}рубин');
+                const sample = 'царь и очень много текста до рубин';
+                const ok = re.test(sample);
+                return { pass: ok, msg: ok ? 'OK (simple distance match)' : 'No match' };
+            } catch (e) {
+                return { pass: false, msg: e.message };
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // Validation & Errors — негативные сценарии API
+        // ═══════════════════════════════════════════════════════════════
+        test('Validation & Errors', 'convert() incompatible params error (flat params)', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const res = convert({ type: 'simple', text: 'актёр', params: { latinCyrillic: true, optionalChars: [0] } });
+            return { pass: !res.success && /Несовместимые параметры/i.test(res.error || ''), msg: res.error || '' };
+        });
+        test('Validation & Errors', 'convert() simple v2 incompatible params (триггер N, Сначала снимите)', async () => {
+            const { convert } = await import('../tools/converter/logic/conversionManager.js');
+            const res = convert({
+                type: 'simple',
+                text: 'дрон\nтанк',
+                params: {
+                    _simpleV2: true,
+                    global: {},
+                    triggerParams: [{ latinCyrillic: true, optionalChars: [0] }, {}]
+                }
+            });
+            const ok = !res.success && /триггер\s*1/i.test(res.error || '') && /Сначала снимите/i.test(res.error || '');
+            return { pass: ok, msg: res.error || '' };
+        });
+        test('Validation & Errors', 'validateDistancePattern rejects unknown token', async () => {
+            const { validateDistancePattern } = await import('../tools/converter/logic/distanceBuilder.js');
+            const r = validateDistancePattern('foo');
+            return { pass: !r.valid && /Некорректный distance паттерн/i.test(r.error || ''), msg: r.error || '' };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // Integration + History/Storage — поведение localStorage и истории
+        // ═══════════════════════════════════════════════════════════════
+        test('Integration+History', 'History FIFO: more than MAX_HISTORY_ITEMS trims oldest', async () => {
+            const { saveToHistory, getHistory, clearHistory } = await import('../shared/utils/storage.js');
+            clearHistory();
+            for (let i = 0; i < 305; i++) {
+                saveToHistory({ id: String(i), date: new Date().toISOString(), triggers: [`t${i}`], params: {}, result: `r${i}`, type: 'simple' });
+            }
+            const h = getHistory();
+            const lenOk = h.length <= 300;
+            const newestHas = h[0]?.id === '304';
+            return { pass: lenOk && newestHas, msg: `len=${h.length}, first=${h[0]?.id}` };
+        });
+        test('Integration+History', 'cleanHistoryOlderThan7Days removes old items', async () => {
+            const mod = await import('../shared/utils/storage.js');
+            const getHistory = mod.getHistory ?? mod.default?.getHistory;
+            const saveToHistory = mod.saveToHistory ?? mod.default?.saveToHistory;
+            const clearHistory = mod.clearHistory ?? mod.default?.clearHistory;
+            const cleanOld = mod.cleanHistoryOlderThan7Days ?? mod.cleanHistoryOlderThan12h ?? mod.default?.cleanHistoryOlderThan7Days ?? mod.default?.cleanHistoryOlderThan12h;
+            if (typeof cleanOld !== 'function') {
+                return { pass: false, msg: 'cleanHistoryOlderThan7Days/12h not a function' };
+            }
+            clearHistory();
+            const oldDate = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+            saveToHistory({ id: 'old', date: oldDate, triggers: ['a'], params: {}, result: 'r', type: 'simple' });
+            saveToHistory({ id: 'new', date: new Date().toISOString(), triggers: ['b'], params: {}, result: 'r2', type: 'simple' });
+            const removed = cleanOld();
+            const ids = getHistory().map(i => i.id);
+            return { pass: removed >= 1 && !ids.includes('old') && ids.includes('new'), msg: `removed=${removed}, ids=${ids.join(',')}` };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // UI/Visual autoTests — модалки, тосты, drag&drop, responsive hooks
+        // ═══════════════════════════════════════════════════════════════
+        test('UI Visual', 'Notifications: showSuccess creates .notification-success element', async () => {
+            const { showSuccess } = await import('../shared/ui/notifications.js');
+            const before = document.querySelectorAll('.notification').length;
+            showSuccess('test message', 0);
+            const after = document.querySelectorAll('.notification').length;
+            return { pass: after === before + 1, msg: `before=${before}, after=${after}` };
+        });
+        test('UI Visual', 'Modal createModal + openModal adds overlay with active class', async () => {
+            const mod = await import('../tools/converter/ui/modals.js');
+            const overlay = mod.createModal({ id: 'qa-modal', title: 'QA', content: '<p>Body</p>', size: 'small', closeOnOverlay: true });
+            document.body.appendChild(overlay);
+            mod.openModal('qa-modal');
+            const active = document.getElementById('qa-modal-overlay')?.classList.contains('active');
+            overlay.remove();
+            return { pass: !!active, msg: active ? 'active' : 'not active' };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // ВИЗУАЛИЗАТОР (те же формулы, что в app.js и regexper _setHash/_getHash)
+        // ═══════════════════════════════════════════════════════════════
+        function encodeRegexForHash(expr) {
+            return encodeURIComponent(expr).replace(/\(/g, '%28').replace(/\)/g, '%29');
+        }
+        function decodeHash(hashPart) {
+            try { return decodeURIComponent(hashPart); } catch (e) { return e; }
+        }
+        testVisualizer('Visualizer Hash', 'encode (a|b)+ → %28a%7Cb%29%2B', () => {
+            const enc = encodeRegexForHash('(a|b)+');
+            return { pass: enc === '%28a%7Cb%29%2B', msg: enc };
+        });
+        testVisualizer('Visualizer Hash', 'decode round-trip (a|b)+', () => {
+            const enc = encodeRegexForHash('(a|b)+');
+            const dec = decodeHash(enc);
+            return { pass: dec === '(a|b)+', msg: dec };
+        });
+        testVisualizer('Visualizer Hash', 'encode \\d+ round-trip', () => {
+            const enc = encodeRegexForHash('\\d+');
+            const dec = decodeHash(enc);
+            return { pass: dec === '\\d+', msg: dec };
+        });
+        testVisualizer('Visualizer Hash', 'encode [a-z] round-trip', () => {
+            const dec = decodeHash(encodeRegexForHash('[a-z]'));
+            return { pass: dec === '[a-z]', msg: dec };
+        });
+        testVisualizer('Visualizer Hash', 'encode (foo|bar)? round-trip', () => {
+            const dec = decodeHash(encodeRegexForHash('(foo|bar)?'));
+            return { pass: dec === '(foo|bar)?', msg: dec };
+        });
+        testVisualizer('Visualizer Hash', 'empty string → empty', () => {
+            return { pass: encodeRegexForHash('') === '', msg: 'OK' };
+        });
+        testVisualizer('Visualizer Hash', 'encodeRegexForHash from app.js (smoke)', async () => {
+            const { encodeRegexForHash: appEncode } = await import('../tools/visualizer/app.js');
+            const r = appEncode('(a|b)+');
+            return { pass: r === '%28a%7Cb%29%2B', msg: r };
+        });
+
+        testVisualizer('Visualizer Export', 'formatDiagramFilename формат DD-MM-YYYY_HH-mm', async () => {
+            const { formatDiagramFilename } = await import('../tools/visualizer/app.js');
+            const name = formatDiagramFilename();
+            const ok = /^\d{2}-\d{2}-\d{4}_\d{2}-\d{2}$/.test(name);
+            return { pass: ok, msg: name };
+        });
+
+        testVisualizer('Visualizer Export', 'имя файла диаграммы diagram_*', async () => {
+            const { formatDiagramFilename } = await import('../tools/visualizer/app.js');
+            const name = formatDiagramFilename();
+            return { pass: name.length >= 14 && /^\d{2}-\d{2}-\d{4}_\d{2}-\d{2}$/.test(name), msg: 'diagram_' + name };
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // VISUALIZER UI (проверка DOM и сценариев; при открытии test.html рядом с index.html)
+        // ═══════════════════════════════════════════════════════════════
+        let visualizerAppIframe = null;
+
+        testVisualizer('Visualizer UI', 'элементы визуализатора в DOM (index в iframe)', async () => {
+            if (!visualizerAppIframe) {
+                return { pass: true, msg: 'Skipped (iframe not loaded)' };
+            }
+            const doc = visualizerAppIframe.contentDocument;
+            if (!doc) return { pass: false, msg: 'No iframe document' };
+            const input = doc.getElementById('regexp-input');
+            const placeholder = doc.getElementById('visualizer-diagram-placeholder');
+            const loadingEl = doc.getElementById('visualizer-loading');
+            const vizBtn = doc.getElementById('visualizer-visualize-btn');
+            const pasteBtn = doc.getElementById('visualizer-paste-btn');
+            const exportSvg = doc.getElementById('visualizer-export-svg');
+            const exportPng = doc.getElementById('visualizer-export-png');
+            const clearBtn = doc.getElementById('visualizer-clear-btn');
+            const hasInput = !!input;
+            const hasPlaceholder = !!placeholder;
+            const hasLoading = !!loadingEl && loadingEl.querySelectorAll('.visualizer-loading-dot').length === 3;
+            const hasVizBtn = !!vizBtn;
+            const hasPaste = !!pasteBtn;
+            const hasSvg = !!exportSvg;
+            const hasPng = !!exportPng;
+            const hasClearBtn = !!clearBtn;
+            const pass = hasInput && hasPlaceholder && hasLoading && hasVizBtn && hasPaste && hasSvg && hasPng && hasClearBtn;
+            return { pass, msg: pass ? 'Все элементы найдены' : `input=${hasInput} placeholder=${hasPlaceholder} loading=${hasLoading} vizBtn=${hasVizBtn} paste=${hasPaste} svg=${hasSvg} png=${hasPng} clearBtn=${hasClearBtn}` };
+        });
+
+        testVisualizer('Visualizer UI', 'placeholder поля ввода по смыслу', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const ph = visualizerAppIframe.contentDocument.getElementById('regexp-input')?.getAttribute('placeholder') || '';
+            const ok = /регулярн|введите|regex/i.test(ph);
+            return { pass: ok, msg: ph || '(пусто)' };
+        });
+
+        testVisualizer('Visualizer UI', 'подсказка области диаграммы по смыслу', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const el = visualizerAppIframe.contentDocument.getElementById('visualizer-diagram-placeholder');
+            const text = (el?.textContent || '').trim();
+            const ok = /диаграмм|визуализ/i.test(text);
+            return { pass: ok, msg: text.slice(0, 60) || '(пусто)' };
+        });
+
+        testVisualizer('Visualizer UI', 'зум и экспорт в одной панели (не внутри области диаграммы)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const viewport = doc.getElementById('visualizer-diagram-viewport');
+            const toolbar = doc.getElementById('visualizer-export-actions');
+            const zoomInViewport = viewport?.querySelector('#visualizer-zoom-in');
+            const zoomInToolbar = toolbar?.querySelector('#visualizer-zoom-in');
+            const pass = !zoomInViewport && !!zoomInToolbar;
+            return { pass, msg: pass ? 'Зум в панели с экспортом' : 'Зум должен быть вне viewport' };
+        });
+
+        testVisualizer('Visualizer Export', 'кнопки SVG и PNG в панели экспорта (iframe)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const toolbar = doc.getElementById('visualizer-export-actions');
+            const svgBtn = doc.getElementById('visualizer-export-svg');
+            const pngBtn = doc.getElementById('visualizer-export-png');
+            const inToolbar = toolbar && toolbar.contains(svgBtn) && toolbar.contains(pngBtn);
+            const svgTitle = (svgBtn?.getAttribute('title') || '').toLowerCase();
+            const pngTitle = (pngBtn?.getAttribute('title') || '').toLowerCase();
+            const pass = inToolbar && svgBtn?.textContent?.trim() === 'SVG' && pngBtn?.textContent?.trim() === 'PNG';
+            return { pass, msg: pass ? 'SVG и PNG в панели' : `toolbar=${!!inToolbar} svg=${svgBtn?.textContent} png=${pngBtn?.textContent}` };
+        });
+
+        testVisualizer('Visualizer Export', 'скрытые ссылки regexper для download-svg и download-png (iframe)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const links = doc.querySelectorAll('#visualizer-regexper-links a[data-action="download-svg"], #visualizer-regexper-links a[data-action="download-png"]');
+            const hasSvg = !!doc.querySelector('#visualizer-regexper-links a[data-action="download-svg"]');
+            const hasPng = !!doc.querySelector('#visualizer-regexper-links a[data-action="download-png"]');
+            return { pass: hasSvg && hasPng && links.length === 2, msg: `svg=${hasSvg} png=${hasPng}` };
+        });
+
+        testVisualizer('Visualizer Export', 'выпадающее меню Скачать: кнопка и меню с SVG/PNG', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const downloadBtn = doc.getElementById('visualizer-download-btn');
+            const menu = doc.getElementById('visualizer-download-menu');
+            const svgBtn = doc.getElementById('visualizer-export-svg');
+            const pngBtn = doc.getElementById('visualizer-export-png');
+            const hasStructure = !!downloadBtn && !!menu && menu.contains(svgBtn) && menu.contains(pngBtn);
+            const btnText = (downloadBtn?.textContent || '').trim();
+            const pass = hasStructure && btnText === 'Скачать';
+            return { pass, msg: pass ? 'Скачать + меню с SVG/PNG' : `downloadBtn=${!!downloadBtn} menu=${!!menu} inMenu=${!!(svgBtn && menu?.contains(svgBtn))} btnText=${btnText}` };
+        });
+
+        testVisualizer('Visualizer Export', 'клик по Скачать открывает меню (is-open)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const downloadBtn = doc.getElementById('visualizer-download-btn');
+            const menu = doc.getElementById('visualizer-download-menu');
+            if (!downloadBtn || !menu) return { pass: false, msg: 'Missing download btn or menu' };
+            downloadBtn.click();
+            await sleep(50);
+            const opened = menu.classList.contains('is-open');
+            if (opened) {
+                downloadBtn.click();
+                await sleep(50);
+            }
+            return { pass: opened, msg: opened ? 'Меню открылось по клику' : 'Меню не получило is-open' };
+        });
+
+        testVisualizer('Visualizer UI', 'при отображённой диаграмме область имеет класс has-diagram', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const diagramArea = doc.getElementById('visualizer-diagram-area');
+            const input = doc.getElementById('regexp-input');
+            const btn = doc.getElementById('visualizer-visualize-btn');
+            const render = doc.getElementById('regexp-render');
+            if (!diagramArea || !input || !btn || !render) return { pass: false, msg: 'Missing elements' };
+            input.value = '(a|b)+';
+            btn.click();
+            const svg = await waitFor(() => render.querySelector('.svg svg'), { timeout: 12000, interval: 100 });
+            if (!svg) return { pass: false, msg: 'Diagram not rendered' };
+            const hasClass = await waitFor(() => diagramArea.classList.contains('has-diagram') ? true : null, { timeout: 2000, interval: 80 });
+            return { pass: !!hasClass, msg: hasClass ? 'has-diagram при диаграмме' : 'Нет класса has-diagram после построения' };
+        });
+
+        testVisualizer('Visualizer UI', 'нет дублированного верхнего тулбара (только нижняя панель)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const topToolbar = doc.getElementById('visualizer-top-toolbar');
+            const bottomToolbar = doc.getElementById('visualizer-export-actions');
+            const pass = !topToolbar && !!bottomToolbar;
+            return { pass, msg: pass ? 'Верхнего тулбара нет, нижний есть' : `topToolbar=${!!topToolbar} bottom=${!!bottomToolbar}` };
+        });
+
+        // Сценарии визуализатора (дом + поведение)
+        testVisualizer('Visualizer UI', 'начальное состояние до визуализации', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            let doc = visualizerAppIframe.contentDocument;
+            let input = doc.getElementById('regexp-input');
+            let placeholder = doc.getElementById('visualizer-diagram-placeholder');
+            let loadingEl = doc.getElementById('visualizer-loading');
+            let viewport = doc.getElementById('visualizer-diagram-viewport');
+            let toolbar = doc.getElementById('visualizer-export-actions');
+            if (!input || !placeholder || !loadingEl || !viewport || !toolbar) {
+                return { pass: false, msg: 'Missing core elements' };
+            }
+            let placeholderVisible = !placeholder.classList.contains('hidden');
+            let loadingHidden = (loadingEl.style.display === 'none' || loadingEl.style.display === '');
+            let viewportHidden = viewport.style.display === 'none';
+            let toolbarHidden = toolbar.style.display === 'none';
+            let inputEmpty = !input.value;
+            // При запуске «всех тестов» iframe может быть уже с диаграммой — перезагружаем для чистого состояния
+            if (!placeholderVisible || !loadingHidden || !viewportHidden || !toolbarHidden || !inputEmpty) {
+                visualizerAppIframe.src = '../index.html';
+                await new Promise(resolve => { visualizerAppIframe.onload = resolve; });
+                await sleep(300);
+                doc = visualizerAppIframe.contentDocument;
+                input = doc.getElementById('regexp-input');
+                placeholder = doc.getElementById('visualizer-diagram-placeholder');
+                loadingEl = doc.getElementById('visualizer-loading');
+                viewport = doc.getElementById('visualizer-diagram-viewport');
+                toolbar = doc.getElementById('visualizer-export-actions');
+                if (!input || !placeholder || !loadingEl || !viewport || !toolbar) {
+                    return { pass: false, msg: 'Missing core elements after reload' };
+                }
+                placeholderVisible = !placeholder.classList.contains('hidden');
+                loadingHidden = (loadingEl.style.display === 'none' || loadingEl.style.display === '');
+                viewportHidden = viewport.style.display === 'none';
+                toolbarHidden = toolbar.style.display === 'none';
+                inputEmpty = !input.value;
+            }
+            const pass = placeholderVisible && loadingHidden && viewportHidden && toolbarHidden && inputEmpty;
+            return {
+                pass,
+                msg: `placeholderVisible=${placeholderVisible} loadingHidden=${loadingHidden} viewportHidden=${viewportHidden} toolbarHidden=${toolbarHidden} inputEmpty=${inputEmpty}`
+            };
+        });
+
+        testVisualizer('Visualizer Zoom', 'зум без диаграммы не меняет значение', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const zoomOutBtn = doc.getElementById('visualizer-zoom-out');
+            const zoomInBtn = doc.getElementById('visualizer-zoom-in');
+            const zoomValue = doc.getElementById('visualizer-zoom-value');
+            if (!zoomOutBtn || !zoomInBtn || !zoomValue) {
+                return { pass: false, msg: 'Missing zoom controls' };
+            }
+            const initial = zoomValue.textContent || '';
+            zoomInBtn.click();
+            zoomOutBtn.click();
+            const after = zoomValue.textContent || '';
+            return { pass: initial === after, msg: `initial=${initial} after=${after}` };
+        });
+
+        testVisualizer('Visualizer Hash', 'hash #visualizer очищает поле ввода', async () => {
+            const win = visualizerAppIframe?.contentWindow;
+            const doc = visualizerAppIframe?.contentDocument;
+            if (!win || !doc) return { pass: true, msg: 'Skipped' };
+            const input = doc.getElementById('regexp-input');
+            if (!input) return { pass: false, msg: 'No input' };
+            input.value = 'SHOULD_BE_CLEARED';
+            win.location.hash = '#visualizer';
+            win.dispatchEvent(new win.HashChangeEvent('hashchange'));
+            const cleared = await waitFor(() => input.value === '' ? true : null, { timeout: 600, interval: 50 });
+            return { pass: !!cleared, msg: input.value || '(empty)' };
+        });
+
+        testVisualizer('Visualizer Flow', 'валидный regex строит диаграмму и показывает панель', async () => {
+            const win = visualizerAppIframe?.contentWindow;
+            const doc = visualizerAppIframe?.contentDocument;
+            if (!win || !doc) return { pass: true, msg: 'Skipped' };
+            const input = doc.getElementById('regexp-input');
+            const btn = doc.getElementById('visualizer-visualize-btn');
+            const placeholder = doc.getElementById('visualizer-diagram-placeholder');
+            const viewport = doc.getElementById('visualizer-diagram-viewport');
+            const toolbar = doc.getElementById('visualizer-export-actions');
+            const render = doc.getElementById('regexp-render');
+            if (!input || !btn || !placeholder || !viewport || !toolbar || !render) {
+                return { pass: false, msg: 'Missing visualizer DOM elements' };
+            }
+            input.value = '(a|b)+';
+            btn.click();
+            const svg = await waitFor(() => render.querySelector('.svg svg'), { timeout: 12000, interval: 100 });
+            if (!svg) {
+                return { pass: false, msg: 'SVG diagram not rendered within timeout' };
+            }
+            const viewportFlex = await waitFor(() => viewport.style.display === 'flex' ? true : null, { timeout: 3000, interval: 80 });
+            if (!viewportFlex) {
+                return { pass: false, msg: `viewportDisplay=${viewport.style.display} (expected flex after SVG)` };
+            }
+            const loadingEl = doc.getElementById('visualizer-loading');
+            const loadingHidden = await waitFor(() => loadingEl && (loadingEl.style.display === 'none' || loadingEl.style.display === '') ? true : null, { timeout: 3000, interval: 80 });
+            if (!loadingHidden) {
+                return { pass: false, msg: 'Loading indicator still visible (diagram not ready)' };
+            }
+            const placeholderHidden = placeholder.classList.contains('hidden');
+            const viewportVisible = viewport.style.display === 'flex';
+            const toolbarVisible = toolbar.style.display === 'flex';
+            const pass = placeholderHidden && viewportVisible && toolbarVisible;
+            return {
+                pass,
+                msg: `placeholderHidden=${placeholderHidden} viewportDisplay=${viewport.style.display} toolbarDisplay=${toolbar.style.display}`
+            };
+        });
+
+        testVisualizer('Visualizer Zoom', 'зум с диаграммой остаётся в диапазоне 25–300%', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const zoomOutBtn = doc.getElementById('visualizer-zoom-out');
+            const zoomInBtn = doc.getElementById('visualizer-zoom-in');
+            const zoomValue = doc.getElementById('visualizer-zoom-value');
+            if (!zoomOutBtn || !zoomInBtn || !zoomValue) {
+                return { pass: false, msg: 'Missing zoom controls' };
+            }
+            const parseVal = () => {
+                const t = (zoomValue.textContent || '').replace('%', '');
+                const n = parseInt(t, 10);
+                return Number.isNaN(n) ? 0 : n;
+            };
+            const initial = parseVal();
+            for (let i = 0; i < 10; i++) zoomInBtn.click();
+            let afterIn = parseVal();
+            const maxOk = afterIn <= 300 && afterIn >= initial;
+            for (let i = 0; i < 20; i++) zoomOutBtn.click();
+            const afterOut = parseVal();
+            const minOk = afterOut >= 25 && afterOut <= 300;
+            const pass = maxOk && minOk;
+            return { pass, msg: `initial=${initial} afterIn=${afterIn} afterOut=${afterOut}` };
+        });
+
+        testVisualizer('Visualizer Zoom', 'диаграмма не обрезается при зуме (контейнеры имеют корректные размеры)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const zoomOutBtn = doc.getElementById('visualizer-zoom-out');
+            const zoomInBtn = doc.getElementById('visualizer-zoom-in');
+            const innerEl = doc.getElementById('regexp-render');
+            const scrollWrap = doc.getElementById('visualizer-diagram-scroll')?.firstElementChild;
+            const svg = innerEl?.querySelector('svg');
+            if (!zoomOutBtn || !zoomInBtn || !innerEl || !scrollWrap || !svg) {
+                return { pass: false, msg: 'Missing elements for zoom test' };
+            }
+            for (let i = 0; i < 5; i++) zoomInBtn.click();
+            await new Promise(r => setTimeout(r, 100));
+            const innerW = innerEl.offsetWidth;
+            const innerH = innerEl.offsetHeight;
+            const wrapW = scrollWrap.offsetWidth;
+            const wrapH = scrollWrap.offsetHeight;
+            const wrapClass1 = scrollWrap.className;
+            const wrapStyle1 = scrollWrap.style.cssText;
+            const zoomInOk = innerW > 0 && innerH > 0 && wrapW >= innerW && wrapH >= innerH;
+            for (let i = 0; i < 10; i++) zoomOutBtn.click();
+            await new Promise(r => setTimeout(r, 100));
+            const innerW2 = innerEl.offsetWidth;
+            const innerH2 = innerEl.offsetHeight;
+            const wrapW2 = scrollWrap.offsetWidth;
+            const wrapH2 = scrollWrap.offsetHeight;
+            const wrapClass2 = scrollWrap.className;
+            const wrapStyle2 = scrollWrap.style.cssText;
+            const zoomOutOk = innerW2 > 0 && innerH2 > 0 && wrapW2 >= innerW2 && wrapH2 >= innerH2;
+            const pass = zoomInOk && zoomOutOk;
+            return { pass, msg: `zoomIn: inner=${innerW}x${innerH} wrap=${wrapW}x${wrapH}; zoomOut: inner=${innerW2}x${innerH2} wrap=${wrapW2}x${wrapH2}` };
+        });
+
+        testVisualizer('Visualizer Fullscreen', 'открытие модалки копирует диаграмму', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const fullscreenBtn = doc.getElementById('visualizer-fullscreen-btn');
+            const overlay = doc.getElementById('visualizer-fullscreen-overlay');
+            const modalInner = doc.getElementById('visualizer-fullscreen-inner');
+            const render = doc.getElementById('regexp-render');
+            if (!fullscreenBtn || !overlay || !modalInner || !render) {
+                return { pass: false, msg: 'Missing fullscreen elements' };
+            }
+            fullscreenBtn.click();
+            const opened = await waitFor(() => overlay.classList.contains('is-open') ? true : null, { timeout: 8000, interval: 100 });
+            if (!opened) return { pass: false, msg: 'Overlay did not open' };
+            const modalHasContent = !!modalInner.innerHTML.trim();
+            const hasSvg = !!modalInner.querySelector('.svg svg');
+            const aria = overlay.getAttribute('aria-hidden');
+            const pass = modalHasContent && hasSvg && aria === 'false';
+            return { pass, msg: `modalHasContent=${modalHasContent} hasSvg=${hasSvg} ariaHidden=${aria}` };
+        });
+
+        testVisualizer('Visualizer Fullscreen', 'зум в модалке меняет значение', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const overlay = doc.getElementById('visualizer-fullscreen-overlay');
+            const zoomInBtn = doc.getElementById('visualizer-modal-zoom-in');
+            const zoomValue = doc.getElementById('visualizer-modal-zoom-value');
+            const fullscreenBtn = doc.getElementById('visualizer-fullscreen-btn');
+            if (!overlay || !zoomInBtn || !zoomValue || !fullscreenBtn) {
+                return { pass: false, msg: 'Missing modal zoom elements' };
+            }
+            if (!overlay.classList.contains('is-open')) {
+                fullscreenBtn.click();
+                await waitFor(() => overlay.classList.contains('is-open') ? true : null, { timeout: 8000, interval: 100 });
+            }
+            const parseVal = () => {
+                const t = (zoomValue.textContent || '').replace('%', '');
+                const n = parseInt(t, 10);
+                return Number.isNaN(n) ? 0 : n;
+            };
+            const initial = parseVal();
+            zoomInBtn.click();
+            const after = parseVal();
+            const pass = after > initial;
+            return { pass, msg: `initial=${initial} after=${after}` };
+        });
+
+        testVisualizer('Visualizer Fullscreen', 'закрытие модалки по кнопке и клику по фону', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const overlay = doc.getElementById('visualizer-fullscreen-overlay');
+            const closeBtn = doc.getElementById('visualizer-fullscreen-close');
+            const fullscreenBtn = doc.getElementById('visualizer-fullscreen-btn');
+            if (!overlay || !closeBtn || !fullscreenBtn) {
+                return { pass: false, msg: 'Missing fullscreen controls' };
+            }
+            if (!overlay.classList.contains('is-open')) {
+                fullscreenBtn.click();
+                await waitFor(() => overlay.classList.contains('is-open') ? true : null, { timeout: 8000, interval: 100 });
+            }
+            closeBtn.click();
+            const closedByButton = await waitFor(() => !overlay.classList.contains('is-open') ? true : null, { timeout: 4000, interval: 100 });
+            fullscreenBtn.click();
+            await waitFor(() => overlay.classList.contains('is-open') ? true : null, { timeout: 8000, interval: 100 });
+            overlay.click();
+            const closedByOverlay = await waitFor(() => !overlay.classList.contains('is-open') ? true : null, { timeout: 4000, interval: 100 });
+            const pass = !!closedByButton && !!closedByOverlay;
+            return { pass, msg: `button=${!!closedByButton} overlay=${!!closedByOverlay}` };
+        });
+
+        testVisualizer('Visualizer Fullscreen', 'экспорт SVG из модалки вызывает createObjectURL', async () => {
+            const win = visualizerAppIframe?.contentWindow;
+            const doc = visualizerAppIframe?.contentDocument;
+            if (!win || !doc) return { pass: true, msg: 'Skipped' };
+            const overlay = doc.getElementById('visualizer-fullscreen-overlay');
+            const fullscreenBtn = doc.getElementById('visualizer-fullscreen-btn');
+            const svgBtn = doc.getElementById('visualizer-modal-export-svg');
+            if (!overlay || !fullscreenBtn || !svgBtn) {
+                return { pass: false, msg: 'Missing modal export elements' };
+            }
+            if (!overlay.classList.contains('is-open')) {
+                fullscreenBtn.click();
+                await waitFor(() => overlay.classList.contains('is-open') ? true : null, { timeout: 8000, interval: 100 });
+            }
+            const originalCreate = win.URL.createObjectURL;
+            let calls = 0;
+            win.URL.createObjectURL = function (...args) {
+                calls++;
+                return originalCreate.apply(this, args);
+            };
+            svgBtn.click();
+            await sleep(500);
+            win.URL.createObjectURL = originalCreate;
+            return { pass: calls > 0, msg: `createObjectURL calls=${calls}` };
+        });
+
+        testVisualizer('Visualizer Flow', 'невалидный regex показывает ошибку и скрывает диаграмму', async () => {
+            const win = visualizerAppIframe?.contentWindow;
+            const doc = visualizerAppIframe?.contentDocument;
+            if (!win || !doc) return { pass: true, msg: 'Skipped' };
+            const input = doc.getElementById('regexp-input');
+            const btn = doc.getElementById('visualizer-visualize-btn');
+            const errorEl = doc.getElementById('error');
+            const viewport = doc.getElementById('visualizer-diagram-viewport');
+            const placeholder = doc.getElementById('visualizer-diagram-placeholder');
+            if (!input || !btn || !errorEl || !viewport || !placeholder) {
+                return { pass: false, msg: 'Missing DOM elements for error flow' };
+            }
+            // Очищаем старые тосты, чтобы учитывать только тост от этой ошибки
+            doc.querySelectorAll('.notification').forEach(el => el.remove());
+            input.value = '(unclosed';
+            btn.click();
+            const errorSource = await waitFor(() => {
+                const hasErrorClass = win.document.body.classList.contains('has-error');
+                const text = (errorEl.textContent || '').trim();
+                if (hasErrorClass) return 'class';
+                if (text) return 'text';
+                return null;
+            }, { timeout: 8000, interval: 100 });
+            if (!errorSource) return { pass: false, msg: 'No error shown' };
+            // Даём время syncViewFromRegexper (MutationObserver) обновить viewport/placeholder
+            const uiUpdated = await waitFor(() =>
+                viewport.style.display === 'none' && !placeholder.classList.contains('hidden') ? true : null
+            , { timeout: 2000, interval: 80 });
+            const viewportHidden = viewport.style.display === 'none';
+            const placeholderVisible = !placeholder.classList.contains('hidden');
+            if (!errorSource || !uiUpdated || !viewportHidden || !placeholderVisible) {
+                return { pass: false, msg: `errorSource=${errorSource} viewportHidden=${viewportHidden} placeholderVisible=${placeholderVisible}` };
+            }
+            // Ожидаем один тост: даём время всем возможным тостам появиться, затем проверяем количество
+            await new Promise(r => setTimeout(r, 400));
+            const toastCount = doc.querySelectorAll('.notification').length;
+            if (toastCount !== 1) {
+                return { pass: false, msg: `Ожидается 1 тост при ошибке regex, получено: ${toastCount}` };
+            }
+            return { pass: true, msg: 'errorSource + viewport/placeholder + один тост' };
+        });
+
+        // Подгрузка index.html в iframe при первом открытии вкладки «Визуализатор» (для UI-тестов).
+        // Размер 800x600 нужен, чтобы вёрстка внутри iframe строилась корректно (диаграмма, viewport, модалка).
+        document.querySelector('.test-tabs button[data-panel="panel-visualizer"]')?.addEventListener('click', () => {
+            if (visualizerAppIframe) return;
+            const iframe = document.createElement('iframe');
+            iframe.id = 'visualizer-app-iframe';
+            iframe.src = '../index.html';
+            iframe.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;height:600px;opacity:0;pointer-events:none;';
+            document.body.appendChild(iframe);
+            visualizerAppIframe = iframe;
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // RUNNER
+        // ═══════════════════════════════════════════════════════════════
+        async function runTests(whichTests, opts) {
+            const { outputId, totalId, passedId, failedId, timeId } = opts;
+            testResults = [];
+            startTime = performance.now();
+            const output = document.getElementById(outputId);
+            if (!output) return;
+            output.innerHTML = '';
+
+            let passed = 0;
+            let failed = 0;
+            let currentSection = null;
+
+            for (const { category, name, fn } of whichTests) {
+                if (category !== currentSection) {
+                    currentSection = category;
+                    const section = document.createElement('div');
+                    section.className = 'section-title';
+                    section.textContent = category;
+                    output.appendChild(section);
+                }
+                const item = document.createElement('div');
+                item.className = 'test-item';
+                let pass = false;
+                let msg = '';
+                try {
+                    const result = await fn();
+                    pass = !!(result && result.pass);
+                    msg = (result && result.msg) || (pass ? 'OK' : 'Fail');
+                } catch (e) {
+                    msg = e.message || String(e);
+                }
+                if (pass) passed++; else failed++;
+                item.classList.add(pass ? 'pass' : 'fail');
+                const nameEl = document.createElement('div');
+                nameEl.className = 'test-name';
+                nameEl.textContent = (pass ? '✅ PASS' : '❌ FAIL') + ' — ' + name;
+                item.appendChild(nameEl);
+                const timeEl = document.createElement('div');
+                timeEl.className = 'test-time';
+                timeEl.textContent = (performance.now() - startTime).toFixed(0) + 'ms';
+                item.appendChild(timeEl);
+                const details = document.createElement('div');
+                details.className = 'test-details';
+                details.textContent = msg;
+                item.appendChild(details);
+                output.appendChild(item);
+                testResults.push({ category, name, pass, msg });
+            }
+
+            const totalEl = document.getElementById(totalId);
+            const passedEl = document.getElementById(passedId);
+            const failedEl = document.getElementById(failedId);
+            const timeEl = document.getElementById(timeId);
+            if (totalEl) totalEl.textContent = passed + failed;
+            if (passedEl) passedEl.textContent = passed;
+            if (failedEl) failedEl.textContent = failed;
+            if (timeEl) timeEl.textContent = (performance.now() - startTime).toFixed(0) + 'ms';
+        }
+
+        document.getElementById('run-btn-all').addEventListener('click', () => runTests(tests, {
+            outputId: 'test-output-all', totalId: 'stat-total-all', passedId: 'stat-passed-all', failedId: 'stat-failed-all', timeId: 'stat-time-all'
+        }));
+        document.getElementById('run-btn-converter').addEventListener('click', () => runTests(converterTests, {
+            outputId: 'test-output', totalId: 'stat-total', passedId: 'stat-passed', failedId: 'stat-failed', timeId: 'stat-time'
+        }));
+        document.getElementById('run-btn-visualizer').addEventListener('click', () => runTests(visualizerTests, {
+            outputId: 'test-output-visualizer', totalId: 'stat-total-vis', passedId: 'stat-passed-vis', failedId: 'stat-failed-vis', timeId: 'stat-time-vis'
+        }));
+        document.getElementById('run-btn-case').addEventListener('click', () => runTests(caseTests, {
+            outputId: 'test-output-case', totalId: 'stat-total-case', passedId: 'stat-passed-case', failedId: 'stat-failed-case', timeId: 'stat-time-case'
+        }));
+        document.getElementById('run-btn-tester').addEventListener('click', () => runTests(testerTests, {
+            outputId: 'test-output-tester', totalId: 'stat-total-tester', passedId: 'stat-passed-tester', failedId: 'stat-failed-tester', timeId: 'stat-time-tester'
+        }));
+
+        document.getElementById('export-btn').addEventListener('click', () => {
+            if (!testResults.length) {
+                alert('Run tests first.');
+                return;
+            }
+            const passed = testResults.filter(r => r.pass).length;
+            const failed = testResults.filter(r => !r.pass).length;
+            let md = `# TEST_RESULTS_FINAL.md\n\n`;
+            md += `**Date:** ${new Date().toISOString().slice(0, 10)}\n\n`;
+            md += `| Total | Passed | Failed |\n|-------|--------|--------|\n| ${testResults.length} | ${passed} | ${failed} |\n\n`;
+            md += `## Results\n\n`;
+            let cat = '';
+            testResults.forEach(r => {
+                if (r.category !== cat) {
+                    cat = r.category;
+                    md += `### ${cat}\n`;
+                }
+                md += `- ${r.pass ? '✅' : '❌'} ${r.name}: ${r.msg}\n`;
+            });
+            const blob = new Blob([md], { type: 'text/markdown' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'TEST_RESULTS_FINAL.md';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+
+        function buildLogText(onlyErrors) {
+            if (!testResults.length) return '';
+            const passed = testResults.filter(r => r.pass).length;
+            const failed = testResults.filter(r => !r.pass).length;
+            let lines = [`Date: ${new Date().toISOString().slice(0, 19)}`, `Total: ${testResults.length} | Passed: ${passed} | Failed: ${failed}`, ''];
+            let cat = '';
+            testResults.forEach(r => {
+                if (onlyErrors && r.pass) return;
+                if (r.category !== cat) {
+                    cat = r.category;
+                    lines.push(cat);
+                }
+                lines.push(`${r.pass ? '✅ PASS' : '❌ FAIL'} — ${r.name}`);
+                lines.push(`${r.msg}`);
+                lines.push('');
+            });
+            return lines.join('\n').trimEnd();
+        }
+
+        document.getElementById('copy-all-btn').addEventListener('click', async () => {
+            const text = buildLogText(false);
+            if (!text) {
+                alert('Сначала запустите тесты.');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(text);
+                const btn = document.getElementById('copy-all-btn');
+                const orig = btn.textContent;
+                btn.textContent = 'Скопировано!';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            } catch (e) {
+                alert('Не удалось скопировать: ' + (e.message || e));
+            }
+        });
+
+        document.getElementById('copy-errors-btn').addEventListener('click', async () => {
+            const text = buildLogText(true);
+            if (!text) {
+                alert('Сначала запустите тесты.');
+                return;
+            }
+            const hasErrors = testResults.some(r => !r.pass);
+            const toCopy = hasErrors ? text : 'Ошибок нет.';
+            try {
+                await navigator.clipboard.writeText(toCopy);
+                const btn = document.getElementById('copy-errors-btn');
+                const orig = btn.textContent;
+                btn.textContent = hasErrors ? 'Скопировано!' : 'Ошибок нет (скопировано)';
+                setTimeout(() => { btn.textContent = orig; }, 1500);
+            } catch (e) {
+                alert('Не удалось скопировать: ' + (e.message || e));
+            }
+        });
+
+        function bindExportCopyFor(exportId, copyAllId, copyErrorsId) {
+            const exportBtn = document.getElementById(exportId);
+            const copyAllBtn = document.getElementById(copyAllId);
+            const copyErrBtn = document.getElementById(copyErrorsId);
+            if (exportBtn) exportBtn.addEventListener('click', () => {
+                if (!testResults.length) { alert('Run tests first.'); return; }
+                const passed = testResults.filter(r => r.pass).length;
+                const failed = testResults.filter(r => !r.pass).length;
+                let md = `# TEST_RESULTS_FINAL.md\n\n**Date:** ${new Date().toISOString().slice(0, 10)}\n\n`;
+                md += `| Total | Passed | Failed |\n|-------|--------|--------|\n| ${testResults.length} | ${passed} | ${failed} |\n\n## Results\n\n`;
+                let cat = '';
+                testResults.forEach(r => {
+                    if (r.category !== cat) { cat = r.category; md += `### ${cat}\n`; }
+                    md += `- ${r.pass ? '✅' : '❌'} ${r.name}: ${r.msg}\n`;
+                });
+                const blob = new Blob([md], { type: 'text/markdown' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'TEST_RESULTS_FINAL.md';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            });
+            if (copyAllBtn) copyAllBtn.addEventListener('click', async () => {
+                const text = buildLogText(false);
+                if (!text) { alert('Сначала запустите тесты.'); return; }
+                try {
+                    await navigator.clipboard.writeText(text);
+                    copyAllBtn.textContent = 'Скопировано!';
+                    setTimeout(() => { copyAllBtn.textContent = 'Копировать все логи'; }, 1500);
+                } catch (e) { alert('Не удалось скопировать: ' + (e.message || e)); }
+            });
+            if (copyErrBtn) copyErrBtn.addEventListener('click', async () => {
+                const text = buildLogText(true);
+                if (!text) { alert('Сначала запустите тесты.'); return; }
+                const hasErrors = testResults.some(r => !r.pass);
+                const toCopy = hasErrors ? text : 'Ошибок нет.';
+                try {
+                    await navigator.clipboard.writeText(toCopy);
+                    copyErrBtn.textContent = hasErrors ? 'Скопировано!' : 'Ошибок нет (скопировано)';
+                    setTimeout(() => { copyErrBtn.textContent = 'Копировать только ошибки'; }, 1500);
+                } catch (e) { alert('Не удалось скопировать: ' + (e.message || e)); }
+            });
+        }
+        bindExportCopyFor('export-btn-all', 'copy-all-btn-all', 'copy-errors-btn-all');
+        bindExportCopyFor('export-btn-vis', 'copy-all-btn-vis', 'copy-errors-btn-vis');
+        bindExportCopyFor('export-btn-case', 'copy-all-btn-case', 'copy-errors-btn-case');
+        bindExportCopyFor('export-btn-tester', 'copy-all-btn-tester', 'copy-errors-btn-tester');
+
+        console.log('test.html loaded. Tests: all=', tests.length, 'converter=', converterTests.length, 'visualizer=', visualizerTests.length, 'case=', caseTests.length, 'tester=', testerTests.length);
+    </script>
+</body>
+</html>

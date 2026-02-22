@@ -1,0 +1,864 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════
+ *                    LINKED BUILDER - STYLES
+ *                   Визуальный конструктор связанных триггеров
+ * ═══════════════════════════════════════════════════════════════════
+ */
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYOUT: Левая панель (конструктор) + Правая панель (параметры)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-builder-container {
+  display: flex;
+  gap: var(--spacing-l);
+  min-height: 300px;
+  padding: var(--spacing-m);
+}
+
+.linked-builder-workspace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.linked-builder-params {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WORKSPACE: Интерактивное поле с триггерами
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-builder-field {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-medium);
+  padding: var(--spacing-m);
+  min-height: 200px;
+  max-height: 500px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.linked-builder-field:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Строки с нумерацией */
+.linked-builder-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.linked-builder-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-s);
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.linked-builder-row:last-child {
+  border-bottom: none;
+}
+
+.linked-builder-row-number {
+  width: 28px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 6px;
+  user-select: none;
+  position: relative;
+}
+
+/* Вертикальная пунктирная линия справа от номеров */
+.linked-builder-row-content.has-multiple-rows {
+  border-left: 1px dashed var(--border-color-light);
+  margin-left: 4px;
+  padding-left: 12px;
+}
+
+.linked-builder-row-content {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  row-gap: 32px;
+  position: relative;
+}
+
+/* Маркер номера строки — вставляется JS в начало каждой визуальной строки */
+.linked-row-marker {
+  position: absolute;
+  left: -32px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Индикатор продолжения строки */
+.linked-row-continue {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.linked-row-continue svg {
+  flex-shrink: 0;
+}
+
+/* Пустое состояние */
+.linked-builder-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 150px;
+  color: var(--text-muted);
+  text-align: center;
+  gap: var(--spacing-s);
+}
+
+.linked-builder-empty-icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+.linked-builder-empty-text {
+  font-size: 14px;
+}
+
+.linked-builder-empty-hint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Кнопка добавления в пустом состоянии */
+.linked-add-trigger-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--spacing-m);
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-medium);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.linked-add-trigger-empty:hover {
+  border-color: var(--color-primary);
+  border-style: solid;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--color-primary);
+}
+
+.linked-add-trigger-empty:active {
+  transform: scale(0.98);
+}
+
+/* Подсказка под рабочей областью */
+.linked-workspace-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--spacing-xs) 0;
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHIP: Чип триггера
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  min-width: 60px;
+  vertical-align: middle;
+  align-self: center;
+}
+
+.linked-chip-main {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 60px;
+  position: relative;
+}
+
+.linked-chip-main:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
+}
+
+.linked-chip.selected .linked-chip-main {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.linked-chip-text {
+  white-space: nowrap;
+  min-width: 30px;
+}
+
+.linked-chip-text.empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.linked-chip-text[contenteditable="true"] {
+  outline: none;
+  background: var(--bg-input);
+  border-radius: 2px;
+  padding: 2px 4px;
+  min-width: 50px;
+  white-space: pre;
+  color: var(--text-primary);
+  font-style: normal;
+}
+
+.linked-chip-text.editing {
+  cursor: text;
+}
+
+.linked-chip-delete {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: var(--color-danger);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.linked-chip:hover .linked-chip-delete,
+.linked-chip.selected .linked-chip-delete {
+  display: flex;
+  opacity: 1;
+}
+
+.linked-chip-delete:hover {
+  background: var(--color-danger-dark);
+  transform: scale(1.1);
+}
+
+/* Бейджи параметров под чипом */
+.linked-chip-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+  min-height: 0;
+}
+
+.linked-chip-badges:empty {
+  display: none;
+}
+
+.linked-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color-light);
+}
+
+.linked-chip-badge-remove {
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 8px;
+}
+
+.linked-chip-badge-remove:hover {
+  opacity: 1;
+  color: var(--color-danger);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ADD TRIGGER BUTTON: Кнопка "+" в поле
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-add-trigger-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 4px;
+}
+
+.linked-add-trigger-inline:hover {
+  border-color: var(--color-primary);
+  border-style: solid;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--color-primary);
+}
+
+.linked-add-trigger-inline:active {
+  transform: scale(0.95);
+}
+
+.linked-add-trigger-inline svg {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DRAG & DROP: Стили перетаскивания
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Перетаскиваемый элемент */
+.linked-chip.dragging,
+.linked-group.dragging {
+  opacity: 0.4;
+  box-shadow: none !important;
+}
+
+/* Курсор при перетаскивании */
+.linked-chip[draggable="true"],
+.linked-group[draggable="true"] {
+  cursor: grab;
+}
+
+.linked-chip[draggable="true"]:active,
+.linked-group[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Цель сброса — общие стили */
+.linked-chip.drop-target,
+.linked-group.drop-target {
+  transition: all 0.1s ease;
+}
+
+/* Индикатор: вставить ДО элемента */
+.linked-chip.drop-before,
+.linked-group.drop-before {
+  box-shadow: -4px 0 0 0 var(--color-primary), 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+/* Индикатор: вставить ПОСЛЕ элемента */
+.linked-chip.drop-after,
+.linked-group.drop-after {
+  box-shadow: 4px 0 0 0 var(--color-primary), 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+/* Индикатор: вставить ВНУТРЬ группы */
+.linked-group.drop-inside {
+  background: rgba(99, 102, 241, 0.15) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONNECTOR: Соединитель между элементами
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-connector {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin: 0 2px;
+  align-self: center;
+}
+
+.linked-connector:hover {
+  border-color: var(--color-secondary);
+  background: var(--bg-hover);
+}
+
+.linked-connector.selected,
+.linked-connector.owner-selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.linked-connector-text {
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GROUP: Рамка группы
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 2px dashed rgba(99, 102, 241, 0.4);
+  border-radius: var(--radius-medium);
+  background: rgba(99, 102, 241, 0.02);
+  position: relative;
+  margin: 0;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+  align-self: center;
+}
+
+.linked-group:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.linked-group.selected {
+  border: 2px solid var(--color-primary);
+  background: rgba(99, 102, 241, 0.06);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Вложенные группы — разные цвета */
+.linked-group .linked-group {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.02);
+}
+
+.linked-group .linked-group:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+.linked-group .linked-group.selected {
+  border-color: var(--color-secondary);
+  background: rgba(139, 92, 246, 0.06);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.linked-group .linked-group .linked-group {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.02);
+}
+
+.linked-group .linked-group .linked-group.selected {
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.linked-group .linked-group .linked-group .linked-group {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.02);
+}
+
+.linked-group .linked-group .linked-group .linked-group.selected {
+  border-color: var(--color-warning);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+/* Кнопка удаления группы */
+.linked-group-delete {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: var(--color-danger);
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.linked-group:hover > .linked-group-delete,
+.linked-group.selected > .linked-group-delete {
+  display: flex;
+}
+
+.linked-group-delete:hover {
+  background: var(--color-danger-dark);
+  transform: scale(1.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PARAMS PANEL: Правая панель параметров
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-params-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-medium);
+  padding: var(--spacing-m);
+}
+
+.linked-params-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--spacing-s);
+}
+
+.linked-params-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.linked-params-grid-secondary {
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 6px;
+}
+
+.linked-params-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: var(--spacing-s);
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
+/* Кнопки параметров */
+.linked-param-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.linked-param-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
+}
+
+.linked-param-btn.active {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary);
+}
+
+.linked-param-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Кнопки соединителей — 5 в ряд */
+.linked-params-section:has(.linked-connector-btn) .linked-params-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.linked-connector-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 6px 4px;
+}
+
+/* Кнопки действий с группой — по умолчанию скрыты, показываются через JS */
+.linked-group-actions {
+  display: none;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* Действия с группами — две колонки */
+.linked-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.linked-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.linked-action-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
+}
+
+.linked-action-btn.danger {
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.linked-action-btn.danger:hover {
+  border-color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.linked-action-btn.duplicate {
+  color: var(--color-success);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.linked-action-btn.duplicate:hover {
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.linked-action-btn.invert {
+  color: var(--color-warning);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.linked-action-btn.invert:hover {
+  border-color: var(--color-warning);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+/* Кнопка Конвертировать */
+.linked-convert-section {
+  margin-top: auto;
+}
+
+.linked-convert-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-small);
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.linked-convert-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.linked-convert-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOOLBAR: Кнопки над полем
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-builder-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding-bottom: var(--spacing-s);
+  border-bottom: 1px solid var(--border-color-light);
+  flex-wrap: wrap;
+}
+
+.linked-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-small);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.linked-toolbar-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-hover);
+}
+
+.linked-toolbar-btn.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.linked-toolbar-btn.primary:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.linked-toolbar-btn.danger {
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.linked-toolbar-btn.danger:hover {
+  border-color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.linked-toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.linked-toolbar-separator {
+  width: 1px;
+  height: 28px;
+  background: var(--border-color);
+  margin: 0 var(--spacing-xs);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONTEXT MENU
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-medium);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: var(--spacing-xs);
+  min-width: 150px;
+}
+
+.linked-context-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-small);
+  transition: background 0.1s ease;
+}
+
+.linked-context-item:hover {
+  background: var(--bg-hover);
+}
+
+.linked-context-item.danger {
+  color: var(--color-danger);
+}
+
+.linked-context-item.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.linked-context-separator {
+  height: 1px;
+  background: var(--border-color-light);
+  margin: var(--spacing-xs) 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .linked-builder-container {
+    flex-direction: column;
+  }
+  
+  .linked-builder-params {
+    width: 100%;
+    order: -1;
+  }
+  
+  .linked-params-grid {
+    justify-content: flex-start;
+  }
+}

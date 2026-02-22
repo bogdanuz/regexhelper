@@ -1,0 +1,113 @@
+/**
+ * Восстановление глобальных стилей после подключения regexper-static.
+ * Подключать после assets/libs/regexper/regexper.css и regexper-overrides.css.
+ * Не трогаем конвертер — только переопределяем то, что regexper.css сбивает.
+ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
+  margin: 0;
+  padding: 0;
+  min-width: 1024px;
+  overflow-x: hidden;
+}
+
+/* Хедер сайта: regexper.css задаёт header { padding 1.5em, зелёный фон } — возвращаем наш вид */
+header.main-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  background: var(--color-header-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, var(--color-border-default), transparent) 1;
+  box-shadow: var(--shadow-medium);
+  padding: 0;
+}
+
+header.main-header .header-container {
+  height: 64px;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* Ссылки — не чёрные, как в regexper.css, а как в основном UI */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-primary);
+}
+
+/* #content в regexper.css даёт padding 1.5em — у нас только внутри визуализатора нужен блок */
+#visualizer #content.application {
+  padding: 0;
+  display: block;
+}
+
+/* Кнопки и поле ввода — в стиле сайта, не зелёные/бежевые из regexper.css */
+#visualizer #content .application textarea,
+#visualizer #content.application textarea {
+  background: var(--color-bg-input) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-default) !important;
+  border-radius: var(--radius-small);
+  font-family: 'Fira Code', monospace;
+  padding: 10px 12px;
+}
+
+#visualizer #content .application textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+#visualizer #content .application button.btn-primary,
+#visualizer #content.application button.btn-primary {
+  background: var(--color-primary) !important;
+  color: var(--color-bg-page) !important;
+  border: none !important;
+  border-radius: var(--radius-small);
+}
+
+#visualizer #content .application button.btn-primary:hover,
+#visualizer #content.application button.btn-primary:hover {
+  background: var(--color-primary-hover) !important;
+}
+
+#visualizer #content .application button.btn-secondary,
+#visualizer #content.application button.btn-secondary,
+#visualizer #content .application button.btn-icon,
+#visualizer #content.application button.btn-icon {
+  background: transparent !important;
+  color: var(--color-primary) !important;
+  border: 1px solid var(--color-primary) !important;
+  border-radius: var(--radius-small);
+}
+
+#visualizer #content .application button.btn-secondary:hover,
+#visualizer #content.application button.btn-secondary:hover,
+#visualizer #content .application button.btn-icon:hover,
+#visualizer #content.application button.btn-icon:hover {
+  background: rgba(var(--color-primary-rgb), 0.1) !important;
+}
+
+#visualizer #content .application button.btn-icon,
+#visualizer #content.application button.btn-icon {
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
+}
+

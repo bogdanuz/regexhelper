@@ -1,0 +1,135 @@
+/**
+ * Переопределение стилей regexper-static под палитру RegexHelper.
+ * Поле вывода диаграммы всегда белое; палитра диаграммы — светлая (читаемо на белом).
+ * Те же стили применяются к модалке (.visualizer-fullscreen-inner), куда клонируется диаграмма.
+ * Подключать после assets/libs/regexper/regexper.css.
+ */
+
+/* Ширина по содержимому, чтобы диаграмма центрировалась в окне (в regexper по умолчанию width: 100%) */
+#regexp-render {
+  width: fit-content;
+}
+/* При зуме снимаем max-width ограничение, чтобы диаграмма не обрезалась */
+#regexp-render.visualizer-diagram-inner--zoomed {
+  max-width: none;
+}
+
+/* Фон поля вывода диаграммы — белый (панель и модалка) */
+#regexp-render .svg,
+#regexp-render svg,
+.visualizer-fullscreen-inner .svg,
+.visualizer-fullscreen-inner svg {
+  background-color: #fff;
+}
+
+/* Линии и контуры (root path/circle) — контрастные на белом */
+#regexp-render .root path,
+.visualizer-fullscreen-inner .root path {
+  stroke: #374151;
+}
+#regexp-render .root circle,
+.visualizer-fullscreen-inner .root circle {
+  fill: #6b7280;
+  stroke: #374151;
+}
+
+/* Литералы — синий (primary), текст белый */
+#regexp-render .literal rect,
+.visualizer-fullscreen-inner .literal rect {
+  fill: #5B8DEF;
+}
+
+/* Escape / charset-escape — зелёный (success), текст белый */
+#regexp-render .escape rect,
+#regexp-render .charset-escape rect,
+.visualizer-fullscreen-inner .escape rect,
+.visualizer-fullscreen-inner .charset-escape rect {
+  fill: #34D399;
+}
+
+/* Anchor, any-character — контрастный серый фон и обводка */
+#regexp-render .anchor rect,
+#regexp-render .any-character rect,
+.visualizer-fullscreen-inner .anchor rect,
+.visualizer-fullscreen-inner .any-character rect {
+  fill: #d1d5db;
+  stroke: #9ca3af;
+  stroke-width: 1;
+}
+#regexp-render .anchor text,
+#regexp-render .any-character text,
+.visualizer-fullscreen-inner .anchor text,
+.visualizer-fullscreen-inner .any-character text {
+  fill: #1a1a1a;
+}
+
+/* Текст в литералах и escape — белый на цветном фоне */
+#regexp-render .escape text,
+#regexp-render .charset-escape text,
+#regexp-render .literal text,
+.visualizer-fullscreen-inner .escape text,
+.visualizer-fullscreen-inner .charset-escape text,
+.visualizer-fullscreen-inner .literal text {
+  fill: #fff;
+}
+
+/* Character set box — заметный на белом */
+#regexp-render .charset .charset-box,
+.visualizer-fullscreen-inner .charset .charset-box {
+  fill: #e5e7eb;
+  stroke: #9ca3af;
+  stroke-width: 1;
+}
+
+/* Subexpression box — пунктирная рамка группы, контрастная */
+#regexp-render .subexp .subexp-box,
+.visualizer-fullscreen-inner .subexp .subexp-box {
+  fill: none;
+  stroke: #4b5563;
+  stroke-width: 1.5;
+  stroke-dasharray: 8 4;
+}
+
+/* Quote (кавычки) — контрастный серый текст */
+#regexp-render .quote,
+.visualizer-fullscreen-inner .quote {
+  fill: #4b5563;
+}
+
+/* Repeat (квантификаторы *, +, ? и т.д.) — контрастный блок с обводкой */
+#regexp-render .repeat rect,
+.visualizer-fullscreen-inner .repeat rect {
+  fill: #d1d5db;
+  stroke: #9ca3af;
+  stroke-width: 1;
+}
+#regexp-render .repeat text,
+.visualizer-fullscreen-inner .repeat text {
+  fill: #1a1a1a;
+}
+
+/* Обводка линий диаграммы; заливка отключена, чтобы не было сплошного чёрного у скобок ветвления */
+#regexp-render path,
+.visualizer-fullscreen-inner path {
+  fill: none;
+  stroke: #374151;
+}
+#regexp-render .literal rect,
+#regexp-render .escape rect,
+#regexp-render .charset-escape rect,
+.visualizer-fullscreen-inner .literal rect,
+.visualizer-fullscreen-inner .escape rect,
+.visualizer-fullscreen-inner .charset-escape rect {
+  stroke: #94a3b8;
+  stroke-width: 1;
+}
+
+/* Текст по умолчанию в диаграмме (подписи, метки) — тёмный на белом */
+#regexp-render text,
+.visualizer-fullscreen-inner text {
+  fill: #1a1a1a;
+}
+#regexp-render .quote text,
+.visualizer-fullscreen-inner .quote text {
+  fill: #4b5563;
+}

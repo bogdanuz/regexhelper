@@ -1,0 +1,17 @@
+{
+  "name": "regexhelper",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/run-tests.mjs",
+    "test:browser": "node tests/run-tests.mjs --browser",
+    "test:browser:converter": "node tests/run-tests.mjs --browser-converter",
+    "test:browser:visualizer": "node tests/run-tests.mjs --browser-visualizer",
+    "test:browser:case": "node tests/run-tests.mjs --browser-case",
+    "test:browser:tester": "node tests/run-tests.mjs --browser-tester"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

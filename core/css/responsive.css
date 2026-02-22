@@ -1,0 +1,167 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER - RESPONSIVE.CSS
+   Адаптивность: 3 breakpoints (1920px, 1280px, 1024px)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   OPTIMAL: 1920px+ (большие экраны)
+   ───────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1920px) {
+    .history-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   STANDARD: 1280px-1919px (средние экраны)
+   ───────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1280px) and (max-width: 1919px) {
+    .history-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .converter-main {
+        max-width: 95%;
+        margin: 0 auto;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   COMPACT: <1280px — groups scroll vertically
+   ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1279px) {
+    .groups-container {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 50vh;
+    }
+    
+    .group {
+        min-width: unset;
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .converter-bottom {
+        flex-direction: column;
+    }
+    
+    .simple-triggers-panel {
+        flex: 0 0 auto;
+        min-height: 200px;
+    }
+    
+    .output-panel {
+        flex: 0 0 auto;
+        min-height: 200px;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   WARNING: 1024px-1279px (минимальная ширина)
+   ───────────────────────────────────────────────────────────────── */
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+    body {
+        width: 100%;
+        font-size: 13px;
+    }
+    
+    .converter-main {
+        padding: 68px 16px 16px 16px;
+        width: 100%;
+    }
+    
+    .history-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-container {
+        padding: 0 24px;
+    }
+    
+    .panel {
+        font-size: 13px;
+    }
+    
+    .panel-header {
+        padding: 12px 16px;
+    }
+    
+    .panel-body {
+        padding: 12px 16px;
+    }
+    
+    .modal-extra-large {
+        max-width: calc(100vw - 40px);
+        width: calc(100vw - 40px);
+        max-height: calc(100vh - 40px);
+        height: calc(100vh - 40px);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   NOT SUPPORTED: < 1024px (блокировка)
+   ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+    #converter-section main {
+        pointer-events: none;
+        opacity: 0.3;
+        filter: blur(4px);
+    }
+    
+    /* Оверлей с сообщением */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 9999;
+    }
+    
+    body::before {
+        content: 'Для полного функционала используйте десктопную версию';
+        white-space: normal;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--color-bg-card);
+        border: 2px solid var(--color-border-default);
+        border-radius: var(--radius-large);
+        padding: 32px 48px;
+        z-index: 10000;
+        max-width: 90%;
+        text-align: center;
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--color-text-primary);
+        box-shadow: var(--shadow-large);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   FONT SIZE АДАПТАЦИЯ
+   ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1279px) {
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; }
+    
+    .btn-primary,
+    .btn-secondary {
+        font-size: 13px;
+        height: 36px;
+        padding: 0 20px;
+    }
+}

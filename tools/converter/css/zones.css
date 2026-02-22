@@ -1,0 +1,24 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER - LIMITS ZONES
+   Green 1-10 groups / 1-20 triggers; Yellow 11-15 (warn); Red >15 />30 block
+   ═══════════════════════════════════════════════════════════════════ */
+
+.linked-triggers-panel.zone-green .groups-container {
+    border-color: rgba(52, 211, 153, 0.25);
+}
+.linked-triggers-panel.zone-yellow .groups-container {
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.2);
+}
+.linked-triggers-panel.zone-red .groups-container {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+}
+
+.limit-indicator {
+    font-size: 12px;
+    margin-left: 8px;
+}
+.limit-indicator.zone-green { color: var(--color-success, #34D399); }
+.limit-indicator.zone-yellow { color: #FBBF24; }
+.limit-indicator.zone-red { color: var(--color-error, #EF4444); }

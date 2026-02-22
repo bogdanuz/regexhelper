@@ -1,0 +1,722 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER - COMMON.CSS
+   Общие стили, дизайн-система, reset, typography, buttons
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   CSS VARIABLES (Дизайн-система)
+   ───────────────────────────────────────────────────────────────── */
+
+:root {
+    /* Цвета: Primary — пастельный синий (тёмная тема по умолчанию) */
+    --color-primary: #5B8DEF;
+    --color-primary-hover: #4A7CE0;
+    --color-primary-active: #3A6BD1;
+    --color-primary-rgb: 91, 141, 239;
+
+    /* Цвета: Background — тёмная тема по умолчанию */
+    --color-bg-page: #13151C;
+    --color-bg-panel: #1E2230;
+    --color-bg-card: #252838;
+    --color-bg-input: #1E2130;
+    --color-bg-elevated: #2D3145;
+
+    /* Цвета: Text — тёмная тема по умолчанию */
+    --color-text-primary: #E8ECF4;
+    --color-text-secondary: #A8B0C2;
+    --color-text-tertiary: #7A8296;
+
+    /* Цвета: Borders — тёмная тема по умолчанию */
+    --color-border-default: #323750;
+    --color-border-hover: #4A5068;
+    --color-border-active: #5B8DEF;
+    --color-border-subtle: #2A2E40;
+
+    /* Цвета: Status */
+    --color-success: #34D399;
+    --color-warning: #FBBF24;
+    --color-error: #EF4444;
+    --color-info: #A78BFA;
+    
+    /* Цвета: Дополнительные (для конструктора и т.п.) */
+    --color-secondary: #8B5CF6;
+    --color-danger: #EF4444;
+    --color-danger-dark: #DC2626;
+    --color-primary-dark: #4A7CE0;
+
+    /* Цвета: Badge параметров */
+    --color-badge-latin: #60A5FA;
+    --color-badge-declensions: #34D399;
+    --color-badge-root: #FB923C;
+    --color-badge-optional: #FBBF24;
+    --color-badge-prefix: #A78BFA;
+
+    /* Header / overlays */
+    --color-header-bg: rgba(26, 29, 39, 0.88);
+    --overlay-modal-bg: rgba(0, 0, 0, 0.6);
+
+    /* Spacing (8px base) */
+    --spacing-xs: 4px;
+    --spacing-s: 8px;
+    --spacing-m: 16px;
+    --spacing-l: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+
+    /* Border Radius */
+    --radius-small: 4px;
+    --radius-medium: 8px;
+    --radius-large: 12px;
+
+    /* Shadows — тёмная тема по умолчанию */
+    --shadow-small: 0 2px 6px rgba(0, 0, 0, 0.15);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --shadow-glow: 0 0 20px rgba(91, 141, 239, 0.08);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+
+    /* Z-index layers — чёткий порядок слоёв */
+    --z-header: 100;
+    --z-dropdown: 200;
+    --z-popup: 500;
+    --z-modal: 1000;
+    --z-modal-confirm: 1500;
+    --z-toast: 2000;
+    --z-dropdown-top: 9990;
+    
+    /* Алиасы для компонентов */
+    --bg-primary: var(--color-bg-panel);
+    --bg-secondary: var(--color-bg-card);
+    --bg-tertiary: var(--color-bg-elevated);
+    --bg-hover: var(--color-bg-elevated);
+    --bg-input: var(--color-bg-input);
+    --text-primary: var(--color-text-primary);
+    --text-secondary: var(--color-text-secondary);
+    --text-muted: var(--color-text-tertiary);
+    --border-color: var(--color-border-default);
+    --border-color-light: var(--color-border-subtle);
+    --font-mono: 'Fira Code', monospace;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   RESET СТИЛИ
+   ───────────────────────────────────────────────────────────────── */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    background: var(--color-bg-page);
+    margin: 0;
+    padding: 0;
+    min-width: 1024px;
+    overflow-x: hidden; /* Убираем горизонтальный скролл */
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TYPOGRAPHY
+   ───────────────────────────────────────────────────────────────── */
+
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text-primary);
+}
+
+h2 {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text-primary);
+}
+
+h3 {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+}
+
+h4 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+}
+
+p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+}
+
+code, pre {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BUTTONS (Кнопки)
+   ───────────────────────────────────────────────────────────────── */
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all var(--transition-normal);
+}
+
+/* Primary Button */
+.btn-primary {
+    background: var(--color-primary);
+    color: var(--color-bg-page);
+    height: 40px;
+    padding: 0 24px;
+    border-radius: var(--radius-small);
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-small);
+}
+
+.btn-primary:active {
+    background: var(--color-primary-active);
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    background: var(--color-border-default);
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    height: 40px;
+    padding: 0 24px;
+    border-radius: var(--radius-small);
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-secondary:hover {
+    background: rgba(var(--color-primary-rgb), 0.1);
+    transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+    background: rgba(var(--color-primary-rgb), 0.2);
+    transform: translateY(0);
+}
+
+/* Icon Button (min 44px touch target for accessibility) */
+.btn-icon {
+    background: transparent;
+    color: var(--color-text-secondary);
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-small);
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+}
+
+.btn-icon:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Danger Button */
+.btn-danger {
+    background: var(--color-error);
+    color: var(--color-text-primary);
+}
+
+.btn-danger:hover {
+    background: #E03333;
+}
+
+.btn-danger:active {
+    background: #CC2222;
+}
+
+.btn-secondary.btn-danger {
+    background: transparent;
+    color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.btn-secondary.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Ghost Button (subtle, danger on hover) */
+.btn-ghost {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid transparent;
+    height: 40px;
+    padding: 0 24px;
+    border-radius: var(--radius-small);
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-ghost:hover {
+    color: var(--color-error);
+    border-color: var(--color-error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-ghost:active {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Small Button */
+.btn-small,
+.btn-sm {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 13px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   INPUTS & TEXTAREAS
+   ───────────────────────────────────────────────────────────────── */
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border-default);
+    color: var(--color-text-primary);
+    padding: 10px 12px;
+    border-radius: var(--radius-small);
+    font-size: 14px;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+    width: 100%;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--color-border-active);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Keyboard focus visible (accessibility) */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.4);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: 'Fira Code', monospace;
+    line-height: 1.6;
+}
+
+input[type="number"] {
+    width: 80px;
+}
+
+/* Select Dropdown */
+select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A0AEC0' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ОБЩИЕ КЛАССЫ
+   ───────────────────────────────────────────────────────────────── */
+
+/* Hint текст */
+.hint,
+.panel-hint {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+/* Error текст */
+.error-text {
+    color: var(--color-error);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* Success текст */
+.success-text {
+    color: var(--color-success);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* Disabled состояние */
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* Скрытие элементов */
+.hidden {
+    display: none !important;
+}
+
+/* Loading спиннер (для будущего) */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Inline SVG icons alignment */
+.btn-primary svg,
+.btn-secondary svg,
+.btn-ghost svg,
+.btn-icon svg,
+.btn-sm svg,
+.panel-title svg,
+.panel-title-compact svg,
+.history-title svg,
+.modal-title svg,
+.drop-zone-header svg {
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Drag handle */
+.drag-handle {
+    color: var(--color-text-tertiary);
+    cursor: move;
+    user-select: none;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.drag-handle:hover {
+    color: var(--color-text-secondary);
+}
+
+/* Dragging state */
+.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DROPDOWN MENU
+   ───────────────────────────────────────────────────────────────── */
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    min-width: 180px;
+    z-index: 9990;
+}
+
+.dropdown.open .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    background: transparent;
+    color: var(--color-text-primary);
+    border: none;
+    padding: 10px 16px;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.dropdown-item:hover {
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.dropdown-item:active {
+    background: rgba(var(--color-primary-rgb), 0.2);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TOAST NOTIFICATIONS (контейнер)
+   ───────────────────────────────────────────────────────────────── */
+
+#toast-container {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
+.toast {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    padding: 16px;
+    box-shadow: var(--shadow-large);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.toast-message {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.toast.success {
+    border-left: 4px solid var(--color-success);
+}
+
+.toast.error {
+    border-left: 4px solid var(--color-error);
+}
+
+.toast.warning {
+    border-left: 4px solid var(--color-warning);
+}
+
+.toast.info {
+    border-left: 4px solid var(--color-info);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   NOTIFICATIONS (используется notifications.js)
+   ───────────────────────────────────────────────────────────────── */
+
+.notifications-container {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: var(--z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
+
+.notification {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    padding: 16px;
+    box-shadow: var(--shadow-large);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.hide {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+.notification-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.notification-message {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.notification-close {
+    background: transparent;
+    border: none;
+    color: var(--color-text-tertiary);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    min-width: auto;
+    min-height: auto;
+    width: auto;
+    height: auto;
+}
+
+.notification-close:hover {
+    color: var(--color-text-primary);
+}
+
+.notification-success { border-left: 4px solid var(--color-success); }
+.notification-error { border-left: 4px solid var(--color-error); }
+.notification-warning { border-left: 4px solid var(--color-warning); }
+.notification-info { border-left: 4px solid var(--color-info); }
+
+/* ─────────────────────────────────────────────────────────────────
+   SCROLLBAR (custom)
+   ───────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg-page);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border-default);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-hover);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   UTILITY CLASSES
+   ───────────────────────────────────────────────────────────────── */
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-primary { color: var(--color-primary); }
+.text-success { color: var(--color-success); }
+.text-error { color: var(--color-error); }
+.text-warning { color: var(--color-warning); }
+
+.mt-s { margin-top: var(--spacing-s); }
+.mt-m { margin-top: var(--spacing-m); }
+.mt-l { margin-top: var(--spacing-l); }
+
+.mb-s { margin-bottom: var(--spacing-s); }
+.mb-m { margin-bottom: var(--spacing-m); }
+.mb-l { margin-bottom: var(--spacing-l); }
+
+.gap-s { gap: var(--spacing-s); }
+.gap-m { gap: var(--spacing-m); }
+.gap-l { gap: var(--spacing-l); }
+
+/* ─────────────────────────────────────────────────────────────────
+   PAGE WRAPPER (фикс растягивания на 100%)
+   ───────────────────────────────────────────────────────────────── */
+
+.page-wrapper {
+    width: 100%;
+    min-width: 1024px;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
