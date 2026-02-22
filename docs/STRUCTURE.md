@@ -35,7 +35,7 @@ regexhelper/
 │   │   └── WIKI.js
 │   └── ui/
 │       ├── notifications.js
-│       └── feedback.js     # Форма обратной связи (Cloudflare Worker + Telegram)
+│       └── feedback.js     # Форма обратной связи (Supabase Edge Function + Telegram)
 │
 ├── tools/
 │   ├── converter/          # Приложение конвертера

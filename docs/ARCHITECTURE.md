@@ -63,8 +63,8 @@
 Модуль `shared/ui/feedback.js` реализует форму обратной связи для пользователей:
 - Кнопка «Фидбек» в хедере открывает модальное окно
 - Типы сообщений: баг, предложение, вопрос, другое
-- Отправка через Cloudflare Worker → Telegram
+- Отправка через Supabase Edge Function → Telegram
 - Honeypot-защита от спама
-- CORS ограничен доменом `bogdanuz.github.io`
+- Публичный endpoint без авторизации (--no-verify-jwt)
 
 Граф зависимостей: **docs/DEPENDENCY_MAP.md**. Принципы разработки: **docs/PROJECT_PRINCIPLES.md**.

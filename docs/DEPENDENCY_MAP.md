@@ -171,7 +171,7 @@ main.js
 
 - **main.js** → `initFeedback` из **shared/ui/feedback.js**
 - Кнопка «Фидбек» в хедере → модальное окно `#feedback-modal-overlay`
-- Отправка на Cloudflare Worker: `https://regexhelper-feedback.bogdandugalev.workers.dev`
+- Отправка на Supabase Edge Function: `https://teuatabseokbnjlxkahn.supabase.co/functions/v1/feedback`
 - **Стили:** tools/converter/css/modals.css (секция FEEDBACK MODAL)
 
 ---
