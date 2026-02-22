@@ -1,2 +1,11 @@
 node_modules/
 .env
+
+# IDE
+.vscode/
+
+# Supabase (Edge Function deployed to Supabase, local files not needed in repo)
+supabase/
+
+# Local reference files
+docs/USER_REGEX_EXAMPLES_REFERENCE.md

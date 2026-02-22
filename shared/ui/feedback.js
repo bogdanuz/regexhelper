@@ -1,11 +1,11 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
  *                    REGEXHELPER - FEEDBACK
- *                   Модуль обратной связи (Cloudflare Worker + Telegram)
+ *                   Модуль обратной связи (Supabase Edge Function + Telegram)
  * ═══════════════════════════════════════════════════════════════════
  * 
  * @file shared/ui/feedback.js
- * @description Форма обратной связи с отправкой на Cloudflare Worker
+ * @description Форма обратной связи с отправкой через Supabase Edge Function
  */
 
 import { showSuccess, showError } from './notifications.js';
@@ -14,7 +14,7 @@ import { showSuccess, showError } from './notifications.js';
 // КОНФИГУРАЦИЯ
 // ═══════════════════════════════════════════════════════════════════
 
-const WORKER_URL = 'https://regexhelper-feedback.bogdandugalev.workers.dev';
+const FEEDBACK_URL = 'https://teuatabseokbnjlxkahn.supabase.co/functions/v1/feedback';
 
 // ═══════════════════════════════════════════════════════════════════
 // DOM ЭЛЕМЕНТЫ
@@ -163,7 +163,7 @@ async function handleSubmit(e) {
   setLoading(true);
 
   try {
-    const response = await fetch(WORKER_URL, {
+    const response = await fetch(FEEDBACK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
