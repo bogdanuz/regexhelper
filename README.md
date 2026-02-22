@@ -96,9 +96,9 @@
 
 Проверяет регулярное выражение на тестовом тексте в реальном времени. Совпадения подсвечиваются. Поддерживает флаги: global, multiline, case-insensitive и другие.
 
-### Регистр
+### Текстовый помощник
 
-Конвертер регистра текста: ВЕРХНИЙ, нижний, Каждое Слово С Заглавной, иНВЕРТИРОВАННЫЙ.
+Набор утилит для работы с текстом: столбец ↔ строка, удаление дубликатов и пустых строк, добавление обёртки (префикс/суффикс), удаление пробелов, изменение регистра (ВЕРХНИЙ, нижний, Каждое Слово, иНВЕРТИРОВАННЫЙ).
 
 ### История
 
@@ -128,11 +128,11 @@ npx serve .
 
 ```bash
 npm install           # Установка зависимостей (Playwright)
-npm run test          # Node тесты (237 тестов)
-npm run test:browser  # Браузерные тесты (240+ тестов)
+npm run test          # Node тесты (250+ тестов)
+npm run test:browser  # Браузерные тесты (255+ тестов)
 ```
 
-Общее покрытие: **477+ тестов**.
+Общее покрытие: **500+ тестов**.
 
 ---
 
@@ -148,7 +148,7 @@ regexhelper/
 │   ├── converter/          # Конвертер триггеров
 │   ├── visualizer/         # Визуализатор regex
 │   ├── tester/             # Тестер regex
-│   └── case/               # Регистр текста
+│   └── texthelper/         # Текстовый помощник
 ├── assets/                 # Библиотеки, изображения
 ├── tests/                  # Тесты (Node + браузер)
 └── docs/                   # Документация
@@ -162,8 +162,8 @@ regexhelper/
 - CSS Custom Properties
 - Web Workers
 - LocalStorage
-- [RussianNounsJS](https://github.com/nicklassundin/russian-nouns) — склонение существительных
-- [Regexper](https://regexper.com/) — визуализация regex
+- [RussianNounsJS](https://github.com/georgy7/RussianNounsJS) — склонение существительных
+- [Regexper](https://gitlab.com/javallone/regexper-static) — визуализация regex
 
 ---
 

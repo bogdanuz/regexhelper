@@ -5,8 +5,8 @@
 
 import { initApp } from './tools/converter/app.js';
 import { initVisualizer } from './tools/visualizer/app.js';
-import { initCase } from './tools/case/app.js';
 import { initTester } from './tools/tester/app.js';
+import { initTexthelper } from './tools/texthelper/app.js';
 import { initFeedback } from './shared/ui/feedback.js';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализация приложения
     initApp();
     initVisualizer();
-    initCase();
     initTester();
+    initTexthelper();
     initFeedback();
   } catch (error) {
     console.error('❌ Ошибка инициализации приложения:', error);

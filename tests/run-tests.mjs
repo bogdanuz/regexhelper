@@ -22,7 +22,7 @@ const NODE_TESTS = [
   'tests/p0-logic-test.mjs',
   'tests/converter-reference-test.mjs',
   'tests/visualizer-test.mjs',
-  'tests/case-test.mjs',
+  'tests/texthelper-test.mjs',
   'tests/tester-test.mjs'
 ];
 

@@ -9,14 +9,14 @@
 ```
 regexhelper/
 ├── index.html              # Страница приложения
-├── main.js                 # Точка входа (ES-модуль): импорт converter + visualizer + case + tester
+├── main.js                 # Точка входа (ES-модуль): импорт converter + visualizer + tester + texthelper
 ├── tests/                  # Все тесты: Node (.mjs) и браузер (test.html)
 │   ├── run-tests.mjs       # Единый запуск: node tests/run-tests.mjs (Node и/или --browser)
 │   ├── test.html           # Страница браузерных тестов (пять вкладок, 235+ тестов)
 │   ├── p0-logic-test.mjs   # Node тесты логики (137 тестов)
 │   ├── converter-reference-test.mjs
 │   ├── visualizer-test.mjs
-│   ├── case-test.mjs
+│   ├── texthelper-test.mjs # Node тесты Текстового помощника (60 тестов)
 │   └── tester-test.mjs
 │
 ├── core/                   # Ядро: конфиг, иконки, общие стили
@@ -80,17 +80,17 @@ regexhelper/
 │   │   ├── app.js
 │   │   ├── css/            # visualizer.css, regexper-overrides.css, regexper-reset.css
 │   │   └── scripts/        # fetch-regexper-static.ps1
-│   ├── case/               # Регистр — конвертер регистра текста
+│   ├── tester/             # Тестер — проверка regex на тестовой строке
 │   │   ├── app.js
-│   │   ├── logic/          # caseConverter.js
-│   │   ├── ui/             # caseUI.js
-│   │   └── css/            # case.css
-│   └── tester/             # Тестер — проверка regex на тестовой строке
+│   │   ├── logic/          # patternPreprocess.js, flagsBuilder.js, matchRunner.js
+│   │   ├── worker/         # matchWorker.js (Web Worker)
+│   │   ├── ui/             # testerUI.js
+│   │   └── css/            # tester.css
+│   └── texthelper/         # Текстовый помощник — утилиты для работы с текстом (включает смену регистра)
 │       ├── app.js
-│       ├── logic/          # patternPreprocess.js, flagsBuilder.js, matchRunner.js
-│       ├── worker/         # matchWorker.js (Web Worker)
-│       ├── ui/             # testerUI.js
-│       └── css/            # tester.css
+│       ├── logic/          # columnToRow.js, rowToColumn.js, removeDuplicates.js, removeEmpty.js, prefixSuffix.js, trim.js, stats.js, changeCase.js
+│       ├── ui/             # texthelperUI.js
+│       └── css/            # texthelper.css
 │
 ├── assets/
 │   ├── libs/               # russian-nouns.min.js, regexper/ (regexper.js, regexper.css)
@@ -105,7 +105,7 @@ regexhelper/
     ├── LINKED_TRIGGERS_REDESIGN_PLAN.md
     ├── converter/          # Документы конвертера
     ├── visualizer/         # Документы визуализатора
-    ├── case/               # Документы Регистр
+    ├── texthelper/         # Документы Текстового помощника
     └── tester/             # Документы Тестер
 ```
 
@@ -117,7 +117,7 @@ regexhelper/
 
 1. Браузер открывает **index.html**.
 2. **index.html** подключает стили и скрипты.
-3. **main.js** импортирует и вызывает `initApp`, `initVisualizer`, `initCase`, `initTester`, `initFeedback`.
+3. **main.js** импортирует и вызывает `initApp`, `initVisualizer`, `initTester`, `initTexthelper`, `initFeedback`.
 4. Каждый инструмент инициализируется независимо.
 
 ### Импорты (правила путей)
@@ -134,7 +134,7 @@ regexhelper/
 - **tests/run-tests.mjs** — единый скрипт запуска
 - **tests/p0-logic-test.mjs** — тесты логики конвертера (137 тестов)
 - **tests/converter-reference-test.mjs** — референсные тесты
-- **tests/visualizer-test.mjs**, **tests/case-test.mjs**, **tests/tester-test.mjs** — тесты инструментов
+- **tests/visualizer-test.mjs**, **tests/texthelper-test.mjs**, **tests/tester-test.mjs** — тесты инструментов
 
 ---
 
@@ -142,7 +142,7 @@ regexhelper/
 
 **С чего начать:** STRUCTURE.md (этот файл), PROJECT_PRINCIPLES.md, DEPENDENCY_MAP.md.
 
-**По инструментам:** docs/converter/, docs/visualizer/, docs/case/, docs/tester/.
+**По инструментам:** docs/converter/, docs/visualizer/, docs/tester/.
 
 **Эталон примеров regex:** USER_REGEX_EXAMPLES_REFERENCE.md.
 
@@ -159,6 +159,7 @@ regexhelper/
 - `tools/converter/converters/prefix.js`
 - `archive/` (вся папка)
 - `temp/` (вся папка)
+- `tools/case/` (вся папка) — функционал перенесён в texthelper
 
 ---
 

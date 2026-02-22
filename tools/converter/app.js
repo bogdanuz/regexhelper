@@ -15,7 +15,6 @@ import { initLayout } from './ui/layoutManager.js';
 import { updateBadges } from './ui/badges.js';
 import { showSuccess, showError, showInfo } from '../../shared/ui/notifications.js';
 import { resetVisualizerPanel } from '../visualizer/app.js';
-import { resetCasePanel } from '../case/app.js';
 import { resetTesterPanel } from '../tester/app.js';
 import { RESET_MODAL } from './resetModalConfig.js';
 import { createWildcardPopup, createDeclensionsPopup, createOptionalCharsPopup, removeAllPopups } from './ui/inlinePopup.js';
@@ -972,9 +971,6 @@ function resetAll() {
 
       // Сброс панели визуализатора (поле, диаграмма, hash)
       resetVisualizerPanel();
-
-      // Сброс панели «Регистр»
-      resetCasePanel();
 
       // Сброс панели «Тестер»
       resetTesterPanel();

@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="tools/visualizer/css/regexper-overrides.css">
     <!-- Восстановление глобальных стилей после reset внутри regexper.css -->
     <link rel="stylesheet" href="tools/visualizer/css/regexper-reset.css">
-    <link rel="stylesheet" href="tools/case/css/case.css">
+    <link rel="stylesheet" href="tools/texthelper/css/texthelper.css">
     <link rel="stylesheet" href="tools/tester/css/tester.css">
 </head>
 <body>
@@ -53,7 +53,7 @@
                 <a href="#visualizer" class="nav-link">Визуализатор</a>
                 <a href="#tester" class="nav-link">Тестер</a>
                 <a href="#history-section" class="nav-link">История</a>
-                <button type="button" class="nav-link nav-link-button" id="nav-register-btn" title="Открыть инструмент «Регистр»">Регистр</button>
+                <button type="button" class="nav-link nav-link-button" id="texthelper-btn" title="Открыть «Текстовый помощник»">Текстовый помощник</button>
             </nav>
 
             <!-- Кнопки действий -->
@@ -521,51 +521,75 @@
         </div>
     </div>
 
-    <!-- Модальное окно: Регистр (конвертер регистра) -->
-    <div class="modal-overlay" id="case-modal-overlay" aria-hidden="true">
-        <div class="modal modal-large modal-case" id="case-modal" role="dialog" aria-modal="true" aria-labelledby="case-modal-title">
-            <div class="modal-header case-modal-header">
-                <div class="case-modal-header-text">
-                    <h3 class="modal-title" id="case-modal-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg> Регистр</h3>
-                    <p class="case-modal-hint">Измените регистр текста: введите или вставьте текст, выберите вариант — результат обновится сразу. Поддерживаются кириллица и латиница.</p>
-                </div>
-                <button type="button" class="btn-icon btn-close-modal" id="case-modal-close" title="Закрыть" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <!-- Модальное окно: Текстовый помощник -->
+    <div class="modal-overlay" id="texthelper-modal-overlay" aria-hidden="true">
+        <div class="modal modal-texthelper" id="texthelper-modal" role="dialog" aria-modal="true" aria-labelledby="texthelper-modal-title">
+            <div class="modal-header">
+                <h3 class="modal-title" id="texthelper-modal-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    Текстовый помощник
+                </h3>
+                <button type="button" class="btn-icon btn-close-modal" id="texthelper-modal-close" title="Закрыть" aria-label="Закрыть">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
-            <div class="modal-body modal-body-case">
-                <div class="case-input-row">
-                    <label class="case-label" for="case-input">Исходный текст</label>
-                    <div class="case-input-wrap">
-                        <textarea id="case-input" class="case-textarea case-input-textarea" placeholder="Введите или вставьте текст для смены регистра" rows="4"></textarea>
-                        <div class="case-input-actions">
-                            <button type="button" class="btn-secondary" id="case-paste-btn" title="Вставить из буфера (заменит текущий текст)">Вставить</button>
-                            <button type="button" class="btn-secondary btn-danger" id="case-clear-btn" title="Очистить поле ввода">Очистить</button>
-                        </div>
+            <div class="modal-body texthelper-content">
+                <!-- Верхняя панель: инструменты + настройки -->
+                <div class="texthelper-top-panel">
+                    <div class="texthelper-tools">
+                        <div class="texthelper-tools-title">Инструменты</div>
+                        <div class="texthelper-tools-list" id="texthelper-tools-list"></div>
+                    </div>
+                    <div class="texthelper-settings">
+                        <div class="texthelper-settings-title">Настройки</div>
+                        <div class="texthelper-settings-content" id="texthelper-settings"></div>
                     </div>
                 </div>
-                <p class="case-counter" id="case-counter" aria-live="polite">0 без пробелов, 0 с пробелами</p>
-                <div class="case-buttons" id="case-buttons" role="group" aria-label="Режим регистра">
-                    <button type="button" class="btn-case" data-mode="upper" title="Верхний регистр">ВЕРХНИЙ РЕГИСТР</button>
-                    <button type="button" class="btn-case" data-mode="lower" title="Нижний регистр">нижний регистр</button>
-                    <button type="button" class="btn-case" data-mode="title" title="Каждое слово с заглавной">Каждое Слово С Заглавной</button>
-                    <button type="button" class="btn-case" data-mode="sentence" title="Первое слово с заглавной">Первое слово с заглавной</button>
-                    <button type="button" class="btn-case" data-mode="inverted" title="Инвертированный регистр">иНВЕРТИРОВАННЫЙ</button>
-                </div>
-                <div class="case-output-row">
-                    <label class="case-label" for="case-output">Результат</label>
-                    <div class="case-output-wrap">
-                        <textarea id="case-output" class="case-textarea case-output-textarea" placeholder="Результат появится здесь" rows="4"></textarea>
-                        <div class="case-output-actions">
-                            <button type="button" class="btn-secondary btn-copy" id="case-copy-btn" title="Скопировать результат в буфер обмена">Копировать</button>
+
+                <!-- Рабочая область: ввод + вывод -->
+                <div class="texthelper-workspace">
+                    <div class="texthelper-field-wrap">
+                        <div class="texthelper-field-header">
+                            <span class="texthelper-field-title">Ввод</span>
+                            <button type="button" class="texthelper-field-btn" id="texthelper-paste-btn">Вставить</button>
                         </div>
+                        <textarea class="texthelper-textarea" id="texthelper-input" placeholder="Введите или вставьте текст..."></textarea>
+                    </div>
+
+                    <div class="texthelper-swap-wrap">
+                        <button type="button" class="texthelper-swap-btn" id="texthelper-swap-btn" title="Поменять местами">↔</button>
+                    </div>
+
+                    <div class="texthelper-field-wrap">
+                        <div class="texthelper-field-header">
+                            <span class="texthelper-field-title">Результат</span>
+                            <button type="button" class="texthelper-field-btn" id="texthelper-copy-btn">Копировать</button>
+                        </div>
+                        <textarea class="texthelper-textarea" id="texthelper-output" placeholder="Результат появится здесь..."></textarea>
                     </div>
                 </div>
+
+                <!-- Нижняя панель: статистика + отчёт -->
+                <div class="texthelper-bottom-panel">
+                    <div class="texthelper-stats" id="texthelper-stats">Строк: 0 | Слов: 0 | Символов: 0</div>
+                    <div class="texthelper-report" id="texthelper-report"></div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary btn-modal-close" id="case-modal-footer-close">Закрыть</button>
+            <div class="modal-footer texthelper-modal-footer">
+                <button type="button" class="btn-secondary btn-danger btn-clear" id="texthelper-clear-btn">Очистить</button>
+                <button type="button" class="btn-secondary btn-modal-close" id="texthelper-modal-close-footer">Закрыть</button>
             </div>
         </div>
     </div>
-
 
     <template id="template-badge">
         <span class="badge" data-param="">

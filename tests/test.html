@@ -681,86 +681,122 @@
         });
 
         // ═══════════════════════════════════════════════════════════════
-        // РЕГИСТР — логика конвертера регистра
+        // ТЕКСТОВЫЙ ПОМОЩНИК — все инструменты
         // ═══════════════════════════════════════════════════════════════
-        testCase('Регистр', 'toUpper: латиница', async () => {
-            const { toUpper } = await import('../tools/case/logic/caseConverter.js');
-            const r = toUpper('hello World');
-            return { pass: r === 'HELLO WORLD', msg: r };
+        
+        // changeCase
+        testCase('Текст-помощник', 'changeCase: upper', async () => {
+            const { changeCase } = await import('../tools/texthelper/logic/changeCase.js');
+            const r = changeCase('hello World', 'upper');
+            return { pass: r.result === 'HELLO WORLD', msg: r.result };
         });
-        testCase('Регистр', 'toUpper: кириллица', async () => {
-            const { toUpper } = await import('../tools/case/logic/caseConverter.js');
-            const r = toUpper('привет мир');
-            return { pass: r === 'ПРИВЕТ МИР', msg: r };
+        testCase('Текст-помощник', 'changeCase: lower', async () => {
+            const { changeCase } = await import('../tools/texthelper/logic/changeCase.js');
+            const r = changeCase('Привет МИР', 'lower');
+            return { pass: r.result === 'привет мир', msg: r.result };
         });
-        testCase('Регистр', 'toLower: латиница и кириллица', async () => {
-            const { toLower } = await import('../tools/case/logic/caseConverter.js');
-            const r = toLower('Привет МИР');
-            return { pass: r === 'привет мир', msg: r };
+        testCase('Текст-помощник', 'changeCase: title', async () => {
+            const { changeCase } = await import('../tools/texthelper/logic/changeCase.js');
+            const r = changeCase('hello world', 'title');
+            return { pass: r.result === 'Hello World', msg: r.result };
         });
-        testCase('Регистр', 'toTitleCase: каждое слово с заглавной', async () => {
-            const { toTitleCase } = await import('../tools/case/logic/caseConverter.js');
-            const r = toTitleCase('hello world');
-            return { pass: r === 'Hello World', msg: r };
+        testCase('Текст-помощник', 'changeCase: inverted', async () => {
+            const { changeCase } = await import('../tools/texthelper/logic/changeCase.js');
+            const r = changeCase('Привет', 'inverted');
+            return { pass: r.result === 'пРИВЕТ', msg: r.result };
         });
-        testCase('Регистр', 'toTitleCase: кириллица', async () => {
-            const { toTitleCase } = await import('../tools/case/logic/caseConverter.js');
-            const r = toTitleCase('привет мир');
-            return { pass: r === 'Привет Мир', msg: r };
+        
+        // columnToRow
+        testCase('Текст-помощник', 'columnToRow: commaSpace', async () => {
+            const { columnToRow } = await import('../tools/texthelper/logic/columnToRow.js');
+            const r = columnToRow('a\nb\nc', 'commaSpace');
+            return { pass: r.result === 'a, b, c', msg: r.result };
         });
-        testCase('Регистр', 'toSentenceCase: первая буква и после точки', async () => {
-            const { toSentenceCase } = await import('../tools/case/logic/caseConverter.js');
-            const r = toSentenceCase('hello. world');
-            return { pass: r === 'Hello. World', msg: r };
+        testCase('Текст-помощник', 'columnToRow: custom separator', async () => {
+            const { columnToRow } = await import('../tools/texthelper/logic/columnToRow.js');
+            const r = columnToRow('a\nb\nc', 'custom', ' | ');
+            return { pass: r.result === 'a | b | c', msg: r.result };
         });
-        testCase('Регистр', 'toSentenceCase: несколько предложений', async () => {
-            const { toSentenceCase } = await import('../tools/case/logic/caseConverter.js');
-            const r = toSentenceCase('first. second! third?');
-            return { pass: r === 'First. Second! Third?', msg: r };
+        
+        // rowToColumn
+        testCase('Текст-помощник', 'rowToColumn: commaSpace', async () => {
+            const { rowToColumn } = await import('../tools/texthelper/logic/rowToColumn.js');
+            const r = rowToColumn('a, b, c', 'commaSpace');
+            return { pass: r.result === 'a\nb\nc', msg: r.result.replace(/\n/g, '\\n') };
         });
-        testCase('Регистр', 'toInverted: инверсия регистра', async () => {
-            const { toInverted } = await import('../tools/case/logic/caseConverter.js');
-            const r = toInverted('Привет');
-            return { pass: r === 'пРИВЕТ', msg: r };
+        testCase('Текст-помощник', 'rowToColumn: auto detect', async () => {
+            const { rowToColumn } = await import('../tools/texthelper/logic/rowToColumn.js');
+            const r = rowToColumn('a;b;c', 'auto');
+            return { pass: r.result === 'a\nb\nc', msg: r.result.replace(/\n/g, '\\n') };
         });
-        testCase('Регистр', 'toInverted: латиница', async () => {
-            const { toInverted } = await import('../tools/case/logic/caseConverter.js');
-            const r = toInverted('Hello');
-            return { pass: r === 'hELLO', msg: r };
+        
+        // removeDuplicates
+        testCase('Текст-помощник', 'removeDuplicates: базовый', async () => {
+            const { removeDuplicates } = await import('../tools/texthelper/logic/removeDuplicates.js');
+            const r = removeDuplicates('a\nb\na\nc');
+            return { pass: r.result === 'a\nb\nc', msg: r.result.replace(/\n/g, '\\n') };
         });
-        testCase('Регистр', 'applyCase: все режимы', async () => {
-            const { applyCase, CASE_MODES } = await import('../tools/case/logic/caseConverter.js');
-            const input = 'TeSt';
-            const upper = applyCase(input, CASE_MODES.UPPER) === 'TEST';
-            const lower = applyCase(input, CASE_MODES.LOWER) === 'test';
-            const title = applyCase('ab cd', CASE_MODES.TITLE) === 'Ab Cd';
-            const inv = applyCase('Ab', CASE_MODES.INVERTED) === 'aB';
-            const ok = upper && lower && title && inv;
-            return { pass: ok, msg: ok ? 'OK' : [upper, lower, title, inv].join(', ') };
+        testCase('Текст-помощник', 'removeDuplicates: case sensitive', async () => {
+            const { removeDuplicates } = await import('../tools/texthelper/logic/removeDuplicates.js');
+            const r = removeDuplicates('a\nA\na', true);
+            return { pass: r.result === 'a\nA', msg: r.result.replace(/\n/g, '\\n') };
         });
-        testCase('Регистр', 'applyCase: пустая строка', async () => {
-            const { applyCase, CASE_MODES } = await import('../tools/case/logic/caseConverter.js');
-            const r = applyCase('', CASE_MODES.UPPER);
-            return { pass: r === '', msg: r === '' ? 'OK' : JSON.stringify(r) };
+        
+        // removeEmpty
+        testCase('Текст-помощник', 'removeEmpty: базовый', async () => {
+            const { removeEmpty } = await import('../tools/texthelper/logic/removeEmpty.js');
+            const r = removeEmpty('a\n\nb\n\nc');
+            return { pass: r.result === 'a\nb\nc', msg: r.result.replace(/\n/g, '\\n') };
         });
-        testCase('Регистр', 'CASE_MODES: все пять режимов', async () => {
-            const { CASE_MODES } = await import('../tools/case/logic/caseConverter.js');
-            const expected = ['upper', 'lower', 'title', 'sentence', 'inverted'];
-            const hasAll = expected.every(k => Object.values(CASE_MODES).includes(k));
-            return { pass: hasAll && Object.keys(CASE_MODES).length === 5, msg: hasAll ? 'OK' : JSON.stringify(CASE_MODES) };
+        testCase('Текст-помощник', 'removeEmpty: whitespace as empty', async () => {
+            const { removeEmpty } = await import('../tools/texthelper/logic/removeEmpty.js');
+            const r = removeEmpty('a\n   \nb', true);
+            return { pass: r.result === 'a\nb', msg: r.result.replace(/\n/g, '\\n') };
         });
-        testCase('Регистр', 'DOM: модалка регистра и кнопка в шапке (если открыт index)', () => {
-            const overlay = document.getElementById('case-modal-overlay');
-            const btn = document.getElementById('nav-register-btn');
+        
+        // addPrefixSuffix
+        testCase('Текст-помощник', 'addPrefixSuffix: quotes', async () => {
+            const { addPrefixSuffix } = await import('../tools/texthelper/logic/prefixSuffix.js');
+            const r = addPrefixSuffix('a\nb', '"', '"');
+            return { pass: r.result === '"a"\n"b"', msg: r.result.replace(/\n/g, '\\n') };
+        });
+        testCase('Текст-помощник', 'addPrefixSuffix: numbered', async () => {
+            const { addPrefixSuffix } = await import('../tools/texthelper/logic/prefixSuffix.js');
+            const r = addPrefixSuffix('a\nb\nc', '', '', true);
+            return { pass: r.result === '1. a\n2. b\n3. c', msg: r.result.replace(/\n/g, '\\n') };
+        });
+        
+        // trimLines
+        testCase('Текст-помощник', 'trimLines: both', async () => {
+            const { trimLines } = await import('../tools/texthelper/logic/trim.js');
+            const r = trimLines('  a  \n  b  ', 'both');
+            return { pass: r.result === 'a\nb', msg: r.result.replace(/\n/g, '\\n') };
+        });
+        testCase('Текст-помощник', 'trimLines: removeDoubleSpaces', async () => {
+            const { trimLines } = await import('../tools/texthelper/logic/trim.js');
+            const r = trimLines('a    b', 'both', true);
+            return { pass: r.result === 'a b', msg: r.result };
+        });
+        
+        // formatStats
+        testCase('Текст-помощник', 'formatStats: подсчёт', async () => {
+            const { formatStats } = await import('../tools/texthelper/logic/stats.js');
+            const r = formatStats('hello world');
+            return { pass: r.includes('2') && r.includes('11'), msg: r };
+        });
+        
+        // DOM
+        testCase('Текст-помощник', 'DOM: модалка и кнопка (если открыт index)', () => {
+            const overlay = document.getElementById('texthelper-modal-overlay');
+            const btn = document.getElementById('texthelper-btn');
             if (!overlay && !btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
             return { pass: !!overlay && !!btn, msg: overlay && btn ? 'Found' : 'missing overlay or button' };
         });
-        testCase('Регистр', 'DOM: поле ввода и кнопки регистра (если открыт index)', () => {
-            const input = document.getElementById('case-input');
-            const buttons = document.getElementById('case-buttons');
+        testCase('Текст-помощник', 'DOM: текстовые поля ввода/вывода', () => {
+            const input = document.getElementById('texthelper-input');
+            const output = document.getElementById('texthelper-output');
             if (!input) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
-            const btnCount = buttons ? buttons.querySelectorAll('.btn-case').length : 0;
-            return { pass: !!input && btnCount === 5, msg: 'input=' + !!input + ', buttons=' + btnCount };
+            return { pass: !!input && !!output, msg: input && output ? 'Found' : 'missing input/output' };
         });
 
         // ═══════════════════════════════════════════════════════════════

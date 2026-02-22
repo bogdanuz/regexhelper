@@ -141,7 +141,7 @@ main.js
 - **tests/test.html** — браузерные тесты (235+ тестов, 5 вкладок)
 - **tests/p0-logic-test.mjs** — Node тесты логики (137 тестов)
 - **tests/converter-reference-test.mjs** — референсные тесты
-- **tests/visualizer-test.mjs**, **tests/case-test.mjs**, **tests/tester-test.mjs** — тесты инструментов
+- **tests/visualizer-test.mjs**, **tests/texthelper-test.mjs**, **tests/tester-test.mjs** — тесты инструментов
 
 ---
 

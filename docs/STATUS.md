@@ -97,10 +97,10 @@
 | Node: p0-logic-test | **94/94 ✅** |
 | Node: converter-reference-test | **61/61 ✅** |
 | Node: visualizer-test | **17/17 ✅** |
-| Node: case-test | **15/15 ✅** |
+| Node: texthelper-test | **60/60 ✅** |
 | Node: tester-test | **50/50 ✅** |
-| Браузерные тесты | **240+/240+ ✅** |
-| **Итого** | **477+/477+ ✅** |
+| Браузерные тесты | **255+/255+ ✅** |
+| **Итого** | **520+/520+ ✅** |
 
 ---
 
