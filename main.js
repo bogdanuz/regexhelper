@@ -8,6 +8,7 @@ import { initVisualizer } from './tools/visualizer/app.js';
 import { initTester } from './tools/tester/app.js';
 import { initTexthelper } from './tools/texthelper/app.js';
 import { initFeedback } from './shared/ui/feedback.js';
+import { initVersionChecker } from './shared/utils/versionChecker.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // НАСТРОЙКА ПОВЕДЕНИЯ СКРОЛЛА
@@ -36,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initTester();
     initTexthelper();
     initFeedback();
+    
+    // Проверка обновлений (раз в час)
+    initVersionChecker();
   } catch (error) {
     console.error('❌ Ошибка инициализации приложения:', error);
     alert(`Ошибка запуска приложения: ${error.message}`);

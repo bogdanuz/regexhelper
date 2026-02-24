@@ -273,8 +273,16 @@ function reverseMapTriggerText(rawText, baseOffset = 0) {
   let hasTranslitDigraph = false;
   
   // 1. Проверяем \b в начале/конце (wordBoundaries)
-  if (text.startsWith('\\b') || text.endsWith('\\b')) {
-    params.wordBoundaries = true;
+  const hasStartBoundary = text.startsWith('\\b');
+  const hasEndBoundary = text.endsWith('\\b');
+  if (hasStartBoundary || hasEndBoundary) {
+    if (hasStartBoundary && hasEndBoundary) {
+      params.wordBoundaries = { mode: 'both' };
+    } else if (hasStartBoundary) {
+      params.wordBoundaries = { mode: 'start' };
+    } else {
+      params.wordBoundaries = { mode: 'end' };
+    }
     text = text.replace(/^\\b/, '').replace(/\\b$/, '');
   }
   
@@ -574,16 +582,25 @@ export function parseRegexPattern(pattern) {
   
   // Проверяем \b в начале и конце всего паттерна
   let cleanPattern = pattern;
-  let hasWordBoundaries = false;
+  let wordBoundariesMode = null;
   
-  if (cleanPattern.startsWith('\\b')) {
-    hasWordBoundaries = true;
+  const hasStartBoundary = cleanPattern.startsWith('\\b');
+  const hasEndBoundary = cleanPattern.endsWith('\\b');
+  
+  if (hasStartBoundary) {
     cleanPattern = cleanPattern.slice(2);
     globalOffset += 2;
   }
-  if (cleanPattern.endsWith('\\b')) {
-    hasWordBoundaries = true;
+  if (hasEndBoundary) {
     cleanPattern = cleanPattern.slice(0, -2);
+  }
+  
+  if (hasStartBoundary && hasEndBoundary) {
+    wordBoundariesMode = { mode: 'both' };
+  } else if (hasStartBoundary) {
+    wordBoundariesMode = { mode: 'start' };
+  } else if (hasEndBoundary) {
+    wordBoundariesMode = { mode: 'end' };
   }
   
   // Удаляем якоря ^ и $ (не поддерживаются)
@@ -599,8 +616,8 @@ export function parseRegexPattern(pattern) {
     const elements = parseTopLevel(cleanPattern, allWarnings, globalOffset);
     
     // Если есть wordBoundaries — применяем ко всем триггерам верхнего уровня
-    if (hasWordBoundaries) {
-      applyParamToAllTriggers(elements, 'wordBoundaries', true);
+    if (wordBoundariesMode) {
+      applyParamToAllTriggers(elements, 'wordBoundaries', wordBoundariesMode);
     }
     
     return {

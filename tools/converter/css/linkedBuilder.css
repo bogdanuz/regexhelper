@@ -447,6 +447,14 @@
   background: rgba(99, 102, 241, 0.08);
 }
 
+/* Соединитель как цель drop */
+.linked-connector.drop-target {
+  border-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+  transform: scale(1.1);
+}
+
 .linked-connector-text {
   white-space: nowrap;
 }
@@ -457,7 +465,7 @@
 
 .linked-group {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
@@ -469,6 +477,7 @@
   transition: all 0.15s ease;
   vertical-align: middle;
   align-self: center;
+  white-space: nowrap;
 }
 
 .linked-group:hover {
@@ -631,18 +640,23 @@
   padding: 6px 4px;
 }
 
-/* Кнопки действий с группой — по умолчанию скрыты, показываются через JS */
-.linked-group-actions {
+/* Кнопки действий — по умолчанию скрыты, показываются через JS */
+.linked-element-actions {
   display: none;
   flex-direction: column;
   gap: var(--spacing-xs);
 }
 
-/* Действия с группами — две колонки */
+/* Действия с элементами — две колонки */
 .linked-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
+}
+
+.linked-actions-grid .linked-action-btn {
+  flex: 1 1 calc(50% - 3px);
+  min-width: 70px;
 }
 
 .linked-action-btn {

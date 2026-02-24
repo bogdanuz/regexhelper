@@ -672,8 +672,8 @@ try {
   assert(r1.success === true, 'parseRegexPattern: \\b success');
   const trigger1 = r1.elements && r1.elements[0];
   assert(trigger1 && trigger1.text === 'кот', 'parseRegexPattern: \\b removed from text');
-  assert(trigger1 && trigger1.params && trigger1.params.wordBoundaries === true, 
-    'parseRegexPattern: wordBoundaries param set');
+  assert(trigger1 && trigger1.params && trigger1.params.wordBoundaries && trigger1.params.wordBoundaries.mode === 'both', 
+    'parseRegexPattern: wordBoundaries param set with mode=both');
 } catch (e) {
   assert(false, 'parseRegexPattern wordBoundaries exception: ' + e.message);
 }
@@ -730,6 +730,45 @@ try {
   assert(r3.warnings && r3.warnings.some(w => w.type === 'slashFormat'), 'analyzePatternForUI: slash format warning');
 } catch (e) {
   assert(false, 'analyzePatternForUI exception: ' + e.message);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// versionChecker module exports
+// ═══════════════════════════════════════════════════════════════════════════
+console.log('\nversionChecker: module exports');
+try {
+  const vc = await import('../shared/utils/versionChecker.js');
+  assert(typeof vc.initVersionChecker === 'function', 'versionChecker: initVersionChecker is a function');
+  assert(typeof vc.stopVersionChecker === 'function', 'versionChecker: stopVersionChecker is a function');
+} catch (e) {
+  assert(false, 'versionChecker import exception: ' + e.message);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Session 2026-02-24: LinkedBuilder grouping connector preservation
+// ═══════════════════════════════════════════════════════════════════
+
+console.log('\nLinkedBuilder: grouping preserves last element connector');
+try {
+  // When elements are grouped, the new group should inherit the connector 
+  // from the last element (since connector defines connection to NEXT element)
+  const elements = [
+    { 
+      type: 'group', 
+      id: 'g1',
+      children: [
+        { type: 'trigger', id: '1', text: 'первый', params: {}, connector: { mode: 'alternation' } },
+        { type: 'trigger', id: '2', text: 'второй', params: {}, connector: { mode: 'any' } }
+      ],
+      connector: { mode: 'any' }  // This should be inherited from last child
+    },
+    { type: 'trigger', id: '3', text: 'третий', params: {}, connector: { mode: 'alternation' } }
+  ];
+  const res = convertLinkedBuilder(elements);
+  assert(res.success, 'convertLinkedBuilder with group connector: success');
+  assert(res.result.includes('[\\s\\S]+'), 'Group connector preserved: any distance between group and next element');
+} catch (e) {
+  assert(false, 'LinkedBuilder grouping connector exception: ' + e.message);
 }
 
 console.log('\n--- Result: ' + passed + ' passed, ' + failed + ' failed ---\n');

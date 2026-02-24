@@ -24,6 +24,30 @@ const PARAM_LABELS_EXTRA = {
 const INTERNAL_PARAM_KEYS = new Set(['_simpleV2', 'global', 'triggerParams']);
 
 /**
+ * Возвращает label для wordBoundaries в зависимости от режима
+ * @param {boolean|Object|null|undefined} value - Значение wordBoundaries
+ * @returns {string} Label для отображения
+ */
+function getWordBoundariesDisplayLabel(value) {
+  if (!value) return '';
+  
+  // Старый формат: true
+  if (value === true) return 'Границы слова (\\b…\\b)';
+  
+  // Новый формат: { mode: 'start' | 'end' | 'both' }
+  if (typeof value === 'object' && value.mode) {
+    switch (value.mode) {
+      case 'start': return 'Границы слова (\\b…)';
+      case 'end': return 'Границы слова (…\\b)';
+      case 'both': return 'Границы слова (\\b…\\b)';
+      default: return 'Границы слова (\\b)';
+    }
+  }
+  
+  return 'Границы слова (\\b)';
+}
+
+/**
  * Форматирует объект параметров в строку с понятными названиями (как в UI).
  * @param {Object} params - Параметры (простых или связанных триггеров)
  * @param {'simple'|'linked'} kind - Тип: простые (могут быть global/triggerParams) или связанные (плоский объект)
@@ -44,6 +68,12 @@ export function formatParamsForDisplay(params, kind = 'linked') {
     }
     if (key === 'wildcard') {
       if (value && typeof value === 'object' && value.mode) parts.push(PARAM_LABELS_EXTRA.wildcard || 'Любой символ (\\w)');
+      continue;
+    }
+    if (key === 'wordBoundaries') {
+      if (value === true || (value && typeof value === 'object' && value.mode)) {
+        parts.push(getWordBoundariesDisplayLabel(value));
+      }
       continue;
     }
     if (value === true || (value !== false && value !== null && value !== undefined && value !== '')) {

@@ -27,13 +27,17 @@ const PARAM_UI_LABELS = {
 /**
  * Проверяет, считается ли параметр активным (для совместимости и фильтрации).
  * optionalChars: [] — не активен.
- * wildcard/declensions: объект с mode или true — активен.
+ * wildcard/declensions/wordBoundaries: объект с mode или true — активен.
  */
 export function isParamActive(key, value) {
   if (value === undefined || value === null) return false;
   if (key === 'optionalChars') return Array.isArray(value) && value.length > 0;
   if (key === 'wildcard') return typeof value === 'object' && value !== null && value.mode;
   if (key === 'declensions') {
+    if (value === true) return true;
+    return typeof value === 'object' && value !== null && value.mode;
+  }
+  if (key === 'wordBoundaries') {
     if (value === true) return true;
     return typeof value === 'object' && value !== null && value.mode;
   }

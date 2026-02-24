@@ -28,6 +28,7 @@ import { WORD_BOUNDARY_MAX_LENGTH, DEFAULT_DISTANCE_MIN, DEFAULT_DISTANCE_MAX } 
  * - declensions: true → { mode: 'auto' }
  * - prefix: { mode: 'wildcard', ... } → wildcard: { mode: 'auto' или 'range', ... }
  * - prefix: { mode: 'exact', prefix, endings } → declensions: { mode: 'exact', stem, endings }
+ * - wordBoundaries: true → { mode: 'both' }
  *
  * @param {Object} params - Параметры триггера
  * @returns {Object} Мигрированные параметры
@@ -58,7 +59,24 @@ export function migrateParams(params) {
     delete migrated.prefix;
   }
 
+  // Миграция wordBoundaries: true → { mode: 'both' }
+  if (migrated.wordBoundaries === true) {
+    migrated.wordBoundaries = { mode: 'both' };
+  }
+
   return migrated;
+}
+
+/**
+ * Нормализует параметр wordBoundaries в объект с mode.
+ * @param {boolean|Object|null|undefined} wb - Значение wordBoundaries
+ * @returns {Object|null} { mode: 'start' | 'end' | 'both' } или null
+ */
+export function normalizeWordBoundaries(wb) {
+  if (!wb) return null;
+  if (wb === true) return { mode: 'both' };
+  if (typeof wb === 'object' && wb.mode) return wb;
+  return null;
 }
 
 /**
@@ -69,7 +87,7 @@ export function migrateParams(params) {
  * @returns {boolean}
  */
 function effectiveWordBoundaries(triggerText, params) {
-  return !!params.wordBoundaries;
+  return !!normalizeWordBoundaries(params.wordBoundaries);
 }
 
 /**
@@ -78,25 +96,37 @@ function effectiveWordBoundaries(triggerText, params) {
  * @param {Object} params - Параметры триггера
  * @returns {boolean} true если \b нужен только в начале
  */
-function wordBoundaryStartOnly(params) {
+export function wordBoundaryStartOnly(params) {
   const hasWildcard = params.wildcard && params.wildcard.mode;
   const hasDeclensions = params.declensions && (params.declensions === true || params.declensions.mode);
   return hasWildcard || hasDeclensions;
 }
 
 /**
- * Применяет границы слова к результату с учётом wildcard/declensions.
+ * Применяет границы слова к результату с учётом режима и wildcard/declensions.
  * @param {string} part - Обработанный триггер
  * @param {Object} params - Параметры триггера
  * @returns {string}
  */
 export function applyWordBoundaries(part, params) {
-  if (!effectiveWordBoundaries(part, params)) return part;
+  const wb = normalizeWordBoundaries(params.wordBoundaries);
+  if (!wb) return part;
   
+  // При wildcard/declensions — только в начале, независимо от выбора пользователя
   if (wordBoundaryStartOnly(params)) {
     return `\\b${part}`;
   }
-  return `\\b${part}\\b`;
+  
+  // Применяем согласно режиму
+  switch (wb.mode) {
+    case 'start':
+      return `\\b${part}`;
+    case 'end':
+      return `${part}\\b`;
+    case 'both':
+    default:
+      return `\\b${part}\\b`;
+  }
 }
 
 /** По умолчанию соединитель между триггерами — альтернация (без паттерна). */
@@ -505,5 +535,7 @@ export default {
   applyParametersToSimpleWithPerTrigger,
   applyParametersToSubgroup,
   applyParametersToGroup,
-  migrateParams
+  migrateParams,
+  normalizeWordBoundaries,
+  wordBoundaryStartOnly
 };

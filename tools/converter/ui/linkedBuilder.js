@@ -9,11 +9,12 @@
  * @date 2026-02-21
  */
 
-import { showSuccess, showError } from '../../../shared/ui/notifications.js';
+import { showSuccess, showError, showInfo } from '../../../shared/ui/notifications.js';
 import { createBadge } from './badges.js';
-import { openWildcardPopup, openDeclensionsPopup, openOptionalCharsPopup, removeAllPopups } from './inlinePopup.js';
+import { openWildcardPopup, openDeclensionsPopup, openOptionalCharsPopup, openWordBoundariesPopup, removeAllPopups } from './inlinePopup.js';
 import { openConfirmModal } from './modals.js';
 import { areParamsCompatible, getIncompatibleParams, isParamActive, getActiveParamKeys } from '../logic/compatibilityChecker.js';
+import { wordBoundaryStartOnly, normalizeWordBoundaries } from '../logic/parameterApplier.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // КОНСТАНТЫ
@@ -262,6 +263,8 @@ function renderChip(element, isLast = false) {
     e.stopPropagation();
     // Не обрабатывать клик если идёт drag
     if (dragState.draggedId) return;
+    // Не обрабатывать клик если текст редактируется
+    if (textEl.classList.contains('editing')) return;
     // Отложить выполнение, чтобы dblclick мог отменить
     if (clickTimeout) clearTimeout(clickTimeout);
     clickTimeout = setTimeout(() => {
@@ -329,6 +332,51 @@ function renderConnector(connector, elementId) {
   conn.onclick = (e) => {
     e.stopPropagation();
     handleConnectorClick(elementId);
+  };
+  
+  // Drag & Drop на соединитель — расширяет зону сброса
+  conn.ondragover = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (!dragState.draggedId || dragState.draggedId === elementId) return;
+    
+    // При наведении на соединитель — подсветить как drop-after для владельца
+    if (dragState.dropTargetId !== elementId || dragState.dropPosition !== 'after') {
+      // Убрать старые классы
+      if (dom.field) {
+        dom.field.querySelectorAll('.drop-target, .drop-before, .drop-after, .drop-inside').forEach(el => {
+          el.classList.remove('drop-target', 'drop-before', 'drop-after', 'drop-inside');
+        });
+      }
+      
+      // Подсветить соединитель
+      conn.classList.add('drop-target');
+      
+      dragState.dropTargetId = elementId;
+      dragState.dropPosition = 'after';
+    }
+  };
+  
+  conn.ondragleave = (e) => {
+    conn.classList.remove('drop-target');
+  };
+  
+  conn.ondrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    conn.classList.remove('drop-target');
+    
+    if (!dragState.draggedId || dragState.draggedId === elementId) {
+      handleDragEnd(e);
+      return;
+    }
+    
+    // Вставить после владельца соединителя
+    moveElement(dragState.draggedId, elementId, 'after');
+    handleDragEnd(e);
   };
   
   return conn;
@@ -610,9 +658,15 @@ function startEditingChip(chipEl, element) {
     sel.addRange(range);
   }
   
+  // Остановить всплытие кликов во время редактирования
+  textEl.onclick = (e) => {
+    e.stopPropagation();
+  };
+  
   const finishEditing = () => {
     textEl.contentEditable = 'false';
     textEl.classList.remove('editing');
+    textEl.onclick = null; // Убрать обработчик после редактирования
     const newText = textEl.textContent.trim();
     element.text = newText;
     if (newText) {
@@ -803,8 +857,13 @@ function groupSelected() {
     removedElements.unshift(firstLocation.array.splice(idx, 1)[0]);
   }
   
-  // Создать новую группу
+  // Сохранить коннектор последнего элемента (он определяет связь группы со следующим элементом)
+  const lastElement = removedElements[removedElements.length - 1];
+  const lastConnector = lastElement?.connector ? { ...lastElement.connector } : { mode: 'alternation' };
+  
+  // Создать новую группу с коннектором последнего элемента
   const newGroup = createGroupData(removedElements);
+  newGroup.connector = lastConnector;
   
   // Вставить группу на место первого выбранного элемента
   firstLocation.array.splice(insertIndex, 0, newGroup);
@@ -991,23 +1050,22 @@ function handleDragOver(e, elementId, elementType) {
   }
   
   const rect = e.currentTarget.getBoundingClientRect();
-  const y = e.clientY - rect.top;
   const x = e.clientX - rect.left;
-  const height = rect.height;
   const width = rect.width;
   
   let position;
   if (elementType === 'group') {
     // Для групп: лево = before, право = after, центр = inside
-    if (x < width * 0.25) {
+    // Расширенные зоны: 35% | 30% | 35% (было 25% | 50% | 25%)
+    if (x < width * 0.35) {
       position = 'before';
-    } else if (x > width * 0.75) {
+    } else if (x > width * 0.65) {
       position = 'after';
     } else {
       position = 'inside';
     }
   } else {
-    // Для триггеров: лево = before, право = after
+    // Для триггеров: лево = before, право = after (50/50)
     position = x < width / 2 ? 'before' : 'after';
   }
   
@@ -1255,13 +1313,34 @@ function updateParamsPanel() {
   
   const selectedTriggers = selectedElements.filter(el => el.type === 'trigger');
   const selectedGroups = selectedElements.filter(el => el.type === 'group');
-  const singleGroupSelected = selectedElements.length === 1 && selectedElements[0]?.type === 'group';
+  const singleElementSelected = selectedElements.length === 1;
+  const singleTriggerSelected = singleElementSelected && selectedElements[0]?.type === 'trigger';
+  const singleGroupSelected = singleElementSelected && selectedElements[0]?.type === 'group';
   
-  // Показать/скрыть секцию действий с группой (только если выбрана группа)
-  const groupActionsSection = dom.paramsPanel.querySelector('.linked-group-actions');
-  if (groupActionsSection) {
-    const showGroupActions = singleGroupSelected;
-    groupActionsSection.style.display = showGroupActions ? 'flex' : 'none';
+  // Показать/скрыть секцию действий (при выборе любого одного элемента)
+  const actionsSection = dom.paramsPanel.querySelector('.linked-element-actions');
+  if (actionsSection) {
+    actionsSection.style.display = singleElementSelected ? 'flex' : 'none';
+  }
+  
+  // Обновить заголовок секции действий
+  const actionsTitle = dom.paramsPanel.querySelector('#lb-actions-title');
+  if (actionsTitle) {
+    if (singleTriggerSelected) {
+      actionsTitle.textContent = 'Действия с триггером';
+    } else if (singleGroupSelected) {
+      actionsTitle.textContent = 'Действия с группой';
+    }
+  }
+  
+  // Кнопки Инвертировать и Разгруппировать — только для групп
+  const invertBtn = dom.paramsPanel.querySelector('#lb-invert');
+  const ungroupBtn = dom.paramsPanel.querySelector('#lb-ungroup');
+  if (invertBtn) {
+    invertBtn.style.display = singleGroupSelected ? '' : 'none';
+  }
+  if (ungroupBtn) {
+    ungroupBtn.style.display = singleGroupSelected ? '' : 'none';
   }
   
   // Показать/скрыть кнопку "Удалить триггеры" в тулбаре (при 2+ выбранных триггерах)
@@ -1484,6 +1563,11 @@ function handleParamClick(param, btn, e) {
     return;
   }
   
+  if (param === 'wordBoundaries') {
+    handleWordBoundariesClick(btn, selectedTriggers, allHaveParam);
+    return;
+  }
+  
   // Для остальных параметров — toggle
   if (allHaveParam) {
     // Выключить
@@ -1577,6 +1661,60 @@ function handleOptionalCharsClick(btn, selectedTriggers, allHaveParam) {
       showSuccess(`Опциональные символы применены: ${indices.length} символ(ов)`);
     },
     currentIndices
+  );
+}
+
+/**
+ * Обработчик клика по "Границы слова (\b)"
+ */
+function handleWordBoundariesClick(btn, selectedTriggers, allHaveParam) {
+  // Если уже активно — выключить
+  if (allHaveParam) {
+    applyParam('wordBoundaries', null);
+    return;
+  }
+  
+  // Проверяем, есть ли у триггеров wildcard или declensions
+  const hasWildcardOrDeclensions = selectedTriggers.some(t => wordBoundaryStartOnly(t.params || {}));
+  
+  // Если есть wildcard/declensions — сразу применяем start с уведомлением
+  if (hasWildcardOrDeclensions) {
+    applyParam('wordBoundaries', { mode: 'start' });
+    showInfo('При склонениях или \\w границы слова ставятся только в начале');
+    return;
+  }
+  
+  // Если выбрано несколько триггеров — применить both по умолчанию
+  if (selectedTriggers.length > 1) {
+    applyParam('wordBoundaries', { mode: 'both' });
+    showSuccess('Границы слова применены');
+    return;
+  }
+  
+  // Один триггер — показать popup
+  const trigger = selectedTriggers[0];
+  const triggerText = trigger.text || '';
+  
+  // Находим DOM элемент чипа
+  const chipEl = dom.field.querySelector(`[data-id="${trigger.id}"]`);
+  
+  // Текущие настройки (нормализуем)
+  const currentWb = normalizeWordBoundaries(trigger.params?.wordBoundaries);
+  
+  openWordBoundariesPopup(
+    chipEl || btn,
+    triggerText,
+    (result) => {
+      if (result === null) {
+        applyParam('wordBoundaries', null);
+        return;
+      }
+      applyParam('wordBoundaries', result);
+      const modeLabels = { start: 'в начале', end: 'в конце', both: 'с обеих сторон' };
+      showSuccess(`Границы слова (${modeLabels[result.mode] || result.mode}) применены`);
+    },
+    currentWb,
+    { hideDisableButton: true }
   );
 }
 
@@ -1787,8 +1925,8 @@ export function initLinkedBuilder(container, options = {}) {
           <div class="linked-params-hint">Соединитель определяет связь со следующим элементом (триггер или группа)</div>
         </div>
         
-        <div class="linked-params-section linked-group-actions">
-          <div class="linked-params-title">Действия с группой</div>
+        <div class="linked-params-section linked-element-actions">
+          <div class="linked-params-title" id="lb-actions-title">Действия</div>
           <div class="linked-actions-grid">
             <button class="linked-action-btn duplicate" id="lb-duplicate" title="Создать копию выбранного элемента (триггера или группы)">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -1833,6 +1971,7 @@ export function initLinkedBuilder(container, options = {}) {
         e.target.classList.contains('linked-builder-row-content') ||
         e.target.classList.contains('linked-builder-row-number') ||
         e.target.classList.contains('linked-row-marker') ||
+        e.target.classList.contains('linked-row-continue') ||
         e.target.classList.contains('linked-builder-empty')) {
       clearSelection();
     }
@@ -1881,13 +2020,6 @@ export function initLinkedBuilder(container, options = {}) {
       }
     };
   });
-  
-  // Клик по пустому месту — сбросить выбор
-  dom.field.onclick = (e) => {
-    if (e.target === dom.field || e.target.classList.contains('linked-builder-empty')) {
-      clearSelection();
-    }
-  };
   
   // Загрузить сохранённое состояние
   loadState();

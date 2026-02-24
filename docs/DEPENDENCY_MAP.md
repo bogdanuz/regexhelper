@@ -46,6 +46,8 @@
 
 ```
 main.js
+├── shared/utils/versionChecker.js (проверка обновлений)
+│   └── shared/ui/notifications.js (showUpdateAvailable)
 ├── shared/ui/feedback.js
 │   └── shared/ui/notifications.js
 ├── tools/converter/app.js
@@ -68,9 +70,10 @@ main.js
 │   ├── tools/converter/ui/linkedBuilder.js (визуальный конструктор связанных триггеров)
 │   │   ├── shared/ui/notifications.js
 │   │   ├── tools/converter/ui/badges.js
-│   │   ├── tools/converter/ui/inlinePopup.js
+│   │   ├── tools/converter/ui/inlinePopup.js (popup'ы: склонения, wildcard, опциональные, wordBoundaries)
 │   │   ├── tools/converter/ui/modals.js (openConfirmModal)
-│   │   └── tools/converter/logic/compatibilityChecker.js
+│   │   ├── tools/converter/logic/compatibilityChecker.js
+│   │   └── tools/converter/logic/parameterApplier.js (normalizeWordBoundaries, wordBoundaryStartOnly)
 │   ├── tools/converter/logic/linkedBuilderConverter.js (конвертация данных linkedBuilder в regex)
 │   │   ├── tools/converter/converters/autoReplace.js
 │   │   └── tools/converter/logic/parameterApplier.js

@@ -407,6 +407,119 @@ export function createDeclensionsPopup(triggerElement, triggerText, onApply, cur
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// СОЗДАНИЕ INLINE POPUP — ГРАНИЦЫ СЛОВА (\b)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Создает inline popup для границ слова (\b)
+ *
+ * @param {HTMLElement} triggerElement - Элемент триггера
+ * @param {string} triggerText - Текст триггера
+ * @param {Function} onApply - Callback при применении
+ * @param {Object} [currentWordBoundaries] - Текущие настройки { mode: 'start' | 'end' | 'both' }
+ * @param {Object} [options] - Дополнительные опции
+ * @param {boolean} [options.hideDisableButton] - Скрыть кнопку «Выключить»
+ * @returns {HTMLElement} Popup элемент
+ */
+export function createWordBoundariesPopup(triggerElement, triggerText, onApply, currentWordBoundaries = null, options = {}) {
+  removeAllPopups();
+
+  const popup = document.createElement('div');
+  popup.className = 'inline-popup word-boundaries-popup';
+  popup.id = 'word-boundaries-popup';
+
+  const currentMode = currentWordBoundaries?.mode || 'both';
+
+  const header = document.createElement('div');
+  header.className = 'popup-header';
+  header.innerHTML = `
+    <h4>Границы слова (\\b)</h4>
+    <button type="button" class="popup-close" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  `;
+
+  const content = document.createElement('div');
+  content.className = 'popup-content';
+  content.innerHTML = `
+    <p class="popup-description">Указывает границу слова в regex. Полезно для поиска целых слов.</p>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="wb-mode" value="start" ${currentMode === 'start' ? 'checked' : ''}>
+        В начале (<code>\\b</code>слово)
+      </label>
+      <label>
+        <input type="radio" name="wb-mode" value="end" ${currentMode === 'end' ? 'checked' : ''}>
+        В конце (слово<code>\\b</code>)
+      </label>
+      <label>
+        <input type="radio" name="wb-mode" value="both" ${currentMode === 'both' ? 'checked' : ''}>
+        С обеих сторон (<code>\\b</code>слово<code>\\b</code>)
+      </label>
+    </div>
+    <div class="popup-preview">
+      <label>Предпросмотр:</label>
+      <code class="wb-preview">\\b${triggerText}\\b</code>
+    </div>
+  `;
+
+  const footer = document.createElement('div');
+  footer.className = 'popup-footer';
+  footer.innerHTML = `
+    ${options.hideDisableButton ? '' : '<button type="button" class="btn btn-secondary" data-action="disable">Выключить</button>'}
+    <button class="btn btn-secondary" data-action="cancel">Отмена</button>
+    <button class="btn btn-primary" data-action="apply">Применить</button>
+  `;
+
+  popup.appendChild(header);
+  popup.appendChild(content);
+  popup.appendChild(footer);
+
+  positionPopup(popup, triggerElement);
+
+  const radios = popup.querySelectorAll('input[name="wb-mode"]');
+  const previewCode = popup.querySelector('.wb-preview');
+
+  const updatePreview = () => {
+    const mode = popup.querySelector('input[name="wb-mode"]:checked').value;
+    switch (mode) {
+      case 'start':
+        previewCode.textContent = `\\b${triggerText}`;
+        break;
+      case 'end':
+        previewCode.textContent = `${triggerText}\\b`;
+        break;
+      case 'both':
+      default:
+        previewCode.textContent = `\\b${triggerText}\\b`;
+        break;
+    }
+  };
+
+  radios.forEach(radio => {
+    radio.onchange = updatePreview;
+  });
+  updatePreview();
+
+  popup.querySelector('.popup-close').onclick = () => removePopup(popup);
+  popup.querySelector('[data-action="cancel"]').onclick = () => removePopup(popup);
+  
+  const disableBtn = popup.querySelector('[data-action="disable"]');
+  if (disableBtn) {
+    disableBtn.onclick = () => {
+      onApply(null);
+      removePopup(popup);
+    };
+  }
+  
+  popup.querySelector('[data-action="apply"]').onclick = () => {
+    const mode = popup.querySelector('input[name="wb-mode"]:checked').value;
+    onApply({ mode });
+    removePopup(popup);
+  };
+
+  return popup;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ═══════════════════════════════════════════════════════════════════
 
@@ -644,6 +757,11 @@ export function openDeclensionsPopup(triggerElement, triggerText, onApply, curre
   getPopupContainer().appendChild(popup);
 }
 
+export function openWordBoundariesPopup(triggerElement, triggerText, onApply, currentWordBoundaries = null, options = {}) {
+  const popup = createWordBoundariesPopup(triggerElement, triggerText, onApply, currentWordBoundaries, options);
+  getPopupContainer().appendChild(popup);
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // ЭКСПОРТ
 // ═══════════════════════════════════════════════════════════════════
@@ -652,9 +770,11 @@ export default {
   createOptionalCharsPopup,
   createWildcardPopup,
   createDeclensionsPopup,
+  createWordBoundariesPopup,
   openTriggerActionChoicePopup,
   openOptionalCharsPopup,
   openWildcardPopup,
   openDeclensionsPopup,
+  openWordBoundariesPopup,
   removeAllPopups
 };

@@ -1756,6 +1756,128 @@ body > .inline-popup {
 }
 
 /* ─────────────────────────────────────────────────────────────────
+   WORD BOUNDARIES POPUP — Границы слова (\b)
+   ───────────────────────────────────────────────────────────────── */
+
+.word-boundaries-popup .popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-default);
+}
+.word-boundaries-popup .popup-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+.word-boundaries-popup .popup-close {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-small);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+.word-boundaries-popup .popup-close:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+.word-boundaries-popup .popup-close svg {
+    width: 16px;
+    height: 16px;
+}
+.word-boundaries-popup .popup-description {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+.word-boundaries-popup .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.word-boundaries-popup .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-small);
+    background: var(--color-bg-secondary);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.word-boundaries-popup .radio-group label:hover {
+    background: var(--color-bg-tertiary);
+}
+.word-boundaries-popup .radio-group label:has(input:checked) {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.1);
+}
+.word-boundaries-popup .radio-group input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+.word-boundaries-popup .radio-group code {
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-primary);
+}
+.word-boundaries-popup .popup-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: var(--radius-small);
+    background: var(--color-bg-secondary);
+    margin-bottom: 16px;
+}
+.word-boundaries-popup .popup-preview > label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+.word-boundaries-popup .popup-preview code {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    color: var(--color-success);
+    word-break: break-all;
+}
+.word-boundaries-popup .popup-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border-default);
+}
+.word-boundaries-popup .popup-footer [data-action="disable"] {
+    margin-right: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    FEEDBACK MODAL — Форма обратной связи
    ───────────────────────────────────────────────────────────────── */
 

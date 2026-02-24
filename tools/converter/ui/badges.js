@@ -20,6 +20,7 @@ import { PARAM_COLORS } from '../../../core/config.js';
  * 
  * @param {string} paramType - Тип параметра (latinCyrillic, declensions, optionalChars, wildcard)
  * @param {Object} options - Дополнительные опции
+ * @param {*} options.paramValue - Значение параметра (для wordBoundaries)
  * @returns {HTMLElement} Badge элемент
  * 
  * @example
@@ -31,7 +32,7 @@ export function createBadge(paramType, options = {}) {
   badge.className = `badge badge-${paramType}`;
   badge.dataset.param = paramType;
 
-  const info = getBadgeInfo(paramType);
+  const info = getBadgeInfo(paramType, options.paramValue);
   const label = options.label != null ? options.label : info.label;
   const { icon, color } = info;
 
@@ -59,9 +60,10 @@ export function createBadge(paramType, options = {}) {
  * Возвращает информацию о badge
  * 
  * @param {string} paramType - Тип параметра
+ * @param {*} paramValue - Значение параметра (опционально, для wordBoundaries)
  * @returns {Object} { icon, label, color }
  */
-function getBadgeInfo(paramType) {
+export function getBadgeInfo(paramType, paramValue) {
   // label — короткое отображение на badge; tooltipLabel — полное имя для tooltip (Panel_Hints 2.4)
   const info = {
     latinCyrillic: {
@@ -96,8 +98,8 @@ function getBadgeInfo(paramType) {
     },
     wordBoundaries: {
       icon: '',
-      label: 'Границы слова (\\b)',
-      tooltipLabel: 'Границы слова (\\b) — только для триггеров 1–3 символа',
+      label: getWordBoundariesLabel(paramValue),
+      tooltipLabel: 'Границы слова (\\b)',
       color: PARAM_COLORS.wordBoundaries || '#06B6D4'
     },
     requireSpaceAfter: {
@@ -122,6 +124,30 @@ function getBadgeInfo(paramType) {
   };
 }
 
+/**
+ * Возвращает label для wordBoundaries в зависимости от режима
+ * @param {boolean|Object|null|undefined} paramValue - Значение wordBoundaries
+ * @returns {string} Label для badge
+ */
+function getWordBoundariesLabel(paramValue) {
+  if (!paramValue) return '\\b';
+  
+  // Старый формат: true
+  if (paramValue === true) return '\\b…\\b';
+  
+  // Новый формат: { mode: 'start' | 'end' | 'both' }
+  if (typeof paramValue === 'object' && paramValue.mode) {
+    switch (paramValue.mode) {
+      case 'start': return '\\b…';
+      case 'end': return '…\\b';
+      case 'both': return '\\b…\\b';
+      default: return '\\b';
+    }
+  }
+  
+  return '\\b';
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // УПРАВЛЕНИЕ BADGE В ГРУППЕ/ПОДГРУППЕ
 // ═══════════════════════════════════════════════════════════════════
@@ -135,6 +161,10 @@ function isParamActive(params, paramType) {
   if (paramType === 'optionalChars') return Array.isArray(v) && v.length > 0;
   if (paramType === 'wildcard') return v && typeof v === 'object' && v.mode;
   if (paramType === 'declensions') {
+    if (v === true) return true;
+    return v && typeof v === 'object' && v.mode;
+  }
+  if (paramType === 'wordBoundaries') {
     if (v === true) return true;
     return v && typeof v === 'object' && v.mode;
   }

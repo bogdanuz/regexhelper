@@ -1,0 +1,44 @@
+# GitHub Action: автоматическое обновление version.json при push в main
+# Позволяет уведомлять пользователей о новой версии сайта
+
+name: Update Version
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'version.json'
+      - '.github/workflows/update-version.yml'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update version.json
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          DATE=$(date -u +"%Y-%m-%d")
+          cat > version.json << EOF
+          {
+            "version": "$TIMESTAMP",
+            "updated": "$DATE"
+          }
+          EOF
+          echo "Updated version to $TIMESTAMP"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add version.json
+          git diff --staged --quiet || git commit -m "chore: update version.json [skip ci]"
+          git push

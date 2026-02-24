@@ -204,6 +204,7 @@ function initPanelModeSwitch() {
 
   const clearSimplePanelBtn = document.getElementById('clear-simple-panel-btn');
   const clearLinkedPanelBtn = document.getElementById('clear-linked-panel-btn');
+  const importPatternBtn = document.getElementById('import-pattern-btn');
 
   function switchMode(newMode) {
     const currentMode = triggersPanel.dataset.mode;
@@ -223,6 +224,7 @@ function initPanelModeSwitch() {
       contentSimple.style.animation = 'fadeIn 0.25s ease';
       if (clearSimplePanelBtn) clearSimplePanelBtn.style.display = 'inline-flex';
       if (clearLinkedPanelBtn) clearLinkedPanelBtn.style.display = 'none';
+      if (importPatternBtn) importPatternBtn.style.display = 'none';
     } else {
       modeIcon.innerHTML = iconLinked;
       modeTitle.textContent = 'Связанные триггеры';
@@ -235,6 +237,7 @@ function initPanelModeSwitch() {
       contentLinked.style.animation = 'fadeIn 0.25s ease';
       if (clearSimplePanelBtn) clearSimplePanelBtn.style.display = 'none';
       if (clearLinkedPanelBtn) clearLinkedPanelBtn.style.display = 'inline-flex';
+      if (importPatternBtn) importPatternBtn.style.display = 'inline-flex';
     }
   }
 

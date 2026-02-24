@@ -9,7 +9,10 @@
 ```
 regexhelper/
 ├── index.html              # Страница приложения
-├── main.js                 # Точка входа (ES-модуль): импорт converter + visualizer + tester + texthelper
+├── main.js                 # Точка входа (ES-модуль): импорт converter + visualizer + tester + texthelper + versionChecker
+├── version.json            # Версия для уведомлений об обновлениях (обновляется GitHub Action)
+├── .github/workflows/      # GitHub Actions
+│   └── update-version.yml  # Автообновление version.json при push в main
 ├── tests/                  # Все тесты: Node (.mjs) и браузер (test.html)
 │   ├── run-tests.mjs       # Единый запуск: node tests/run-tests.mjs (Node и/или --browser)
 │   ├── test.html           # Страница браузерных тестов (пять вкладок, 235+ тестов)
@@ -30,7 +33,8 @@ regexhelper/
 │   ├── utils/
 │   │   ├── storage.js
 │   │   ├── validation.js
-│   │   └── escape.js
+│   │   ├── escape.js
+│   │   └── versionChecker.js  # Проверка обновлений (version.json)
 │   ├── content/
 │   │   └── WIKI.js
 │   └── ui/

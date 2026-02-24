@@ -200,6 +200,56 @@ export function closeAllNotifications() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// УВЕДОМЛЕНИЕ ОБ ОБНОВЛЕНИИ
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Показывает уведомление о доступном обновлении с кнопками
+ * «Обновить» перезагружает страницу, «Позже» закрывает тост
+ */
+export function showUpdateAvailable() {
+  let container = document.getElementById('notifications-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'notifications-container';
+    container.className = 'notifications-container';
+    document.body.appendChild(container);
+  }
+
+  const notification = document.createElement('div');
+  notification.className = 'notification notification-info notification-update';
+
+  const icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>';
+
+  notification.innerHTML = `
+    <div class="notification-icon">${icon}</div>
+    <div class="notification-content">
+      <div class="notification-message">Доступно обновление функционала. Обновить страницу?</div>
+      <div class="notification-actions">
+        <button class="notification-btn notification-btn-primary" data-action="refresh">Обновить</button>
+        <button class="notification-btn notification-btn-secondary" data-action="later">Позже</button>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(notification);
+
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+
+  notification.querySelector('[data-action="refresh"]').onclick = () => {
+    window.location.reload();
+  };
+
+  notification.querySelector('[data-action="later"]').onclick = () => {
+    closeNotification(notification);
+  };
+
+  return notification;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // ЭКСПОРТ
 // ═══════════════════════════════════════════════════════════════════
 
@@ -215,5 +265,6 @@ export default {
   showExportSuccess,
   showValidationError,
   showLimitWarning,
-  closeAllNotifications
+  closeAllNotifications,
+  showUpdateAvailable
 };
