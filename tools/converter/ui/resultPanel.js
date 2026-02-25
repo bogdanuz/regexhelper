@@ -35,9 +35,11 @@ export function displayResult(result, data = {}) {
   }
 
   if (resultStats) {
+    // Длина — число символов; группы — все неэкранированные (; альтернации — число |
+    const withoutEscapedOpenParens = result.replace(/\\\(/g, '');
     const stats = {
       length: result.length,
-      groups: (result.match(/\(\?:/g) || []).length,
+      groups: (withoutEscapedOpenParens.match(/\(/g) || []).length,
       alternations: (result.match(/\|/g) || []).length
     };
 
