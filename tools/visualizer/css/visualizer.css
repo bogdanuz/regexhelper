@@ -48,6 +48,24 @@
   gap: var(--spacing-m);
 }
 
+/* Общий блок: область диаграммы + нижняя панель */
+.visualizer-diagram-block {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 260px);
+  min-height: 0;
+}
+
+.visualizer-diagram-block .visualizer-diagram-area {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+.visualizer-diagram-block .visualizer-toolbar.visualizer-export-actions {
+  flex-shrink: 0;
+}
+
 .visualizer-input-row {
   display: flex;
   gap: var(--spacing-m);
@@ -196,7 +214,7 @@
 
 .visualizer-diagram-scroll {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
   min-height: 0;
   cursor: grab;
   user-select: none;
@@ -208,9 +226,10 @@
 }
 
 /* Обёртка задаёт область прокрутки; при зуме размер задаётся из JS */
+/* Размер по контенту (диаграмма + padding), чтобы panX/panY центрировали корректно и большие, и маленькие диаграммы */
 .visualizer-diagram-scroll-wrap {
-  min-width: 100%;
-  min-height: 100%;
+  min-width: 0;
+  min-height: 0;
   width: fit-content;
   height: fit-content;
   display: flex;
@@ -479,16 +498,17 @@
 .visualizer-fullscreen-scroll {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   cursor: grab;
   background: #fff;
 }
 .visualizer-fullscreen-scroll:active {
   cursor: grabbing;
 }
+/* Размер по контенту, как в основной панели — центрирование через transform единообразно */
 .visualizer-fullscreen-scroll-wrap {
-  min-width: 100%;
-  min-height: 100%;
+  min-width: 0;
+  min-height: 0;
   width: fit-content;
   height: fit-content;
   display: flex;

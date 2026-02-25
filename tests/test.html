@@ -2346,6 +2346,32 @@
             return { pass, msg: pass ? 'Верхнего тулбара нет, нижний есть' : `topToolbar=${!!topToolbar} bottom=${!!bottomToolbar}` };
         });
 
+        testVisualizer('Visualizer UI', 'блок diagram-block: область диаграммы и панель в одном контейнере', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const block = doc.getElementById('visualizer-diagram-block');
+            const area = doc.getElementById('visualizer-diagram-area');
+            const toolbar = doc.getElementById('visualizer-export-actions');
+            const hasBlock = !!block;
+            const blockContainsArea = !!block && block.contains(area);
+            const blockContainsToolbar = !!block && block.contains(toolbar);
+            const pass = hasBlock && blockContainsArea && blockContainsToolbar;
+            return { pass, msg: pass ? 'diagram-block содержит area и панель' : `block=${hasBlock} area=${blockContainsArea} toolbar=${blockContainsToolbar}` };
+        });
+
+        testVisualizer('Visualizer UI', 'область диаграммы без скроллбара (overflow hidden)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const scrollEl = doc.getElementById('visualizer-diagram-scroll');
+            if (!scrollEl) return { pass: false, msg: 'Missing visualizer-diagram-scroll' };
+            const style = doc.defaultView?.getComputedStyle(scrollEl);
+            const overflow = (style?.overflow || '').toLowerCase();
+            const overflowX = (style?.overflowX || '').toLowerCase();
+            const overflowY = (style?.overflowY || '').toLowerCase();
+            const isHidden = overflow === 'hidden' || (overflowX === 'hidden' && overflowY === 'hidden');
+            return { pass: isHidden, msg: isHidden ? 'overflow: hidden' : `overflow=${overflow} overflowX=${overflowX} overflowY=${overflowY}` };
+        });
+
         // Сценарии визуализатора (дом + поведение)
         testVisualizer('Visualizer UI', 'начальное состояние до визуализации', async () => {
             if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
@@ -2482,37 +2508,36 @@
             return { pass, msg: `initial=${initial} afterIn=${afterIn} afterOut=${afterOut}` };
         });
 
-        testVisualizer('Visualizer Zoom', 'диаграмма не обрезается при зуме (контейнеры имеют корректные размеры)', async () => {
+        testVisualizer('Visualizer Zoom', 'диаграмма не обрезается при зуме (transform на scroll-wrap)', async () => {
             if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
             const doc = visualizerAppIframe.contentDocument;
             const zoomOutBtn = doc.getElementById('visualizer-zoom-out');
             const zoomInBtn = doc.getElementById('visualizer-zoom-in');
+            const zoomValue = doc.getElementById('visualizer-zoom-value');
             const innerEl = doc.getElementById('regexp-render');
             const scrollWrap = doc.getElementById('visualizer-diagram-scroll')?.firstElementChild;
             const svg = innerEl?.querySelector('svg');
-            if (!zoomOutBtn || !zoomInBtn || !innerEl || !scrollWrap || !svg) {
+            if (!zoomOutBtn || !zoomInBtn || !zoomValue || !innerEl || !scrollWrap || !svg) {
                 return { pass: false, msg: 'Missing elements for zoom test' };
             }
+            const parseZoom = () => {
+                const t = (zoomValue.textContent || '').replace('%', '');
+                const n = parseInt(t, 10);
+                return Number.isNaN(n) ? 0 : n;
+            };
             for (let i = 0; i < 5; i++) zoomInBtn.click();
             await new Promise(r => setTimeout(r, 100));
-            const innerW = innerEl.offsetWidth;
-            const innerH = innerEl.offsetHeight;
-            const wrapW = scrollWrap.offsetWidth;
-            const wrapH = scrollWrap.offsetHeight;
-            const wrapClass1 = scrollWrap.className;
-            const wrapStyle1 = scrollWrap.style.cssText;
-            const zoomInOk = innerW > 0 && innerH > 0 && wrapW >= innerW && wrapH >= innerH;
+            const transform1 = (scrollWrap.style.transform || '').trim();
+            const zoom1 = parseZoom();
+            const hasScale1 = /scale\s*\(/i.test(transform1);
+            const zoomInOk = zoom1 >= 25 && zoom1 <= 300 && (transform1.includes('translate') || transform1.includes('scale'));
             for (let i = 0; i < 10; i++) zoomOutBtn.click();
             await new Promise(r => setTimeout(r, 100));
-            const innerW2 = innerEl.offsetWidth;
-            const innerH2 = innerEl.offsetHeight;
-            const wrapW2 = scrollWrap.offsetWidth;
-            const wrapH2 = scrollWrap.offsetHeight;
-            const wrapClass2 = scrollWrap.className;
-            const wrapStyle2 = scrollWrap.style.cssText;
-            const zoomOutOk = innerW2 > 0 && innerH2 > 0 && wrapW2 >= innerW2 && wrapH2 >= innerH2;
+            const transform2 = (scrollWrap.style.transform || '').trim();
+            const zoom2 = parseZoom();
+            const zoomOutOk = zoom2 >= 25 && zoom2 <= 300;
             const pass = zoomInOk && zoomOutOk;
-            return { pass, msg: `zoomIn: inner=${innerW}x${innerH} wrap=${wrapW}x${wrapH}; zoomOut: inner=${innerW2}x${innerH2} wrap=${wrapW2}x${wrapH2}` };
+            return { pass, msg: `zoomIn: zoom=${zoom1}% transform=${transform1.slice(0, 50)}…; zoomOut: zoom=${zoom2}%` };
         });
 
         testVisualizer('Visualizer Fullscreen', 'открытие модалки копирует диаграмму', async () => {
@@ -2559,6 +2584,17 @@
             const after = parseVal();
             const pass = after > initial;
             return { pass, msg: `initial=${initial} after=${after}` };
+        });
+
+        testVisualizer('Visualizer Fullscreen', 'в модалке область диаграммы без скроллбара (overflow hidden)', async () => {
+            if (!visualizerAppIframe?.contentDocument) return { pass: true, msg: 'Skipped' };
+            const doc = visualizerAppIframe.contentDocument;
+            const scrollEl = doc.getElementById('visualizer-fullscreen-scroll');
+            if (!scrollEl) return { pass: false, msg: 'Missing visualizer-fullscreen-scroll' };
+            const style = doc.defaultView?.getComputedStyle(scrollEl);
+            const overflow = (style?.overflow || '').toLowerCase();
+            const isHidden = overflow === 'hidden';
+            return { pass: isHidden, msg: isHidden ? 'overflow: hidden' : `overflow=${overflow}` };
         });
 
         testVisualizer('Visualizer Fullscreen', 'закрытие модалки по кнопке и клику по фону', async () => {

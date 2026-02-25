@@ -337,34 +337,36 @@
                         </form>
                         <div id="error" class="visualizer-regexper-error" role="alert" aria-live="assertive"></div>
                         <div id="warnings" class="visualizer-regexper-warnings" aria-hidden="true"></div>
-                        <div class="visualizer-diagram-area" id="visualizer-diagram-area">
-                            <div class="visualizer-diagram-placeholder" id="visualizer-diagram-placeholder">Диаграмма появится здесь после нажатия «Визуализировать».</div>
-                            <div class="visualizer-loading" id="visualizer-loading" aria-hidden="true" aria-label="Построение диаграммы" role="status">
-                                <span class="visualizer-loading-dot"></span>
-                                <span class="visualizer-loading-dot"></span>
-                                <span class="visualizer-loading-dot"></span>
-                            </div>
-                            <div class="visualizer-diagram-viewport" id="visualizer-diagram-viewport" style="display:none;">
-                                <div class="visualizer-diagram-scroll" id="visualizer-diagram-scroll">
-                                    <div class="visualizer-diagram-scroll-wrap">
-                                        <div class="visualizer-diagram-inner" id="regexp-render"></div>
+                        <div id="visualizer-diagram-block" class="visualizer-diagram-block">
+                            <div class="visualizer-diagram-area" id="visualizer-diagram-area">
+                                <div class="visualizer-diagram-placeholder" id="visualizer-diagram-placeholder">Диаграмма появится здесь после нажатия «Визуализировать».</div>
+                                <div class="visualizer-loading" id="visualizer-loading" aria-hidden="true" aria-label="Построение диаграммы" role="status">
+                                    <span class="visualizer-loading-dot"></span>
+                                    <span class="visualizer-loading-dot"></span>
+                                    <span class="visualizer-loading-dot"></span>
+                                </div>
+                                <div class="visualizer-diagram-viewport" id="visualizer-diagram-viewport" style="display:none;">
+                                    <div class="visualizer-diagram-scroll" id="visualizer-diagram-scroll">
+                                        <div class="visualizer-diagram-scroll-wrap">
+                                            <div class="visualizer-diagram-inner" id="regexp-render"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="visualizer-toolbar visualizer-export-actions" id="visualizer-export-actions" style="display:none;">
-                            <div class="visualizer-toolbar-export visualizer-download-dropdown">
-                                <button type="button" class="btn-secondary" id="visualizer-download-btn" title="Скачать диаграмму" aria-expanded="false" aria-haspopup="true">Скачать</button>
-                                <div class="visualizer-download-menu" id="visualizer-download-menu" role="menu" aria-label="Формат скачивания" aria-hidden="true">
-                                    <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-svg" title="Скачать SVG">SVG</button>
-                                    <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-png" title="Скачать PNG">PNG</button>
+                            <div class="visualizer-toolbar visualizer-export-actions" id="visualizer-export-actions" style="display:none;">
+                                <div class="visualizer-toolbar-export visualizer-download-dropdown">
+                                    <button type="button" class="btn-secondary" id="visualizer-download-btn" title="Скачать диаграмму" aria-expanded="false" aria-haspopup="true">Скачать</button>
+                                    <div class="visualizer-download-menu" id="visualizer-download-menu" role="menu" aria-label="Формат скачивания" aria-hidden="true">
+                                        <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-svg" title="Скачать SVG">SVG</button>
+                                        <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-png" title="Скачать PNG">PNG</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="visualizer-diagram-zoom-controls">
-                                <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-out" title="Уменьшить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Уменьшить">−</button>
-                                <span class="visualizer-zoom-value" id="visualizer-zoom-value">100%</span>
-                                <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-in" title="Увеличить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Увеличить">+</button>
-                                <button type="button" class="btn-secondary visualizer-toolbar-btn visualizer-fullscreen-btn-text" id="visualizer-fullscreen-btn" title="Раскрыть на весь экран" aria-label="Раскрыть на весь экран">Раскрыть на весь экран</button>
+                                <div class="visualizer-diagram-zoom-controls">
+                                    <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-out" title="Уменьшить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Уменьшить">−</button>
+                                    <span class="visualizer-zoom-value" id="visualizer-zoom-value">100%</span>
+                                    <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-in" title="Увеличить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Увеличить">+</button>
+                                    <button type="button" class="btn-secondary visualizer-toolbar-btn visualizer-fullscreen-btn-text" id="visualizer-fullscreen-btn" title="Раскрыть на весь экран" aria-label="Раскрыть на весь экран">Раскрыть на весь экран</button>
+                                </div>
                             </div>
                         </div>
                     </div>

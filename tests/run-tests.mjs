@@ -112,6 +112,14 @@ async function runBrowserTests(which) {
     if (which === 'visualizer' || which === 'all') {
       await page.click('button[data-panel="panel-visualizer"]');
       await page.waitForSelector('#panel-visualizer', { state: 'visible' });
+      await page.waitForTimeout(300);
+      await page.waitForFunction(
+        () => {
+          const iframe = document.getElementById('visualizer-app-iframe');
+          return iframe && iframe.contentDocument && iframe.contentDocument.getElementById('regexp-input');
+        },
+        { timeout: 15000 }
+      ).catch(() => null);
       await page.waitForTimeout(500);
       await page.click('#run-btn-visualizer');
       await page.waitForFunction(

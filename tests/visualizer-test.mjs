@@ -115,5 +115,16 @@ try {
   assert(false, 'Export filename exception: ' + e.message);
 }
 
+// Совпадение с app.js: formatDiagramFilename (имя без префикса diagram_)
+console.log('\nformatDiagramFilename from app.js');
+try {
+  const { formatDiagramFilename } = await import('../tools/visualizer/app.js');
+  const name = formatDiagramFilename();
+  assert(/^\d{2}-\d{2}-\d{4}_\d{2}-\d{2}$/.test(name), 'app formatDiagramFilename pattern');
+  assert(name.length >= 14, 'app formatDiagramFilename length');
+} catch (e) {
+  assert(false, 'formatDiagramFilename import: ' + e.message);
+}
+
 console.log('\n--- Result: ' + passed + ' passed, ' + failed + ' failed ---\n');
 process.exit(failed > 0 ? 1 : 0);

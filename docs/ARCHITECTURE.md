@@ -9,7 +9,7 @@
 | Инструмент | Документ | Описание |
 |------------|----------|----------|
 | **Конвертер** | [docs/converter/ARCHITECTURE.md](converter/ARCHITECTURE.md) | Поток данных, ключевые модули, UI, зависимые converters. |
-| **Визуализатор** | [docs/visualizer/ARCHITECTURE.md](visualizer/ARCHITECTURE.md) | Интеграция с regexper-static; кнопка «Скачать» с выпадающим меню (SVG/PNG); зум и Ctrl+колёсико; адаптивная высота области (has-diagram); модалка на весь экран; патч отступов бандла. |
+| **Визуализатор** | [docs/visualizer/ARCHITECTURE.md](visualizer/ARCHITECTURE.md) | Интеграция с regexper-static; блок diagram-block (панель всегда внизу); зум/пан как в Miro/Figma (transform, без скроллбара); fit to view при первой отрисовке; кнопка «Скачать» (SVG/PNG); модалка на весь экран; патч отступов бандла. |
 | **Регистр** | [docs/case/ARCHITECTURE.md](case/ARCHITECTURE.md) | Конвертер регистра текста (модальное окно из навигации): режимы, логика, интеграция, сброс, тесты. |
 | **Тестер** | [docs/tester/ARCHITECTURE.md](tester/ARCHITECTURE.md) | Проверка regex на тестовой строке: Python (emulated), флаги, Worker с таймаутом, подсветка в поле, Match Information. |
 | **Текстовый помощник** | — | Утилиты для работы с текстом: столбец↔строка, удаление дубликатов, пустых строк, префикс/суффикс, trim. Модальное окно из навигации. |

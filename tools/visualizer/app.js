@@ -228,12 +228,15 @@ export function initVisualizer() {
         naturalDiagramWidth = 0;
         naturalDiagramHeight = 0;
         currentZoom = 100;
+        panX = 0;
+        panY = 0;
         applyZoom();
         requestAnimationFrame(() => {
           if (innerEl && regexpRender.querySelector('.svg svg')) {
             const svgSize = getNaturalSvgSize();
             naturalDiagramWidth = svgSize.width;
             naturalDiagramHeight = svgSize.height;
+            applyFitToView();
           }
         });
       }
@@ -458,6 +461,8 @@ text { fill: #1a1a1a; }
   const MAX_ZOOM = 300;
   const ZOOM_STEP = 25;
   let currentZoom = 100;
+  let panX = 0;
+  let panY = 0;
   let naturalDiagramWidth = 0;
   let naturalDiagramHeight = 0;
   const innerEl = document.getElementById('regexp-render');
@@ -488,80 +493,79 @@ text { fill: #1a1a1a; }
   }
 
   const DIAGRAM_PADDING = 36;
-  
+
   function getScrollWrap() {
     return diagramScroll?.firstElementChild;
   }
 
   function applyZoom() {
-    const value = currentZoom + '%';
-    if (zoomValueEl) zoomValueEl.textContent = value;
-    const diagramEl = getDiagramScaleEl();
-    if (!innerEl) return;
+    if (zoomValueEl) zoomValueEl.textContent = `${currentZoom}%`;
+    const scrollWrap = getScrollWrap();
+    if (!scrollWrap) return;
+    const scale = currentZoom / 100;
+    scrollWrap.style.transformOrigin = '0 0';
+    scrollWrap.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  }
 
-    if (currentZoom === 100) {
-      const svgSize = getNaturalSvgSize();
-      naturalDiagramWidth = svgSize.width;
-      naturalDiagramHeight = svgSize.height;
-      innerEl.style.width = '';
-      innerEl.style.height = '';
-      innerEl.classList.remove('visualizer-diagram-inner--zoomed');
-      const scrollWrap = getScrollWrap();
-      if (scrollWrap) {
-        scrollWrap.style.width = '';
-        scrollWrap.style.height = '';
-        scrollWrap.style.minWidth = '';
-        scrollWrap.style.minHeight = '';
-        scrollWrap.classList.remove('visualizer-scroll-wrap--zoomed');
-      }
-      if (diagramEl) {
-        diagramEl.style.transform = '';
-        diagramEl.style.transformOrigin = '';
-      }
-    } else {
-      if (naturalDiagramWidth <= 0 || naturalDiagramHeight <= 0) {
-        const svgSize = getNaturalSvgSize();
-        naturalDiagramWidth = svgSize.width;
-        naturalDiagramHeight = svgSize.height;
-      }
-      const scaledW = Math.round(naturalDiagramWidth * currentZoom / 100);
-      const scaledH = Math.round(naturalDiagramHeight * currentZoom / 100);
-      const totalPadding = DIAGRAM_PADDING * 2;
-      const w = scaledW + totalPadding;
-      const h = scaledH + totalPadding;
-      innerEl.style.width = w + 'px';
-      innerEl.style.height = h + 'px';
-      innerEl.classList.add('visualizer-diagram-inner--zoomed');
-      const scrollWrap = getScrollWrap();
-      if (scrollWrap) {
-        scrollWrap.classList.add('visualizer-scroll-wrap--zoomed');
-        scrollWrap.style.width = w + 'px';
-        scrollWrap.style.height = h + 'px';
-        scrollWrap.style.minWidth = w + 'px';
-        scrollWrap.style.minHeight = h + 'px';
-      }
-      if (diagramEl) {
-        diagramEl.style.transform = `scale(${currentZoom / 100})`;
-        diagramEl.style.transformOrigin = '0 0';
-      }
+  function applyFitToView() {
+    if (!diagramScroll || !innerEl || !hasDiagram()) return;
+    const svgSize = getNaturalSvgSize();
+    naturalDiagramWidth = svgSize.width;
+    naturalDiagramHeight = svgSize.height;
+    if (naturalDiagramWidth <= 0 || naturalDiagramHeight <= 0) return;
+
+    const totalW = naturalDiagramWidth + DIAGRAM_PADDING * 2;
+    const totalH = naturalDiagramHeight + DIAGRAM_PADDING * 2;
+    const vw = diagramScroll.clientWidth || diagramScroll.getBoundingClientRect().width;
+    const vh = diagramScroll.clientHeight || diagramScroll.getBoundingClientRect().height;
+    if (!vw || !vh) return;
+
+    const scale = Math.min(1, vw / totalW, vh / totalH);
+    currentZoom = Math.round(scale * 100);
+    const scaledW = totalW * scale;
+    const scaledH = totalH * scale;
+    panX = (vw - scaledW) / 2;
+    panY = (vh - scaledH) / 2;
+    applyZoom();
+  }
+
+  function zoomAtPoint(viewportX, viewportY, deltaZoom) {
+    if (!hasDiagram() || !diagramScroll) {
+      showError('Сначала визуализируйте regex, чтобы изменять масштаб');
+      return;
     }
+    const oldZoom = currentZoom;
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, oldZoom + deltaZoom));
+    if (newZoom === oldZoom) return;
+
+    const scale = oldZoom / 100;
+    const diagramX = (viewportX - panX) / scale;
+    const diagramY = (viewportY - panY) / scale;
+    const newScale = newZoom / 100;
+
+    currentZoom = newZoom;
+    panX = viewportX - diagramX * newScale;
+    panY = viewportY - diagramY * newScale;
+    applyZoom();
   }
 
   function zoomOut() {
-    if (!hasDiagram()) {
+    if (!diagramScroll) {
       showError('Сначала визуализируйте regex, чтобы изменять масштаб');
       return;
     }
-    currentZoom = Math.max(MIN_ZOOM, currentZoom - ZOOM_STEP);
-    applyZoom();
+    const centerX = diagramScroll.clientWidth / 2;
+    const centerY = diagramScroll.clientHeight / 2;
+    zoomAtPoint(centerX, centerY, -ZOOM_STEP);
   }
   function zoomIn() {
-    if (!hasDiagram()) {
+    if (!diagramScroll) {
       showError('Сначала визуализируйте regex, чтобы изменять масштаб');
       return;
     }
-    currentZoom = Math.min(MAX_ZOOM, currentZoom + ZOOM_STEP);
-    applyZoom();
+    const centerX = diagramScroll.clientWidth / 2;
+    const centerY = diagramScroll.clientHeight / 2;
+    zoomAtPoint(centerX, centerY, ZOOM_STEP);
   }
   zoomOutBtn?.addEventListener('click', zoomOut);
   zoomInBtn?.addEventListener('click', zoomIn);
@@ -573,33 +577,41 @@ text { fill: #1a1a1a; }
   diagramScroll?.addEventListener('wheel', (e) => {
     if (!e.ctrlKey || !hasDiagram()) return;
     e.preventDefault();
-    if (e.deltaY < 0) {
-      currentZoom = Math.min(MAX_ZOOM, currentZoom + ZOOM_STEP);
-    } else {
-      currentZoom = Math.max(MIN_ZOOM, currentZoom - ZOOM_STEP);
-    }
-    applyZoom();
+    const rect = diagramScroll.getBoundingClientRect();
+    const viewportX = e.clientX - rect.left;
+    const viewportY = e.clientY - rect.top;
+    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+    zoomAtPoint(viewportX, viewportY, delta);
   }, { passive: false });
 
-  // Pan: ЛКМ + перетаскивание в области скролла (направление как «тянешь окно»: вниз → контент вверх, вправо → контент влево)
+  // Pan: ЛКМ + перетаскивание — двигаем panX/panY (как в Miro/Figma)
   let panStart = null;
   diagramScroll?.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     panStart = {
-      x: e.clientX - diagramScroll.scrollLeft,
-      y: e.clientY - diagramScroll.scrollTop,
-      scrollLeft: diagramScroll.scrollLeft,
-      scrollTop: diagramScroll.scrollTop
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      panX,
+      panY
     };
+    diagramScroll.style.cursor = 'grabbing';
   });
   document.addEventListener('mousemove', (e) => {
     if (panStart === null) return;
     e.preventDefault();
-    diagramScroll.scrollLeft = panStart.scrollLeft - (e.clientX - (panStart.x + panStart.scrollLeft));
-    diagramScroll.scrollTop = panStart.scrollTop - (e.clientY - (panStart.y + panStart.scrollTop));
+    const dx = e.clientX - panStart.mouseX;
+    const dy = e.clientY - panStart.mouseY;
+    panX = panStart.panX + dx;
+    panY = panStart.panY + dy;
+    applyZoom();
   });
-  document.addEventListener('mouseup', () => { panStart = null; });
-  document.addEventListener('mouseleave', () => { panStart = null; });
+  function stopPan() {
+    if (!diagramScroll) return;
+    panStart = null;
+    diagramScroll.style.cursor = 'grab';
+  }
+  document.addEventListener('mouseup', stopPan);
+  document.addEventListener('mouseleave', stopPan);
 
   // Модальное окно «на весь экран»: кнопка, открытие/закрытие, клон диаграммы, зум, пан, экспорт
   const fullscreenBtn = document.getElementById('visualizer-fullscreen-btn');
@@ -616,13 +628,11 @@ text { fill: #1a1a1a; }
   const modalExportPngBtn = document.getElementById('visualizer-modal-export-png');
 
   let modalZoom = 100;
+  let modalPanX = 0;
+  let modalPanY = 0;
   let naturalDiagramWidthModal = 0;
   let naturalDiagramHeightModal = 0;
-
-  function getModalDiagramScaleEl() {
-    if (!modalInner) return null;
-    return modalInner.querySelector('.svg') || modalInner.querySelector('svg') || modalInner.firstElementChild;
-  }
+  let modalPanStart = null;
 
   /** Получить натуральные размеры SVG в модальном окне */
   function getModalNaturalSvgSize() {
@@ -641,64 +651,57 @@ text { fill: #1a1a1a; }
 
   function applyModalZoom() {
     if (modalZoomValueEl) modalZoomValueEl.textContent = modalZoom + '%';
-    const diagramEl = getModalDiagramScaleEl();
-    if (!modalInner) return;
-    if (modalZoom === 100) {
-      const svgSize = getModalNaturalSvgSize();
-      naturalDiagramWidthModal = svgSize.width;
-      naturalDiagramHeightModal = svgSize.height;
-      modalInner.style.width = '';
-      modalInner.style.height = '';
-      modalInner.classList.remove('visualizer-fullscreen-inner--zoomed');
-      if (modalScrollWrap) {
-        modalScrollWrap.style.width = '';
-        modalScrollWrap.style.height = '';
-        modalScrollWrap.style.minWidth = '';
-        modalScrollWrap.style.minHeight = '';
-        modalScrollWrap.classList.remove('visualizer-scroll-wrap--zoomed');
-      }
-      if (diagramEl) {
-        diagramEl.style.transform = '';
-        diagramEl.style.transformOrigin = '';
-      }
-    } else {
-      if (naturalDiagramWidthModal <= 0 || naturalDiagramHeightModal <= 0) {
-        const svgSize = getModalNaturalSvgSize();
-        naturalDiagramWidthModal = svgSize.width;
-        naturalDiagramHeightModal = svgSize.height;
-      }
-      const scaledW = Math.round(naturalDiagramWidthModal * modalZoom / 100);
-      const scaledH = Math.round(naturalDiagramHeightModal * modalZoom / 100);
-      const totalPadding = DIAGRAM_PADDING * 2;
-      const w = scaledW + totalPadding;
-      const h = scaledH + totalPadding;
-      modalInner.style.width = w + 'px';
-      modalInner.style.height = h + 'px';
-      modalInner.classList.add('visualizer-fullscreen-inner--zoomed');
-      if (modalScrollWrap) {
-        modalScrollWrap.classList.add('visualizer-scroll-wrap--zoomed');
-        modalScrollWrap.style.width = w + 'px';
-        modalScrollWrap.style.height = h + 'px';
-        modalScrollWrap.style.minWidth = w + 'px';
-        modalScrollWrap.style.minHeight = h + 'px';
-      }
-      if (diagramEl) {
-        diagramEl.style.transform = `scale(${modalZoom / 100})`;
-        diagramEl.style.transformOrigin = '0 0';
-      }
-    }
+    if (!modalScrollWrap) return;
+    const scale = modalZoom / 100;
+    modalScrollWrap.style.transformOrigin = '0 0';
+    modalScrollWrap.style.transform = `translate(${modalPanX}px, ${modalPanY}px) scale(${scale})`;
   }
 
-  // Зум по Ctrl + колёсико мыши в модальном окне (как в панели диаграммы)
+  function applyModalFitToView() {
+    if (!modalScroll || !modalInner || !modalScrollWrap) return;
+    const svg = modalInner.querySelector('svg');
+    if (!svg) return;
+    const svgSize = getModalNaturalSvgSize();
+    naturalDiagramWidthModal = svgSize.width;
+    naturalDiagramHeightModal = svgSize.height;
+    if (naturalDiagramWidthModal <= 0 || naturalDiagramHeightModal <= 0) return;
+    const totalW = naturalDiagramWidthModal + DIAGRAM_PADDING * 2;
+    const totalH = naturalDiagramHeightModal + DIAGRAM_PADDING * 2;
+    const vw = modalScroll.clientWidth || modalScroll.getBoundingClientRect().width;
+    const vh = modalScroll.clientHeight || modalScroll.getBoundingClientRect().height;
+    if (!vw || !vh) return;
+    const scale = Math.min(1, vw / totalW, vh / totalH);
+    modalZoom = Math.round(scale * 100);
+    const scaledW = totalW * scale;
+    const scaledH = totalH * scale;
+    modalPanX = (vw - scaledW) / 2;
+    modalPanY = (vh - scaledH) / 2;
+    applyModalZoom();
+  }
+
+  function modalZoomAtPoint(viewportX, viewportY, deltaZoom) {
+    if (!modalScroll || !modalScrollWrap) return;
+    const oldZoom = modalZoom;
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, oldZoom + deltaZoom));
+    if (newZoom === oldZoom) return;
+    const scale = oldZoom / 100;
+    const diagramX = (viewportX - modalPanX) / scale;
+    const diagramY = (viewportY - modalPanY) / scale;
+    const newScale = newZoom / 100;
+    modalZoom = newZoom;
+    modalPanX = viewportX - diagramX * newScale;
+    modalPanY = viewportY - diagramY * newScale;
+    applyModalZoom();
+  }
+
   modalScroll?.addEventListener('wheel', (e) => {
     if (!e.ctrlKey) return;
     e.preventDefault();
-    if (e.deltaY < 0) {
-      modalZoom = Math.min(MAX_ZOOM, modalZoom + ZOOM_STEP);
-    } else {
-      modalZoom = Math.max(MIN_ZOOM, modalZoom - ZOOM_STEP);
-    }
-    applyModalZoom();
+    const rect = modalScroll.getBoundingClientRect();
+    const viewportX = e.clientX - rect.left;
+    const viewportY = e.clientY - rect.top;
+    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+    modalZoomAtPoint(viewportX, viewportY, delta);
   }, { passive: false });
 
   function openFullscreenModal() {
@@ -711,11 +714,11 @@ text { fill: #1a1a1a; }
     naturalDiagramWidthModal = 0;
     naturalDiagramHeightModal = 0;
     modalZoom = 100;
+    modalPanX = 0;
+    modalPanY = 0;
+    applyModalZoom();
     requestAnimationFrame(() => {
-      const svgSize = getModalNaturalSvgSize();
-      naturalDiagramWidthModal = svgSize.width;
-      naturalDiagramHeightModal = svgSize.height;
-      applyModalZoom();
+      applyModalFitToView();
     });
     if (overlay) {
       overlay.classList.add('is-open');
@@ -725,6 +728,7 @@ text { fill: #1a1a1a; }
 
   function closeFullscreenModal() {
     modalPanStart = null;
+    if (modalScroll) modalScroll.style.cursor = 'grab';
     if (overlay) {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
@@ -739,32 +743,46 @@ text { fill: #1a1a1a; }
   modal?.addEventListener('click', (e) => e.stopPropagation());
 
   modalZoomOutBtn?.addEventListener('click', () => {
-    modalZoom = Math.max(MIN_ZOOM, modalZoom - ZOOM_STEP);
-    applyModalZoom();
+    if (!modalScroll) return;
+    const centerX = modalScroll.clientWidth / 2;
+    const centerY = modalScroll.clientHeight / 2;
+    modalZoomAtPoint(centerX, centerY, -ZOOM_STEP);
   });
   modalZoomInBtn?.addEventListener('click', () => {
-    modalZoom = Math.min(MAX_ZOOM, modalZoom + ZOOM_STEP);
-    applyModalZoom();
+    if (!modalScroll) return;
+    const centerX = modalScroll.clientWidth / 2;
+    const centerY = modalScroll.clientHeight / 2;
+    modalZoomAtPoint(centerX, centerY, ZOOM_STEP);
   });
 
   modalExportSvgBtn?.addEventListener('click', () => exportSvgBtn?.click());
   modalExportPngBtn?.addEventListener('click', () => exportPngBtn?.click());
 
-  let modalPanStart = null;
   modalScroll?.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     modalPanStart = {
-      x: e.clientX - modalScroll.scrollLeft,
-      y: e.clientY - modalScroll.scrollTop,
-      scrollLeft: modalScroll.scrollLeft,
-      scrollTop: modalScroll.scrollTop
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      panX: modalPanX,
+      panY: modalPanY
     };
+    modalScroll.style.cursor = 'grabbing';
   });
   document.addEventListener('mousemove', (e) => {
     if (modalPanStart === null || !modalScroll) return;
     e.preventDefault();
-    modalScroll.scrollLeft = modalPanStart.scrollLeft - (e.clientX - (modalPanStart.x + modalPanStart.scrollLeft));
-    modalScroll.scrollTop = modalPanStart.scrollTop - (e.clientY - (modalPanStart.y + modalPanStart.scrollTop));
+    const dx = e.clientX - modalPanStart.mouseX;
+    const dy = e.clientY - modalPanStart.mouseY;
+    modalPanX = modalPanStart.panX + dx;
+    modalPanY = modalPanStart.panY + dy;
+    applyModalZoom();
   });
-  document.addEventListener('mouseup', () => { modalPanStart = null; });
+  document.addEventListener('mouseup', () => {
+    modalPanStart = null;
+    if (modalScroll) modalScroll.style.cursor = 'grab';
+  });
+  document.addEventListener('mouseleave', () => {
+    modalPanStart = null;
+    if (modalScroll) modalScroll.style.cursor = 'grab';
+  });
 }
