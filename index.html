@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="tools/visualizer/css/regexper-reset.css">
     <link rel="stylesheet" href="tools/texthelper/css/texthelper.css">
     <link rel="stylesheet" href="tools/tester/css/tester.css">
+    <link rel="stylesheet" href="tools/editor/css/editor.css">
 </head>
 <body>
 <div class="page-wrapper">
@@ -50,6 +51,7 @@
             <!-- Навигация -->
             <nav class="header-nav">
                 <a href="#converter-section" class="nav-link active">Конвертер</a>
+                <a href="#editor" class="nav-link">Редактор</a>
                 <a href="#visualizer" class="nav-link">Визуализатор</a>
                 <a href="#tester" class="nav-link">Тестер</a>
                 <a href="#history-section" class="nav-link">История</a>
@@ -198,6 +200,9 @@
                         <button class="btn-secondary btn-to-visualizer" id="to-visualizer-btn" title="Вставить результат в визуализатор и перейти к нему">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg> В визуализатор
                         </button>
+                        <button class="btn-secondary btn-to-editor" id="to-editor-btn" title="Отправить результат в ручной редактор">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> В редактор
+                        </button>
                         <button type="button" class="btn-header-clear btn-danger" id="clear-result-btn" title="Очистить результат: удаляет regex из поля результата">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             <span>Очистить</span>
@@ -207,6 +212,91 @@
             </div>
 
         </main>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--              EDITOR SECTION (ручной редактор regex)          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <section id="editor" class="editor-section">
+        <div class="editor-container">
+            <div class="panel editor-panel">
+                <div class="panel-header panel-header-compact">
+                    <h2 class="panel-title panel-title-compact"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Ручной редактор регулярных выражений</h2>
+                    <p class="panel-hint panel-hint-compact" id="editor-hint">Вводите или вставляйте regex, используйте кнопки справа для вставки параметров и соединителей в позицию курсора.</p>
+                </div>
+                <div class="panel-body panel-body-compact editor-body">
+                    <div class="editor-main">
+                        <div class="editor-field-wrap">
+                            <div class="editor-overlay-wrap">
+                                <div class="editor-highlight-layer" id="editor-highlight-layer" aria-hidden="true"></div>
+                                <textarea
+                                    id="editor-textarea"
+                                    class="editor-textarea"
+                                    placeholder="Введите или вставьте регулярное выражение"
+                                    spellcheck="false"
+                                    rows="5"
+                                ></textarea>
+                            </div>
+                            <div class="editor-validation" id="editor-validation"></div>
+                        </div>
+                        <div class="editor-params">
+                            <div class="editor-params-group">
+                                <span class="editor-params-group-title">Параметры триггера</span>
+                                <div class="editor-params-row editor-params-row-3">
+                                    <button type="button" class="editor-param-btn" data-insert="?" title="Опциональный символ">(?)</button>
+                                    <button type="button" class="editor-param-btn" data-insert="\w" title="Один буквенно-цифровой символ">(\w)</button>
+                                    <button type="button" class="editor-param-btn" data-insert="\w{0,10}" title="От 0 до 10 буквенно-цифровых">(\w{0,10})</button>
+                                </div>
+                                <div class="editor-params-row editor-params-row-2">
+                                    <button type="button" class="editor-param-btn" data-insert="\b" title="Граница слова">(\b)</button>
+                                    <button type="button" class="editor-param-btn" data-insert="\s" title="Пробел после">(\s)</button>
+                                </div>
+                            </div>
+                            <div class="editor-params-group">
+                                <span class="editor-params-group-title">Соединители</span>
+                                <div class="editor-params-row editor-params-row-2">
+                                    <button type="button" class="editor-param-btn" data-insert="|" title="Альтернация (ИЛИ)">|</button>
+                                    <button type="button" class="editor-param-btn" data-insert="[\s\S]+" title="Любое расстояние">[\s\S]+</button>
+                                </div>
+                                <div class="editor-params-row editor-params-row-2">
+                                    <button type="button" class="editor-param-btn" data-insert=".+" title="В пределах абзаца">.+</button>
+                                    <button type="button" class="editor-param-btn" data-insert="[^\\n]+" title="В пределах строки">[^\n]+</button>
+                                </div>
+                                <div class="editor-params-row editor-params-row-1">
+                                    <button type="button" class="editor-param-btn" data-insert=".{0,10}" title="Своё расстояние 0–10">.{0,10}</button>
+                                </div>
+                            </div>
+                            <div class="editor-params-group">
+                                <span class="editor-params-group-title">Скобки</span>
+                                <div class="editor-params-row editor-params-row-2">
+                                    <button type="button" class="editor-param-btn editor-param-btn-label" data-insert="(" title="Открывающая скобка">Откр. скобка (</button>
+                                    <button type="button" class="editor-param-btn editor-param-btn-label" data-insert=")" title="Закрывающая скобка">Закр. скобка )</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-actions editor-actions">
+                        <button class="btn-secondary" id="editor-copy-btn" title="Скопировать в буфер обмена">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать
+                        </button>
+                        <button class="btn-secondary" id="editor-to-visualizer-btn" title="Вставить в визуализатор и перейти">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg> В визуализатор
+                        </button>
+                        <button class="btn-secondary" id="editor-to-tester-btn" title="Вставить в тестер и перейти">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> В тестер
+                        </button>
+                        <button type="button" class="btn-secondary" id="editor-check-btn" title="Проверить синтаксис (вкл/выкл)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Проверить
+                        </button>
+                        <button type="button" class="btn-header-clear btn-danger" id="editor-clear-btn" title="Очистить поле редактора">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            <span>Очистить</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════ -->

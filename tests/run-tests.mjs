@@ -23,7 +23,8 @@ const NODE_TESTS = [
   'tests/converter-reference-test.mjs',
   'tests/visualizer-test.mjs',
   'tests/texthelper-test.mjs',
-  'tests/tester-test.mjs'
+  'tests/tester-test.mjs',
+  'tests/editor-test.mjs'
 ];
 
 const MIME = {
@@ -180,6 +181,68 @@ async function runBrowserTests(which) {
       }
     }
 
+    if (which === 'editor' || which === 'all') {
+      const editorPage = await browser.newPage();
+      try {
+        await editorPage.goto(`${base}/index.html`, { waitUntil: 'networkidle' });
+        await editorPage.waitForSelector('#editor-textarea');
+
+        // Проверка: кнопка «В редактор» переносит результат
+        await editorPage.evaluate(() => {
+          const ta = document.getElementById('result-textarea');
+          if (ta) ta.value = 'abc123';
+        });
+        await editorPage.click('#to-editor-btn');
+        await editorPage.waitForTimeout(200);
+        const editorValue = await editorPage.$eval('#editor-textarea', el => el.value);
+        if (editorValue !== 'abc123') {
+          console.error('Editor browser tests: sendToEditor failed, value=', editorValue);
+          anyFailed = true;
+        } else {
+          console.log('Editor browser: sendToEditor OK');
+        }
+
+        // Проверка: вставка параметра (\w) в позицию курсора
+        await editorPage.click('#editor-textarea');
+        await editorPage.keyboard.type('test');
+        await editorPage.click('button.editor-param-btn[data-insert="\\\\w"]');
+        const editorValue2 = await editorPage.$eval('#editor-textarea', el => el.value);
+        if (!editorValue2.endsWith('test\\w')) {
+          console.error('Editor browser tests: param insert failed, value=', editorValue2);
+          anyFailed = true;
+        } else {
+          console.log('Editor browser: param insert OK');
+        }
+
+        // Проверка: подсветка синтаксической ошибки и её снятие
+        await editorPage.$eval('#editor-textarea', el => { el.value = '('; });
+        await editorPage.click('#editor-check-btn');
+        await editorPage.waitForTimeout(300);
+        const hasErrorClass = await editorPage.$eval('#editor-validation', el => el.classList.contains('validation-error'));
+        const highlightHtml = await editorPage.$eval('#editor-highlight-layer', el => el.innerHTML);
+        if (!hasErrorClass || !highlightHtml || !highlightHtml.includes('import-highlight-error')) {
+          console.error('Editor browser tests: validation highlight failed');
+          anyFailed = true;
+        } else {
+          console.log('Editor browser: validation highlight OK');
+        }
+        await editorPage.click('#editor-check-btn');
+        await editorPage.waitForTimeout(200);
+        const highlightAfterOff = await editorPage.$eval('#editor-highlight-layer', el => el.innerHTML);
+        if (highlightAfterOff && highlightAfterOff.trim().length > 0) {
+          console.error('Editor browser tests: validation toggle off failed');
+          anyFailed = true;
+        } else {
+          console.log('Editor browser: validation toggle off OK');
+        }
+      } catch (e) {
+        console.error('Editor browser tests exception:', e.message);
+        anyFailed = true;
+      } finally {
+        await editorPage.close();
+      }
+    }
+
   } catch (e) {
     console.error('Run error:', e.message);
     anyFailed = true;
@@ -193,10 +256,11 @@ async function runBrowserTests(which) {
 async function main() {
   const args = process.argv.slice(2);
   const doNode = args.length === 0 || args.includes('--node');
-  const doBrowser = args.includes('--browser') || args.includes('--browser-converter') || args.includes('--browser-visualizer') || args.includes('--browser-case');
+  const doBrowser = args.includes('--browser') || args.includes('--browser-converter') || args.includes('--browser-visualizer') || args.includes('--browser-case') || args.includes('--browser-editor');
   const browserWhich = args.includes('--browser-visualizer') ? 'visualizer'
     : args.includes('--browser-converter') ? 'converter'
     : args.includes('--browser-case') ? 'case'
+    : args.includes('--browser-editor') ? 'editor'
     : args.includes('--browser-tester') ? 'tester'
     : doBrowser ? 'all' : null;
 

@@ -4,6 +4,7 @@
  */
 
 import { initApp } from './tools/converter/app.js';
+import { initEditor } from './tools/editor/app.js';
 import { initVisualizer } from './tools/visualizer/app.js';
 import { initTester } from './tools/tester/app.js';
 import { initTexthelper } from './tools/texthelper/app.js';
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Инициализация приложения
     initApp();
+    initEditor();
     initVisualizer();
     initTester();
     initTexthelper();

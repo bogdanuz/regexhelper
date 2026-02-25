@@ -133,7 +133,7 @@ function syncViewFromRegexper(bodyEl) {
  */
 function isSectionHash(hashValue) {
   const decoded = tryDecodeHash(hashValue);
-  return decoded === 'visualizer' || decoded === 'converter-section' || decoded === 'history-section' || decoded === 'tester' || decoded === 'top';
+  return decoded === 'visualizer' || decoded === 'converter-section' || decoded === 'history-section' || decoded === 'tester' || decoded === 'editor' || decoded === 'top';
 }
 
 function tryDecodeHash(hashValue) {

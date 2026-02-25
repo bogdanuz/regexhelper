@@ -1819,7 +1819,8 @@
 .output-actions .btn-convert,
 .output-actions .btn-copy,
 .output-actions .btn-to-tester,
-.output-actions .btn-to-visualizer {
+.output-actions .btn-to-visualizer,
+.output-actions .btn-to-editor {
     flex-shrink: 0;
     height: 36px;
 }

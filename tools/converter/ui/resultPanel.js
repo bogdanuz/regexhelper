@@ -153,6 +153,27 @@ export function sendToVisualizer() {
   showSuccess('Regex вставлен в визуализатор');
 }
 
+/**
+ * Отправляет результат в ручной редактор (заменяет содержимое поля редактора)
+ */
+export async function sendToEditor() {
+  const regex = getResultValue();
+  if (!regex) {
+    showError('Сначала выполните конвертацию');
+    return;
+  }
+
+  const { setEditorContent } = await import('../../editor/app.js');
+  setEditorContent(regex);
+
+  const editorSection = document.getElementById('editor');
+  if (editorSection) {
+    editorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  showSuccess('Результат отправлен в редактор');
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // ИНИЦИАЛИЗАЦИЯ КНОПОК
 // ═══════════════════════════════════════════════════════════════════
@@ -183,6 +204,11 @@ export function initResultPanel() {
   if (toVisualizerBtn) {
     toVisualizerBtn.onclick = sendToVisualizer;
   }
+
+  const toEditorBtn = document.getElementById('to-editor-btn');
+  if (toEditorBtn) {
+    toEditorBtn.onclick = sendToEditor;
+  }
 }
 
 export default {
@@ -191,5 +217,6 @@ export default {
   copyResultToClipboard,
   sendToTester,
   sendToVisualizer,
+  sendToEditor,
   initResultPanel
 };

@@ -135,6 +135,7 @@ function initUIComponents() {
 function initHeaderNav() {
   const headerNav = document.querySelector('.header-nav');
   const converterSection = document.getElementById('converter-section');
+  const editorSection = document.getElementById('editor');
   const visualizerSection = document.getElementById('visualizer');
   const testerSection = document.getElementById('tester');
   const historySection = document.getElementById('history-section');
@@ -173,6 +174,7 @@ function initHeaderNav() {
     { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
   );
   observer.observe(converterSection);
+  if (editorSection) observer.observe(editorSection);
   if (visualizerSection) observer.observe(visualizerSection);
   if (testerSection) observer.observe(testerSection);
   observer.observe(historySection);

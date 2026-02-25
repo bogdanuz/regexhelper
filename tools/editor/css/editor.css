@@ -1,0 +1,282 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER - EDITOR PANEL
+   Ручной редактор регулярных выражений
+   ═══════════════════════════════════════════════════════════════════ */
+
+#editor.editor-section {
+    scroll-margin-top: 80px;
+}
+
+.editor-section {
+    margin-top: var(--spacing-xxl);
+    padding: 0 48px var(--spacing-xl);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.editor-container {
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.editor-panel {
+    border-top: 3px solid var(--color-success);
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    flex: 1;
+    min-height: 0;
+}
+
+.editor-main {
+    display: flex;
+    gap: var(--spacing-l);
+    align-items: stretch;
+    min-height: 200px;
+    flex: 1;
+}
+
+.editor-field-wrap {
+    flex: 1 1 60%;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+}
+
+.editor-overlay-wrap {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 120px;
+}
+
+.editor-highlight-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 12px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    overflow: auto;
+    pointer-events: none;
+    z-index: 0;
+    background: var(--color-bg-page);
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    color: var(--color-success);
+    box-sizing: border-box;
+}
+
+.editor-textarea {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: none;
+    box-sizing: border-box;
+    background: var(--color-bg-page);
+    color: var(--color-success);
+    display: block;
+}
+
+/* При показе ошибок валидации: текст и фон прозрачны — виден слой подсветки (как в импорте паттерна) */
+.editor-textarea.validation-showing {
+    color: transparent !important;
+    -webkit-text-fill-color: transparent;
+    background: transparent !important;
+    caret-color: var(--color-text-primary);
+}
+
+.editor-textarea:focus {
+    outline: none;
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.1);
+}
+
+.editor-textarea::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+.editor-validation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 13px;
+    min-height: 24px;
+}
+
+.editor-validation.validation-error {
+    color: var(--color-error);
+}
+
+.editor-validation-reminder {
+    color: var(--color-text-tertiary);
+    font-size: 12px;
+    width: 100%;
+}
+
+.editor-validation.validation-success {
+    color: var(--color-success);
+}
+
+/* Правая панель — параметры и соединители (группы, аккуратная сетка) */
+.editor-params {
+    flex: 0 0 auto;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+}
+
+.editor-params-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+}
+
+.editor-params-group-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary);
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.editor-params-row {
+    display: grid;
+    gap: var(--spacing-s);
+    align-items: stretch;
+}
+
+.editor-params-row-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.editor-params-row-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.editor-params-row-1 {
+    grid-template-columns: 1fr;
+}
+
+.editor-param-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: 'Fira Code', monospace;
+    background: var(--color-bg-card);
+    color: var(--color-success);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    white-space: nowrap;
+    min-width: 0;
+    text-align: center;
+}
+
+.editor-param-btn:hover {
+    border-color: var(--color-success);
+    background: rgba(52, 211, 153, 0.08);
+    color: var(--color-success);
+}
+
+.editor-param-btn:active {
+    border-color: var(--color-success);
+}
+
+.editor-param-btn-label {
+    font-size: 11px;
+    white-space: normal;
+    line-height: 1.3;
+}
+
+/* Кнопки действий редактора */
+.editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-m);
+    align-items: center;
+}
+
+.editor-actions .btn-secondary,
+.editor-actions .btn-header-clear {
+    flex-shrink: 0;
+    height: 36px;
+}
+
+.editor-actions .btn-header-clear {
+    margin-left: auto;
+}
+
+/* Кнопка «Проверить»: выкл — вторичная, вкл — акцент для явной индикации */
+#editor-check-btn {
+    border-color: var(--color-border-default);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+}
+
+#editor-check-btn:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+#editor-check-btn.is-active {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.18);
+    color: var(--color-primary);
+}
+
+#editor-check-btn.is-active:hover {
+    background: rgba(var(--color-primary-rgb), 0.25);
+}
+
+/* Подсветка ошибок в слое редактора (те же классы, что в модалке импорта) */
+.editor-highlight-layer .import-highlight-error {
+    background: rgba(239, 68, 68, 0.25);
+    color: var(--color-error);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+.editor-highlight-layer .import-highlight-warning {
+    background: rgba(251, 191, 36, 0.25);
+    color: var(--color-warning);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+@media (max-width: 900px) {
+    .editor-main {
+        flex-direction: column;
+    }
+
+    .editor-params {
+        width: 100%;
+    }
+}
