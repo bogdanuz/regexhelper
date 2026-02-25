@@ -11,6 +11,11 @@ on:
       - 'version.json'
       - '.github/workflows/update-version.yml'
 
+# Один запуск за раз — избегаем гонки и конфликта при push
+concurrency:
+  group: update-version-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-version:
     runs-on: ubuntu-latest
@@ -22,23 +27,32 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Update version.json
+      - name: Sync with main and update version.json
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git pull --rebase origin main
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           DATE=$(date -u +"%Y-%m-%d")
-          cat > version.json << EOF
+          cat > version.json << 'EOF'
           {
-            "version": "$TIMESTAMP",
-            "updated": "$DATE"
+            "version": "TIMESTAMP_PLACEHOLDER",
+            "updated": "DATE_PLACEHOLDER"
           }
           EOF
+          sed -i "s/TIMESTAMP_PLACEHOLDER/$TIMESTAMP/" version.json
+          sed -i "s/DATE_PLACEHOLDER/$DATE/" version.json
           echo "Updated version to $TIMESTAMP"
 
       - name: Commit and push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add version.json
-          git diff --staged --quiet || git commit -m "chore: update version.json [skip ci]"
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes, skip commit"
+            exit 0
+          fi
+          git commit -m "chore: update version.json [skip ci]"
+          git push origin main
