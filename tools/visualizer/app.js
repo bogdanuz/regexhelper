@@ -439,7 +439,8 @@ text { fill: #1a1a1a; }
     e.stopPropagation();
     setDownloadMenuOpen(!downloadMenu?.classList.contains('is-open'));
   });
-  document.addEventListener('click', () => {
+  document.addEventListener('click', (e) => {
+    if (downloadBtn && (e.target === downloadBtn || downloadBtn.contains(e.target))) return;
     if (downloadMenu?.classList.contains('is-open')) setDownloadMenuOpen(false);
   });
   downloadMenu?.addEventListener('click', (e) => {

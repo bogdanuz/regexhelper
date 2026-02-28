@@ -289,6 +289,9 @@
                         <button type="button" class="btn-secondary" id="editor-check-btn" title="Проверить синтаксис (вкл/выкл)">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Проверить
                         </button>
+                        <button type="button" class="btn-secondary" id="editor-save-to-history-btn" title="Сохранить текущее выражение в историю">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Сохранить в историю
+                        </button>
                         <button type="button" class="btn-header-clear btn-danger" id="editor-clear-btn" title="Очистить поле редактора">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                             <span>Очистить</span>
@@ -414,11 +417,12 @@
                         <div class="tester-flags-dropdown-wrap">
                             <button type="button" class="btn-secondary tester-flags-toggle" id="tester-flags-toggle" aria-expanded="false" aria-haspopup="true" title="Открыть список флагов регулярных выражений">Флаги</button>
                             <div class="tester-flags-dropdown" id="tester-flags-dropdown" role="group" aria-label="Regex flags" hidden>
+                                <p class="tester-flags-hint">По умолчанию: g, m, u (как Python на regex101). a и u не совместимы.</p>
                                 <label class="tester-flag"><input type="checkbox" id="tester-flag-g" checked> <span class="tester-flag-name">global</span> <span class="tester-flag-desc">Don't return after first match</span></label>
                                 <label class="tester-flag"><input type="checkbox" id="tester-flag-m" checked> <span class="tester-flag-name">multiline</span> <span class="tester-flag-desc">^ and $ match start/end of line</span></label>
                                 <label class="tester-flag"><input type="checkbox" id="tester-flag-i"> <span class="tester-flag-name">insensitive</span> <span class="tester-flag-desc">Case insensitive match</span></label>
                                 <label class="tester-flag"><input type="checkbox" id="tester-flag-s"> <span class="tester-flag-name">single line</span> <span class="tester-flag-desc">Dot matches newline</span></label>
-                                <label class="tester-flag"><input type="checkbox" id="tester-flag-u"> <span class="tester-flag-name">unicode</span> <span class="tester-flag-desc">Match with full unicode</span></label>
+                                <label class="tester-flag"><input type="checkbox" id="tester-flag-u" checked> <span class="tester-flag-name">unicode</span> <span class="tester-flag-desc">Match with full unicode</span></label>
                                 <label class="tester-flag"><input type="checkbox" id="tester-flag-x"> <span class="tester-flag-name">extended</span> <span class="tester-flag-desc">Ignore whitespace in pattern</span></label>
                                 <label class="tester-flag"><input type="checkbox" id="tester-flag-a"> <span class="tester-flag-name">ascii</span> <span class="tester-flag-desc">\w \d \s ASCII only</span></label>
                             </div>

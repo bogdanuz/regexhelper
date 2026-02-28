@@ -9,6 +9,7 @@
  */
 
 import { showError, showSuccess } from '../../shared/ui/notifications.js';
+import { saveToHistory } from '../../shared/utils/storage.js';
 import { analyzePatternForUI } from '../converter/logic/regexParser.js';
 
 const TOAST_INSERT_CURSOR = 'Поставьте курсор в поле редактора в то место, куда нужно вставить параметр';
@@ -383,16 +384,40 @@ function clearEditor() {
   showSuccess('Поле редактора очищено');
 }
 
+async function saveEditorToHistory() {
+  const value = getEditorValue();
+  if (!value) {
+    showError('Введите регулярное выражение, чтобы сохранить его в историю');
+    return;
+  }
+  saveToHistory({
+    id: Date.now().toString(),
+    date: new Date().toISOString(),
+    triggers: [],
+    params: {},
+    result: getEditorTextarea().value,
+    type: 'manual'
+  });
+  const { displayHistory } = await import('../converter/ui/historyUI.js');
+  displayHistory();
+  showSuccess('Сохранено в историю');
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // ПРИЁМ ИЗ ПАНЕЛИ РЕЗУЛЬТАТА («В редактор»)
 // ═══════════════════════════════════════════════════════════════════
 
+/**
+ * Полностью заменяет содержимое поля редактора (не добавляет к существующему).
+ * @param {string} value - Новое регулярное выражение
+ */
 export function setEditorContent(value) {
   const ta = getEditorTextarea();
-  if (ta) {
-    ta.value = value;
-    hideValidationState();
-  }
+  if (!ta) return;
+  const text = value != null ? String(value) : '';
+  ta.value = text;
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+  hideValidationState();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -448,6 +473,9 @@ export function initEditor() {
 
   const clearBtn = document.getElementById('editor-clear-btn');
   if (clearBtn) clearBtn.addEventListener('click', clearEditor);
+
+  const saveToHistoryBtn = document.getElementById('editor-save-to-history-btn');
+  if (saveToHistoryBtn) saveToHistoryBtn.addEventListener('click', saveEditorToHistory);
 
   // Изначально подсветка скрыта
   if (highlightLayer) {

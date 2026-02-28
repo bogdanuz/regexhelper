@@ -243,6 +243,56 @@ async function runBrowserTests(which) {
         } else {
           console.log('Editor browser: validation toggle off OK');
         }
+
+        // Сохранить в историю из редактора (type manual)
+        await editorPage.$eval('#editor-textarea', el => { el.value = 'saved-regex-from-editor'; });
+        await editorPage.click('#editor-save-to-history-btn');
+        await editorPage.waitForTimeout(300);
+        const historyAfterSave = await editorPage.evaluate(async () => {
+          const { getHistory } = await import('./shared/utils/storage.js');
+          const h = getHistory();
+          const first = h[0];
+          return first ? { type: first.type, result: first.result } : null;
+        });
+        if (!historyAfterSave || historyAfterSave.type !== 'manual' || historyAfterSave.result !== 'saved-regex-from-editor') {
+          console.error('Editor browser tests: save to history (manual) failed', historyAfterSave);
+          anyFailed = true;
+        } else {
+          console.log('Editor browser: save to history (manual) OK');
+        }
+
+        // «В редактор» с карточки истории полностью заменяет содержимое
+        await editorPage.$eval('#editor-textarea', el => { el.value = 'old-content'; });
+        await editorPage.evaluate(async () => {
+          const { saveToHistory, clearHistory } = await import('./shared/utils/storage.js');
+          const { displayHistory } = await import('./tools/converter/ui/historyUI.js');
+          clearHistory();
+          saveToHistory({
+            id: 'br-to-editor',
+            date: new Date().toISOString(),
+            triggers: [],
+            params: {},
+            result: 'new-from-history',
+            type: 'manual'
+          });
+          displayHistory();
+        });
+        await editorPage.waitForTimeout(200);
+        const toEditorBtn = await editorPage.$('.history-card [data-action="to-editor"]');
+        if (toEditorBtn) {
+          await toEditorBtn.click();
+          await editorPage.waitForTimeout(300);
+          const editorAfter = await editorPage.$eval('#editor-textarea', el => el.value);
+          if (editorAfter !== 'new-from-history') {
+            console.error('Editor browser tests: to-editor from history replace failed, value=', editorAfter);
+            anyFailed = true;
+          } else {
+            console.log('Editor browser: to-editor from history (replace) OK');
+          }
+        } else {
+          console.error('Editor browser tests: no history card to-editor button found');
+          anyFailed = true;
+        }
       } catch (e) {
         console.error('Editor browser tests exception:', e.message);
         anyFailed = true;

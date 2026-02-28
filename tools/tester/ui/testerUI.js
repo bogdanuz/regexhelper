@@ -4,6 +4,7 @@
  */
 
 import { showError, showSuccess } from '../../../shared/ui/notifications.js';
+import { buildFlagsString } from '../logic/flagsBuilder.js';
 
 const DEBOUNCE_MS = 180;
 const LOADING_THRESHOLD_MS = 250;
@@ -183,6 +184,7 @@ function buildRegexOverlayHtml(pattern, errorIndices) {
  * @param {HTMLElement} [regexWrap]
  * @param {HTMLElement} [regexOverlayLayer]
  * @param {string} [pattern] — текущий паттерн (для оверлея)
+ * @param {string} [effectiveFlagsStr] — фактическая строка флагов (например "gmu") для отображения
  */
 function applyResult(
   result,
@@ -194,7 +196,8 @@ function applyResult(
   regexErrorEl,
   regexWrap,
   regexOverlayLayer,
-  pattern
+  pattern,
+  effectiveFlagsStr
 ) {
   const setError = (displayMessage) => {
     if (errorEl) {
@@ -256,7 +259,10 @@ function applyResult(
   setRegexOverlay(escapeHtml(pattern ?? ''));
   const matches = Array.isArray(result.matches) ? result.matches : [];
   if (highlightLayer) highlightLayer.innerHTML = buildHighlightHtml(str, matches);
-  if (matchInfoEl) matchInfoEl.innerHTML = buildMatchInfoHtml(matches);
+  if (matchInfoEl) {
+    const flagsLine = effectiveFlagsStr ? `<div class="tester-flags-used">Флаги: <code>${escapeHtml(effectiveFlagsStr)}</code></div>` : '';
+    matchInfoEl.innerHTML = flagsLine + buildMatchInfoHtml(matches);
+  }
 }
 
 /**
@@ -282,9 +288,13 @@ export function initTesterUI() {
   let workerTimeoutId = 0;
   let workerSeq = 0;
 
+  /** Версия воркера — при изменении логики тестера увеличить, чтобы браузер не использовал кэш. */
+  const WORKER_VERSION = 4;
   function createWorker() {
     try {
-      return new Worker(new URL('../worker/matchWorker.js', import.meta.url), { type: 'module' });
+      const workerUrl = new URL('../worker/matchWorker.js', import.meta.url);
+      workerUrl.searchParams.set('v', String(WORKER_VERSION));
+      return new Worker(workerUrl, { type: 'module' });
     } catch (e) {
       return null;
     }
@@ -306,7 +316,8 @@ export function initTesterUI() {
       }, LOADING_THRESHOLD_MS);
     }
 
-    function finish(result, fromTimeout = false) {
+    const effectiveFlagsStr = buildFlagsString(flags);
+    function finish(result, fromTimeout = false, flagsStr = effectiveFlagsStr) {
       if (loadingTimer) {
         clearTimeout(loadingTimer);
         loadingTimer = 0;
@@ -326,7 +337,8 @@ export function initTesterUI() {
         regexErrorEl,
         regexWrap,
         regexOverlayLayer,
-        pattern
+        pattern,
+        flagsStr
       );
       if (highlightLayer && testInput) {
         syncHighlightSize();

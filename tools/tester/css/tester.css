@@ -67,6 +67,15 @@
   padding: 6px 12px;
 }
 
+.tester-flags-hint {
+  margin: 0 0 8px 0;
+  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-card, rgba(0,0,0,0.2));
+  border-radius: 4px;
+}
 .tester-flags-dropdown {
   position: absolute;
   top: 100%;
@@ -349,6 +358,15 @@
   gap: var(--spacing-xs);
 }
 
+.tester-flags-used {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+.tester-flags-used code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
 .tester-match-info {
   font-size: 13px;
   color: var(--color-text-secondary);

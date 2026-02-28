@@ -116,6 +116,7 @@
 
 .history-card[data-type="simple"] { border-left: 3px solid var(--color-text-tertiary); }
 .history-card[data-type="linked"] { border-left: 3px solid var(--color-primary); }
+.history-card[data-type="manual"] { border-left: 3px solid var(--color-text-secondary); }
 
 /* Empty state */
 .history-empty,

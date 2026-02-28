@@ -5,8 +5,11 @@
 
 import { initTesterUI, resetTesterLowercaseMode } from './ui/testerUI.js';
 
+/** Флаги по умолчанию для эмуляции Python/regex101: g, m, u. */
+const DEFAULT_TESTER_FLAGS = ['g', 'm', 'u'];
+
 /**
- * Сброс панели «Тестер»: очистка полей ввода, сброс флагов по умолчанию (g, m), очистка результата.
+ * Сброс панели «Тестер»: очистка полей ввода, сброс флагов по умолчанию (g, m, u), очистка результата.
  */
 export function resetTesterPanel() {
   const regexInput = document.getElementById('tester-regex-input');
@@ -32,7 +35,7 @@ export function resetTesterPanel() {
   const flags = ['g', 'm', 'i', 's', 'u', 'x', 'a'];
   flags.forEach((f) => {
     const cb = document.getElementById(`tester-flag-${f}`);
-    if (cb) cb.checked = f === 'g' || f === 'm';
+    if (cb) cb.checked = DEFAULT_TESTER_FLAGS.includes(f);
   });
 
   resetTesterLowercaseMode();

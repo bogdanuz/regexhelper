@@ -29,7 +29,7 @@ import { STORAGE_KEYS, MAX_HISTORY_ITEMS } from '../../core/config.js';
  * @param {Array<string>} item.triggers - Массив триггеров (макс 10 для отображения)
  * @param {Object} item.params - Параметры конвертации
  * @param {string} item.result - Результат (regex)
- * @param {string} item.type - Тип ('simple' или 'linked')
+ * @param {string} item.type - Тип ('simple', 'linked' или 'manual')
  * @returns {boolean} true при успехе
  */
 export function saveToHistory(item) {

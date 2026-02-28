@@ -8,6 +8,54 @@
 import { applyExtendedFlag } from './patternPreprocess.js';
 import { buildFlagsString } from './flagsBuilder.js';
 
+/** В JS \b с флагом u но без i остаётся только ASCII; Python/regex101 используют Unicode. Эквивалент границы слова для Unicode (u, без i). */
+const UNICODE_WORD_BOUNDARY = '(?:(?<=[\\p{L}\\p{N}_])(?![\\p{L}\\p{N}_])|(?<![\\p{L}\\p{N}_])(?=[\\p{L}\\p{N}_]))';
+const UNICODE_NON_WORD_BOUNDARY = '(?:(?<=[\\p{L}\\p{N}_])(?=[\\p{L}\\p{N}_])|(?<![\\p{L}\\p{N}_])(?![\\p{L}\\p{N}_]))';
+
+/**
+ * Заменяет \b и \B вне символьных классов на Unicode-аналоги (для эмуляции Python при u без i).
+ * @param {string} p — паттерн
+ * @returns {string}
+ */
+function replaceUnicodeWordBoundaries(p) {
+  let result = '';
+  let i = 0;
+  const n = p.length;
+  let inClass = false;
+  while (i < n) {
+    if (inClass) {
+      if (p[i] === '\\' && i + 1 < n) {
+        result += p[i] + p[i + 1];
+        i += 2;
+        continue;
+      }
+      if (p[i] === ']') inClass = false;
+      result += p[i];
+      i++;
+      continue;
+    }
+    if (p[i] === '[') {
+      inClass = true;
+      result += p[i];
+      i++;
+      continue;
+    }
+    if (p[i] === '\\' && i + 1 < n && p[i + 1] === 'b') {
+      result += UNICODE_WORD_BOUNDARY;
+      i += 2;
+      continue;
+    }
+    if (p[i] === '\\' && i + 1 < n && p[i + 1] === 'B') {
+      result += UNICODE_NON_WORD_BOUNDARY;
+      i += 2;
+      continue;
+    }
+    result += p[i];
+    i++;
+  }
+  return result;
+}
+
 /**
  * Результат одного совпадения: полное совпадение, индекс, группы, индексы для подсветки.
  * @typedef {{ match: string, index: number, groups: string[], fullMatch: string, indices?: number[][] }} MatchEntry
@@ -67,6 +115,13 @@ export function runMatch(pattern, flagsState, str) {
   if (flagsState.g) {
     processedPattern = processedPattern.replace(/\[\\s\\S\]\*(?!\?)/g, '[\\s\\S]*?');
     processedPattern = processedPattern.replace(/\[\\s\\S\]\+(?!\?)/g, '[\\s\\S]+?');
+  }
+
+  // В JS \b с флагом u без i остаётся только ASCII; в Python/regex101 \b — Unicode. Заменяем \b/\B на Unicode-аналоги.
+  const state = flagsState && typeof flagsState === 'object' ? flagsState : {};
+  const hasWordBoundary = /\\b/.test(processedPattern) || /\\B/.test(processedPattern);
+  if (!state.a && !state.i && hasWordBoundary) {
+    processedPattern = replaceUnicodeWordBoundaries(processedPattern);
   }
 
   /** Одно сообщение для всех ошибок regex; в UI показывается только оно, детали — в подсветке. */

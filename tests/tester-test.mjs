@@ -59,10 +59,12 @@ assert(!ra.error && ra.matches?.length >= 2, 'флаг u: [a-zа-я]+');
 
 console.log('\n--- buildFlagsString и a/u ---\n');
 
-assert(buildFlagsString({ g: true, m: true }) === 'gm', 'buildFlagsString: g,m → "gm"');
+assert(buildFlagsString({ g: true, m: true }) === 'gmu', 'buildFlagsString: g,m → "gmu" (Python: u по умолчанию)');
 assert(buildFlagsString({ g: true, i: true, a: true }) === 'gi', 'buildFlagsString: a → без u');
+const asciiNoCyrillic = runMatch('\\bтнт\\b', full({ a: true }), 'тнт премьер');
+assert(!asciiNoCyrillic.error && asciiNoCyrillic.matches?.length === 0, 'Флаг a: \\b только ASCII, кириллица не матчится');
 assert(buildFlagsString({ g: true, u: true }) === 'gu', 'buildFlagsString: u без a → "gu"');
-assert(buildFlagsString({ g: true, m: true, i: true, s: true }) === 'gims', 'buildFlagsString: gims');
+assert(buildFlagsString({ g: true, m: true, i: true, s: true }) === 'gimsu', 'buildFlagsString: gims + u');
 
 console.log('\n--- Extended (x): комментарии и пробелы ---\n');
 
@@ -99,6 +101,20 @@ console.log('\n--- Референс: границы слова и фразы ---
 assert(runMatch('\\bno wp\\b', full(), 'no wp and no wp').matches?.length === 2, 'Reference: \\bno wp\\b фраза');
 assert(runMatch('парацетамол\\s', full(), 'парацетамол ').matches?.length === 1, 'Reference: парацетамол\\s');
 assert(runMatch('ideal we\\b', full(), 'ideal we').matches?.length === 1, 'Reference: ideal we\\b');
+
+console.log('\n--- \\b с кириллицей (Python emulation: u по умолчанию) ---\n');
+
+const cyrB = runMatch('\\b(мал|хохлат)', full(), 'маленький 15000₽');
+assert(!cyrB.error && cyrB.matches?.length >= 1 && cyrB.matches?.[0]?.groups?.[0] === 'мал', '\\b(мал|хохлат) на "маленький 15000₽" → матч "мал"');
+const cyrTnt = runMatch('\\bтнт\\b', full(), 'тнт премьер');
+assert(!cyrTnt.error && cyrTnt.matches?.length === 1 && cyrTnt.matches?.[0]?.fullMatch === 'тнт', '\\bтнт\\b на "тнт премьер" → матч "тнт"');
+
+// Точный паттерн и текст из бага: баклан + до 10 символов + \b(мал|хохлат) или обратный порядок
+const userPattern = 'баклан[\\s\\S]{0,10}\\b(мал|хохлат)|\\b(мал|хохлат)[\\s\\S]{0,10}баклан';
+const userText = 'бакланы черные\nмаленький 15000₽\nбольшой 25000₽';
+const userMatch = runMatch(userPattern, full(), userText);
+assert(!userMatch.error && userMatch.matches?.length >= 1, 'Паттерн баклан[\\s\\S]{0,10}\\b(мал|хохлат)|... на трёх строках → хотя бы одно совпадение');
+assert(userMatch.matches?.[0]?.groups?.[0] === 'мал', 'Группа 1 совпадения = "мал"');
 
 console.log('\n--- Нагруженный текст: длинная строка и много совпадений ---\n');
 

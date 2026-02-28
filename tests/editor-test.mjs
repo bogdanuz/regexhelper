@@ -6,7 +6,8 @@
 import {
   parseErrorIndex,
   heuristicErrorPosition,
-  findCharClassEnd
+  findCharClassEnd,
+  setEditorContent
 } from '../tools/editor/app.js';
 
 let passed = 0;
@@ -79,6 +80,14 @@ try {
   assert(h && h.start === 1, 'Invalid quantifier highlights {');
 } catch (e) {
   assert(false, 'heuristicErrorPosition invalid quantifier exception: ' + e.message);
+}
+
+// setEditorContent: exists and is function (replacement behavior tested in browser)
+console.log('\nsetEditorContent');
+try {
+  assert(typeof setEditorContent === 'function', 'setEditorContent is a function');
+} catch (e) {
+  assert(false, 'setEditorContent exception: ' + e.message);
 }
 
 console.log(`\nEditor logic tests: passed=${passed}, failed=${failed}\n`);

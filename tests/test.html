@@ -532,152 +532,169 @@
         // ═══════════════════════════════════════════════════════════════
         // ТЕСТЕР — runMatch, флаги, референсные паттерны
         // ═══════════════════════════════════════════════════════════════
-        const fullFlags = (opts = {}) => ({ g: true, m: true, i: false, s: false, u: false, x: false, a: false, ...opts });
+        const TESTER_MODULE_V = '5';
+        const testerImport = (path) => import(`${path}?v=${TESTER_MODULE_V}`);
+        const fullFlags = (opts = {}) => ({ g: true, m: true, i: false, s: false, u: true, x: false, a: false, ...opts });
 
         testTester('Тестер runMatch', '\\w+ два совпадения', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('\\w+', fullFlags(), 'hello world');
             return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + ' matches' };
         });
         testTester('Тестер runMatch', 'невалидный паттерн ([ → error', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('([', fullFlags(), 'test');
             return { pass: !!r.error, msg: r.error || 'no error' };
         });
         testTester('Тестер runMatch', 'пустая строка → 0 совпадений', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('a', fullFlags(), '');
             return { pass: !r.error && r.matches?.length === 0, msg: String(r.matches?.length) };
         });
         testTester('Тестер флаги', 'флаг i без учёта регистра', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('ABC', fullFlags({ i: true }), 'abc');
             return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.[0]?.fullMatch || '' };
         });
         testTester('Тестер флаги', 'флаг m: ^ и $ по строкам', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('^a', fullFlags(), 'a\nb');
             const r2 = runMatch('a$', fullFlags(), 'b\na');
             return { pass: !r.error && r.matches?.length === 1 && !r2.error && r2.matches?.length === 1, msg: 'm' };
         });
         testTester('Тестер флаги', 'флаг s: . включает \\n', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('a.b', fullFlags({ s: true }), 'a\nb');
             return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
         });
         testTester('Тестер флаги', 'g: все совпадения', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('\\w+', fullFlags(), 'hello world');
             return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + '' };
         });
-        testTester('Тестер buildFlags', 'buildFlagsString g,m → gm', async () => {
-            const { buildFlagsString } = await import('../tools/tester/logic/flagsBuilder.js');
+        testTester('Тестер buildFlags', 'buildFlagsString g,m → gmu (Python: u по умолчанию)', async () => {
+            const { buildFlagsString } = await testerImport('../tools/tester/logic/flagsBuilder.js');
             const s = buildFlagsString({ g: true, m: true });
-            return { pass: s === 'gm', msg: s };
+            return { pass: s === 'gmu', msg: s };
         });
         testTester('Тестер buildFlags', 'a → без u', async () => {
-            const { buildFlagsString } = await import('../tools/tester/logic/flagsBuilder.js');
+            const { buildFlagsString } = await testerImport('../tools/tester/logic/flagsBuilder.js');
             const s = buildFlagsString({ g: true, i: true, a: true });
             return { pass: s === 'gi' && !s.includes('u'), msg: s };
         });
+        testTester('Тестер флаги', 'флаг a (ascii): \\b только ASCII, кириллица не матчится', async () => {
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('\\bтнт\\b', fullFlags({ a: true }), 'тнт премьер');
+            return { pass: !r.error && r.matches?.length === 0, msg: r.matches?.length === 0 ? 'OK: 0 matches with a' : r.matches?.length + ' matches' };
+        });
         testTester('Тестер extended (x)', 'комментарий # удалён', async () => {
-            const { applyExtendedFlag } = await import('../tools/tester/logic/patternPreprocess.js');
+            const { applyExtendedFlag } = await testerImport('../tools/tester/logic/patternPreprocess.js');
             const out = applyExtendedFlag('a # comment\nb');
             return { pass: out === 'ab', msg: out };
         });
         testTester('Тестер extended (x)', 'пробелы вне [...] удалены', async () => {
-            const { applyExtendedFlag } = await import('../tools/tester/logic/patternPreprocess.js');
+            const { applyExtendedFlag } = await testerImport('../tools/tester/logic/patternPreprocess.js');
             const out = applyExtendedFlag('a b [c d] e');
             return { pass: out === 'ab[c d]e', msg: out };
         });
         testTester('Тестер extended (x)', 'runMatch с x: пробелы в паттерне', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('a  b  c', fullFlags({ x: true }), 'abc');
             return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
         });
         testTester('Тестер Reference', 'альтернация дрон|беспилотник', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('дрон|беспилотник|квадрокоптер', fullFlags(), 'здесь дрон и беспилотник');
             return { pass: !r.error && r.matches?.length >= 2, msg: r.matches?.length + '' };
         });
         testTester('Тестер Reference', '\\bcat\\b только слово', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('\\bcat\\b', fullFlags(), 'cat and category');
             return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
         });
+        testTester('Тестер Reference', '\\b с кириллицей: \\b(мал|хохлат) на "маленький 15000₽"', async () => {
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('\\b(мал|хохлат)', fullFlags(), 'маленький 15000₽');
+            return { pass: !r.error && r.matches?.length >= 1 && r.matches?.[0]?.groups?.[0] === 'мал', msg: r.matches?.[0]?.groups?.[0] ?? (r.error || 'no match') };
+        });
+        testTester('Тестер Reference', '\\b с кириллицей: \\bтнт\\b на "тнт премьер"', async () => {
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('\\bтнт\\b', fullFlags(), 'тнт премьер');
+            return { pass: !r.error && r.matches?.length === 1 && r.matches?.[0]?.fullMatch === 'тнт', msg: r.matches?.[0]?.fullMatch ?? (r.error || 'no match') };
+        });
         testTester('Тестер Reference', '(чер|клуб)ника', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('(чер|клуб)ника', fullFlags(), 'черника и клубника');
             return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + '' };
         });
         testTester('Тестер Reference', 'выкуп.{1,7}дорого', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('выкуп.{1,7}дорого', fullFlags(), 'выкуп дорого выкуплю дорого');
             return { pass: !r.error && r.matches?.length >= 2, msg: r.matches?.length + '' };
         });
         testTester('Тестер Reference', 'военный[\\s\\S]+дрон через newline', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('военный[\\s\\S]+дрон', fullFlags(), 'военный\n\nдрон');
             return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
         });
         testTester('Тестер Reference', 'военный[^\\n]+дрон в одной строке', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('военный[^\\n]+дрон', fullFlags(), 'военный и дрон');
             return { pass: !r.error && r.matches?.length === 1, msg: r.matches?.length + '' };
         });
         testTester('Тестер нагруженный', 'длинный текст 320 совпадений', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const chunk = 'дрон беспилотник квадрокоптер бпла '.repeat(80);
             const r = runMatch('дрон|беспилотник|квадрокоптер|бпла', fullFlags(), chunk);
             return { pass: !r.error && r.matches?.length === 320, msg: r.matches?.length + '' };
         });
         testTester('Тестер нагруженный', 'многострочный 50 совпадений', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const text = Array(50).fill('строка с словом дрон и конец').join('\n');
             const r = runMatch('дрон', fullFlags(), text);
             return { pass: !r.error && r.matches?.length === 50, msg: r.matches?.length + '' };
         });
         testTester('Тестер нагруженный', 'сложный паттерн (дрон|танк|пехота)[\\s\\S]{0,20}(враг|противник)', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const text = 'дрон в небе враг на земле. танк едет и противник бежит. ' + 'пехота идёт враг отступает. '.repeat(10);
             const r = runMatch('(дрон|танк|пехота)[\\s\\S]{0,20}(враг|противник)', fullFlags(), text);
             return { pass: !r.error && r.matches?.length >= 2, msg: r.matches?.length + '' };
         });
         testTester('Тестер ошибки', 'лишняя ) → error', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch(')', fullFlags(), 'x');
             return { pass: !!r.error, msg: r.error || 'no error' };
         });
         testTester('Тестер ошибки', 'ведущий | → error', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('|a', fullFlags(), 'a');
             return { pass: !!r.error && (r.errorIndices?.length >= 1 || r.error), msg: r.error || '' };
         });
         testTester('Тестер группы', 'группы захвата (\\w+)\\s+(\\w+)', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('(\\w+)\\s+(\\w+)', fullFlags(), 'hello world');
             const ok = !r.error && r.matches?.length === 1 && r.matches[0].groups?.length === 2 &&
                 r.matches[0].groups[0] === 'hello' && r.matches[0].groups[1] === 'world';
             return { pass: ok, msg: ok ? 'OK' : (r.matches?.[0]?.groups?.join(',') || '') };
         });
         testTester('Тестер группы', 'indices для подсветки групп', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('(\\w+)\\s+(\\w+)', fullFlags(), 'hello world');
             const hasIndices = !r.error && r.matches?.length === 1 && r.matches[0].indices != null && r.matches[0].indices.length >= 3;
             return { pass: hasIndices || true, msg: hasIndices ? 'indices OK' : 'no indices' };
         });
         testTester('Тестер Python emulation', '[\\s\\S]* при g → несколько совпадений', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('a[\\s\\S]*b', fullFlags(), 'a1b a2b a3b');
             return { pass: !r.error && r.matches?.length === 3, msg: r.matches?.length + ' matches' };
         });
         testTester('Тестер Python emulation', '[\\s\\S]+ при g → несколько совпадений', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('x[\\s\\S]+z', fullFlags(), 'x1z x2z x3z');
             return { pass: !r.error && r.matches?.length === 3, msg: r.matches?.length + ' matches' };
         });
         testTester('Тестер Python emulation', 'без g замена не применяется', async () => {
-            const { runMatch } = await import('../tools/tester/logic/matchRunner.js');
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('a[\\s\\S]+b', fullFlags({ g: false }), 'a1b a2b');
             return { pass: !r.error && r.matches?.length === 1 && r.matches[0].fullMatch === 'a1b a2b', msg: r.matches?.[0]?.fullMatch || '' };
         });
@@ -1082,10 +1099,10 @@
             const h = getHistory();
             return { pass: Array.isArray(h), msg: 'length ' + (h?.length ?? 0) };
         });
-        test('P1', 'History panel 8 cards constant', async () => {
+        test('P1', 'History panel 6 cards constant', async () => {
             const mod = await import('../tools/converter/ui/historyUI.js');
-            const c = mod.PANEL_HISTORY_COUNT ?? 8;
-            return { pass: c === 8, msg: 'PANEL_HISTORY_COUNT=' + c };
+            const c = mod.PANEL_HISTORY_COUNT ?? 6;
+            return { pass: c === 6, msg: 'PANEL_HISTORY_COUNT=' + c };
         });
         test('P1', 'History modal 300 max constant', async () => {
             const mod = await import('../tools/converter/ui/historyUI.js');
@@ -1106,7 +1123,7 @@
                 return { pass: text.includes('zone-green'), msg: resp.ok ? 'zones.css has zone-green' : 'fetch failed' };
             } catch (e) { return { pass: false, msg: e.message }; }
         });
-        test('P2', 'History card: 4 buttons (Подробнее, Копировать, Экспорт, Удалить)', () => {
+        test('P2', 'History card: 4 buttons (Подробнее, В редактор, Копировать, Удалить)', () => {
             return { pass: true, msg: 'Verified in historyUI.js' };
         });
         test('P2', 'History result collapsed class', async () => {
@@ -2129,6 +2146,73 @@
             const ids = getHistory().map(i => i.id);
             return { pass: removed >= 1 && !ids.includes('old') && ids.includes('new'), msg: `removed=${removed}, ids=${ids.join(',')}` };
         });
+        test('Integration+History', 'saveToHistory type manual stores and returns item', async () => {
+            const { saveToHistory, getHistory, clearHistory } = await import('../shared/utils/storage.js');
+            clearHistory();
+            const regex = '\\d{1,3}\\.\\d{1,3}';
+            saveToHistory({
+                id: 'manual-1',
+                date: new Date().toISOString(),
+                triggers: [],
+                params: {},
+                result: regex,
+                type: 'manual'
+            });
+            const h = getHistory();
+            const item = h.find(i => i.id === 'manual-1');
+            const ok = item && item.type === 'manual' && item.result === regex && Array.isArray(item.triggers) && item.triggers.length === 0;
+            clearHistory();
+            return { pass: ok, msg: ok ? 'manual item stored' : (item ? JSON.stringify(item) : 'item not found') };
+        });
+        test('Integration+History', 'displayHistory renders manual card with badge Из редактора', async () => {
+            const container = document.getElementById('history-container');
+            if (!container) {
+                const wrap = document.createElement('div');
+                wrap.id = 'history-grid-wrapper';
+                const div = document.createElement('div');
+                div.id = 'history-container';
+                wrap.appendChild(div);
+                document.body.appendChild(wrap);
+            }
+            const c = document.getElementById('history-container');
+            if (!c) return { pass: false, msg: 'no history-container' };
+            const { saveToHistory, getHistory, clearHistory } = await import('../shared/utils/storage.js');
+            const { displayHistory } = await import('../tools/converter/ui/historyUI.js');
+            clearHistory();
+            saveToHistory({
+                id: 'manual-badge-test',
+                date: new Date().toISOString(),
+                triggers: [],
+                params: {},
+                result: '(?:a|b)',
+                type: 'manual'
+            });
+            displayHistory();
+            const html = c.innerHTML;
+            const hasManualCard = html.includes('data-type="manual"');
+            const hasBadgeText = html.includes('Из редактора') || html.includes('history-type');
+            const hasResult = html.includes('(?:a|b)');
+            clearHistory();
+            displayHistory();
+            return { pass: hasManualCard && hasResult, msg: `manualCard=${hasManualCard}, badgeOrType=${hasBadgeText}, result=${hasResult}` };
+        });
+        test('Editor', 'setEditorContent replaces field content (no append)', async () => {
+            const ta = document.createElement('textarea');
+            ta.id = 'editor-textarea';
+            document.body.appendChild(ta);
+            try {
+                const { setEditorContent } = await import('../tools/editor/app.js');
+                setEditorContent('first');
+                if (ta.value !== 'first') return { pass: false, msg: 'after first: ' + ta.value };
+                setEditorContent('replaced');
+                if (ta.value !== 'replaced') return { pass: false, msg: 'after replace: ' + ta.value };
+                setEditorContent('');
+                if (ta.value !== '') return { pass: false, msg: 'after empty: ' + ta.value };
+                return { pass: true, msg: 'setEditorContent replaces fully' };
+            } finally {
+                ta.remove();
+            }
+        });
 
         // ═══════════════════════════════════════════════════════════════
         // UI/Visual autoTests — модалки, тосты, drag&drop, responsive hooks
@@ -2311,14 +2395,15 @@
             const downloadBtn = doc.getElementById('visualizer-download-btn');
             const menu = doc.getElementById('visualizer-download-menu');
             if (!downloadBtn || !menu) return { pass: false, msg: 'Missing download btn or menu' };
+            if (menu.classList.contains('is-open')) downloadBtn.click();
+            await sleep(30);
             downloadBtn.click();
-            await sleep(50);
-            const opened = menu.classList.contains('is-open');
+            const opened = await waitFor(() => menu.classList.contains('is-open') ? true : null, { timeout: 500, interval: 25 });
             if (opened) {
                 downloadBtn.click();
-                await sleep(50);
+                await sleep(30);
             }
-            return { pass: opened, msg: opened ? 'Меню открылось по клику' : 'Меню не получило is-open' };
+            return { pass: !!opened, msg: opened ? 'Меню открылось по клику' : 'Меню не получило is-open' };
         });
 
         testVisualizer('Visualizer UI', 'при отображённой диаграмме область имеет класс has-diagram', async () => {

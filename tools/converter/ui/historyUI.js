@@ -52,7 +52,12 @@ function createHistoryCard(item, collapsed = true) {
   const triggersTitle = escapeHtml(triggersFull).replace(/"/g, '&quot;');
   const result = item.result || '';
   const resultEscaped = escapeHtml(result);
-  const typeLabel = item.type === 'simple' ? 'Простые' : 'Связанные';
+  const isManual = item.type === 'manual';
+  const typeLabel = isManual ? 'Из редактора' : (item.type === 'simple' ? 'Простые' : 'Связанные');
+
+  const triggersBlock = isManual
+    ? ''
+    : `<div class="history-triggers" title="${triggersTitle || 'Триггеры'}">${escapeHtml(triggersPreview)}${triggersList.length > 5 ? '…' : ''}</div>`;
 
   return `
     <div class="history-card" data-id="${item.id}" data-type="${item.type || 'simple'}">
@@ -65,11 +70,15 @@ function createHistoryCard(item, collapsed = true) {
         </div>
         <span class="history-type">${typeLabel}</span>
       </div>
-      <div class="history-triggers" title="${triggersTitle || 'Триггеры'}">${escapeHtml(triggersPreview)}${triggersList.length > 5 ? '…' : ''}</div>
+      ${triggersBlock}
       <div class="history-result ${collapsed ? 'history-result-collapsed' : ''}">
         <code>${resultEscaped}</code>
       </div>
       <div class="history-actions">
+        <button type="button" class="btn-history-action btn-history-to-editor" data-action="to-editor" data-id="${item.id}" title="Отправить в ручной редактор">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          В редактор
+        </button>
         <button type="button" class="btn-history-action btn-history-copy" data-action="copy" data-id="${item.id}" title="Копировать результат">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Копировать
@@ -129,6 +138,25 @@ function initHistoryHandlers() {
       if (item) openExpandHistoryModal(item);
     };
   });
+
+  document.querySelectorAll('.history-card [data-action="to-editor"]').forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.dataset.id;
+      const item = getHistory().find(i => i.id === id) || getRecentHistory(MODAL_HISTORY_MAX).find(i => i.id === id);
+      if (!item || item.result == null) return;
+      const regexText = String(item.result);
+      const { setEditorContent } = await import('../../editor/app.js');
+      setEditorContent(regexText);
+      if (btn.closest('#modal-full-history')) {
+        closeFullHistoryModal();
+      }
+      const editorSection = document.getElementById('editor');
+      if (editorSection) {
+        editorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      showSuccess('Выражение перенесено в редактор');
+    };
+  });
 }
 
 /** Модалка «Развернуть карточку истории» — одна на всё приложение, переиспользуется */
@@ -162,6 +190,9 @@ function openExpandHistoryModal(item) {
         <textarea class="expand-history-textarea expand-result-textarea" readonly></textarea>
       </div>
       <div class="modal-footer expand-content-footer">
+        <button type="button" class="btn-secondary btn-expand-history-to-editor" title="Отправить в ручной редактор">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> В редактор
+        </button>
         <button type="button" class="btn-secondary btn-expand-history-copy" title="Копировать результат">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать
         </button>
@@ -183,6 +214,19 @@ function openExpandHistoryModal(item) {
   expandHistoryOverlay.querySelector('.btn-close-modal').onclick = closeModal;
   expandHistoryOverlay.querySelector('.modal-footer .btn-modal-close').onclick = closeModal;
   expandHistoryOverlay.onclick = (e) => { if (e.target === expandHistoryOverlay) closeModal(); };
+
+  expandHistoryOverlay.querySelector('.btn-expand-history-to-editor').onclick = async () => {
+    const val = expandHistoryOverlay.querySelector('.expand-history-textarea').value;
+    if (!val) { showInfo('Нечего отправить в редактор'); return; }
+    const { setEditorContent } = await import('../../editor/app.js');
+    setEditorContent(val);
+    closeModal();
+    const editorSection = document.getElementById('editor');
+    if (editorSection) {
+      editorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    showSuccess('Выражение перенесено в редактор');
+  };
 
   expandHistoryOverlay.querySelector('.btn-expand-history-copy').onclick = () => {
     const val = expandHistoryOverlay.querySelector('.expand-history-textarea').value;

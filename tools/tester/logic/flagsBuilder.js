@@ -12,12 +12,13 @@
  * @returns {string} — строка флагов, например "gim" или "gmsu"
  */
 export function buildFlagsString(flagsState) {
+  const state = flagsState && typeof flagsState === 'object' ? flagsState : {};
   const parts = [];
-  if (flagsState.g) parts.push('g');
-  if (flagsState.i) parts.push('i');
-  if (flagsState.m) parts.push('m');
-  if (flagsState.s) parts.push('s');
-  // u только если не включён a (ascii имеет приоритет)
-  if (flagsState.u && !flagsState.a) parts.push('u');
+  if (state.g) parts.push('g');
+  if (state.i) parts.push('i');
+  if (state.m) parts.push('m');
+  if (state.s) parts.push('s');
+  // Эмуляция Python: по умолчанию Unicode (\b, \w работают с кириллицей). u всегда, кроме явного a (ascii).
+  if (!state.a) parts.push('u');
   return parts.join('');
 }
