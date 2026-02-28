@@ -572,10 +572,15 @@
             const r = runMatch('\\w+', fullFlags(), 'hello world');
             return { pass: !r.error && r.matches?.length === 2, msg: r.matches?.length + '' };
         });
-        testTester('Тестер buildFlags', 'buildFlagsString g,m → gmu (Python: u по умолчанию)', async () => {
+        testTester('Тестер buildFlags', 'buildFlagsString g,m,u (дефолт) → gmu', async () => {
             const { buildFlagsString } = await testerImport('../tools/tester/logic/flagsBuilder.js');
-            const s = buildFlagsString({ g: true, m: true });
+            const s = buildFlagsString({ g: true, m: true, u: true });
             return { pass: s === 'gmu', msg: s };
+        });
+        testTester('Тестер buildFlags', 'пользователь снял u → gm', async () => {
+            const { buildFlagsString } = await testerImport('../tools/tester/logic/flagsBuilder.js');
+            const s = buildFlagsString({ g: true, m: true, u: false });
+            return { pass: s === 'gm' && !s.includes('u'), msg: s };
         });
         testTester('Тестер buildFlags', 'a → без u', async () => {
             const { buildFlagsString } = await testerImport('../tools/tester/logic/flagsBuilder.js');
@@ -669,6 +674,46 @@
             const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
             const r = runMatch('|a', fullFlags(), 'a');
             return { pass: !!r.error && (r.errorIndices?.length >= 1 || r.error), msg: r.error || '' };
+        });
+        testTester('Тестер ошибки', 'конечный | → error', async () => {
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a|', fullFlags(), 'a');
+            return { pass: !!r.error && (r.errorIndices?.length >= 1 || r.error), msg: r.error || '' };
+        });
+        testTester('Тестер ошибки', 'пустая альтернация || → error и errorIndices', async () => {
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('a||b', fullFlags(), 'ab');
+            return { pass: !!r.error && Array.isArray(r.errorIndices) && r.errorIndices.length >= 2, msg: r.errorIndices?.length + ' indices' };
+        });
+        testTester('Тестер ошибки', 'лишняя } → error и errorIndices', async () => {
+            const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const r = runMatch('слово}', fullFlags(), 'текст');
+            return { pass: !!r.error && r.errorIndices?.length > 0, msg: r.error || '' };
+        });
+        testTester('Тестер validatePatternForUI', 'пустой паттерн → valid', async () => {
+            const { validatePatternForUI } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const v = validatePatternForUI('', fullFlags());
+            return { pass: v.valid === true, msg: v.valid ? 'valid' : 'invalid' };
+        });
+        testTester('Тестер validatePatternForUI', 'незакрытая ( → valid: false и errorIndices', async () => {
+            const { validatePatternForUI } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const v = validatePatternForUI('(дрон', fullFlags());
+            return { pass: v.valid === false && Array.isArray(v.errorIndices) && v.errorIndices.length > 0, msg: v.errorIndices?.length + ' indices' };
+        });
+        testTester('Тестер validatePatternForUI', 'валидный паттерн → valid', async () => {
+            const { validatePatternForUI } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const v = validatePatternForUI('дрон|танк', fullFlags());
+            return { pass: v.valid === true, msg: v.valid ? 'valid' : 'invalid' };
+        });
+        testTester('Тестер validatePatternForUI', 'лишняя } и || → errorIndices', async () => {
+            const { validatePatternForUI } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const v = validatePatternForUI('(промокод}|купоны)|(плюс||мульти)', fullFlags());
+            return { pass: v.valid === false && Array.isArray(v.errorIndices) && v.errorIndices.length > 0, msg: v.errorIndices?.length + ' indices' };
+        });
+        testTester('Тестер validatePatternForUI', 'валидный квантификатор {2,5} → valid', async () => {
+            const { validatePatternForUI } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const v = validatePatternForUI('a{2,5}', fullFlags());
+            return { pass: v.valid === true, msg: v.valid ? 'valid' : 'invalid' };
         });
         testTester('Тестер группы', 'группы захвата (\\w+)\\s+(\\w+)', async () => {
             const { runMatch } = await testerImport('../tools/tester/logic/matchRunner.js');
@@ -2212,6 +2257,17 @@
             } finally {
                 ta.remove();
             }
+        });
+        test('Editor', 'invert selection pipeline: parse + invert + convert a|b -> b|a', async () => {
+            const { invertTopLevelElements } = await import('../tools/editor/app.js');
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const { convertLinkedBuilder } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const r = parseRegexPattern('a|b');
+            if (!r.success || !r.elements || r.elements.length < 2) return { pass: false, msg: 'parse a|b failed' };
+            const inv = invertTopLevelElements(r.elements);
+            const conv = convertLinkedBuilder(inv);
+            if (!conv.success || conv.result !== 'b|a') return { pass: false, msg: 'invert result: ' + (conv.result || conv.error) };
+            return { pass: true, msg: 'a|b -> b|a OK' };
         });
 
         // ═══════════════════════════════════════════════════════════════

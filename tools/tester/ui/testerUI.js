@@ -5,6 +5,7 @@
 
 import { showError, showSuccess } from '../../../shared/ui/notifications.js';
 import { buildFlagsString } from '../logic/flagsBuilder.js';
+import { validatePatternForUI } from '../logic/matchRunner.js';
 
 const DEBOUNCE_MS = 180;
 const LOADING_THRESHOLD_MS = 250;
@@ -399,6 +400,25 @@ export function initTesterUI() {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(() => {
       debounceTimer = 0;
+      const pattern = regexInput?.value ?? '';
+      const validation = validatePatternForUI(pattern, getFlagsState());
+      if (!validation.valid) {
+        if (regexErrorEl) {
+          regexErrorEl.textContent = MSG_REGEX_INVALID;
+          regexErrorEl.hidden = false;
+        }
+        if (errorEl) errorEl.hidden = true;
+        if (regexWrap) regexWrap.classList.add('tester-has-error');
+        if (regexOverlayLayer) {
+          regexOverlayLayer.innerHTML = buildRegexOverlayHtml(pattern, validation.errorIndices);
+        }
+        if (highlightLayer) highlightLayer.innerHTML = escapeHtml(testInput?.value ?? '');
+        if (matchInfoEl) matchInfoEl.innerHTML = '';
+        return;
+      }
+      if (regexErrorEl) regexErrorEl.hidden = true;
+      if (regexWrap) regexWrap.classList.remove('tester-has-error');
+      if (regexOverlayLayer) regexOverlayLayer.innerHTML = escapeHtml(pattern);
       runWithWorkerOrSync();
     }, DEBOUNCE_MS);
   }

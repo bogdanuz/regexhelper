@@ -10,9 +10,11 @@
 
 import { showError, showSuccess } from '../../shared/ui/notifications.js';
 import { saveToHistory } from '../../shared/utils/storage.js';
-import { analyzePatternForUI } from '../converter/logic/regexParser.js';
+import { analyzePatternForUI, parseRegexPattern } from '../converter/logic/regexParser.js';
+import { convertLinkedBuilder } from '../converter/logic/linkedBuilderConverter.js';
 
 const TOAST_INSERT_CURSOR = 'Поставьте курсор в поле редактора в то место, куда нужно вставить параметр';
+const TOAST_INVERT_PARSE_ERROR = 'Не удалось разобрать выделенный фрагмент как регулярное выражение. Попробуйте воспользоваться конвертером для построения выражения.';
 
 let validationActive = false;
 
@@ -55,6 +57,84 @@ function insertParamAtStoredPosition(text) {
   lastEditorRef = ta;
   ta.focus();
   ta.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ИНВЕРТИРОВАТЬ ВЫДЕЛЕННОЕ (порядок элементов наоборот, в конец через |)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Инвертирует порядок элементов верхнего уровня (как в конвертере для группы).
+ * @param {Array} elements - массив элементов из parseRegexPattern
+ * @returns {Array} новый массив с обратным порядком и перераспределёнными соединителями
+ */
+export function invertTopLevelElements(elements) {
+  if (!Array.isArray(elements) || elements.length === 0) return elements;
+  const originalConnectors = elements.map((el) => (el.connector ? { ...el.connector } : null));
+  const inverted = [...elements].reverse();
+  const usedConnectors = originalConnectors.slice(0, -1).reverse();
+  inverted.forEach((el, i) => {
+    el.connector = i < inverted.length - 1
+      ? (usedConnectors[i] || { mode: 'alternation' })
+      : { mode: 'alternation' };
+  });
+  return inverted;
+}
+
+function getInvertSelectionBtn() {
+  return document.getElementById('editor-invert-selection-btn');
+}
+
+/** Показывать кнопку «Инвертировать выделенное» только при непустом выделении в поле редактора */
+function updateInvertSelectionButtonVisibility() {
+  const ta = getEditorTextarea();
+  const btn = getInvertSelectionBtn();
+  if (!ta || !btn) return;
+  const hasSelection = ta.selectionStart !== ta.selectionEnd;
+  btn.style.display = hasSelection ? '' : 'none';
+}
+
+function handleInvertSelection() {
+  const ta = getEditorTextarea();
+  const btn = getInvertSelectionBtn();
+  if (!ta || !btn) return;
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  if (start === end) {
+    showError('Выделите фрагмент регулярного выражения в поле редактора');
+    return;
+  }
+  const selectedText = ta.value.slice(start, end).trim();
+  if (!selectedText) {
+    showError('Выделенный фрагмент пуст после обрезки пробелов');
+    return;
+  }
+  const parsed = parseRegexPattern(selectedText);
+  if (!parsed.success) {
+    showError(TOAST_INVERT_PARSE_ERROR);
+    return;
+  }
+  if (!parsed.elements || parsed.elements.length === 0) {
+    showError(TOAST_INVERT_PARSE_ERROR);
+    return;
+  }
+  const inverted = invertTopLevelElements(parsed.elements);
+  const conversion = convertLinkedBuilder(inverted);
+  if (!conversion.success || conversion.result === '') {
+    showError(TOAST_INVERT_PARSE_ERROR);
+    return;
+  }
+  const currentValue = ta.value;
+  const append = (currentValue ? '|' : '') + conversion.result;
+  ta.value = currentValue + append;
+  const newEnd = ta.value.length;
+  ta.selectionStart = ta.selectionEnd = newEnd;
+  lastEditorRef = ta;
+  lastSelectionStart = lastSelectionEnd = newEnd;
+  ta.focus();
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+  updateInvertSelectionButtonVisibility();
+  showSuccess('Обратный вариант добавлен в конец');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -437,6 +517,10 @@ export function initEditor() {
     document.addEventListener('selectionchange', () => {
       if (document.activeElement === ta) saveEditorSelection();
     });
+    // Видимость кнопки «Инвертировать выделенное» при изменении выделения
+    [ 'focus', 'select', 'mouseup', 'keyup' ].forEach((ev) => {
+      ta.addEventListener(ev, updateInvertSelectionButtonVisibility);
+    });
   }
 
   // Кнопки вставки (data-insert) — вставка по запомненной позиции (вариант A)
@@ -476,6 +560,13 @@ export function initEditor() {
 
   const saveToHistoryBtn = document.getElementById('editor-save-to-history-btn');
   if (saveToHistoryBtn) saveToHistoryBtn.addEventListener('click', saveEditorToHistory);
+
+  // Кнопка «Инвертировать выделенное» — видна только при выделении в поле
+  const invertBtn = getInvertSelectionBtn();
+  if (invertBtn) {
+    invertBtn.addEventListener('click', handleInvertSelection);
+    updateInvertSelectionButtonVisibility();
+  }
 
   // Изначально подсветка скрыта
   if (highlightLayer) {

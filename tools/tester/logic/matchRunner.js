@@ -5,7 +5,7 @@
  * @file tools/tester/logic/matchRunner.js
  */
 
-import { applyExtendedFlag } from './patternPreprocess.js';
+import { applyExtendedFlag, applyExtendedFlagWithMap } from './patternPreprocess.js';
 import { buildFlagsString } from './flagsBuilder.js';
 
 /** В JS \b с флагом u но без i остаётся только ASCII; Python/regex101 используют Unicode. Эквивалент границы слова для Unicode (u, без i). */
@@ -18,7 +18,18 @@ const UNICODE_NON_WORD_BOUNDARY = '(?:(?<=[\\p{L}\\p{N}_])(?=[\\p{L}\\p{N}_])|(?
  * @returns {string}
  */
 function replaceUnicodeWordBoundaries(p) {
+  return replaceUnicodeWordBoundariesWithMap(p).pattern;
+}
+
+/**
+ * То же, но возвращает маппинг: для каждой позиции в выходной строке — индекс во входной.
+ * @param {string} p — паттерн
+ * @returns {{ pattern: string, inputByOutput: number[] }}
+ */
+function replaceUnicodeWordBoundariesWithMap(p) {
   let result = '';
+  /** inputByOutput[индекс в result] = индекс в p */
+  const inputByOutput = [];
   let i = 0;
   const n = p.length;
   let inClass = false;
@@ -26,34 +37,177 @@ function replaceUnicodeWordBoundaries(p) {
     if (inClass) {
       if (p[i] === '\\' && i + 1 < n) {
         result += p[i] + p[i + 1];
+        inputByOutput.push(i, i + 1);
         i += 2;
         continue;
       }
       if (p[i] === ']') inClass = false;
       result += p[i];
+      inputByOutput.push(i);
       i++;
       continue;
     }
     if (p[i] === '[') {
       inClass = true;
       result += p[i];
+      inputByOutput.push(i);
       i++;
       continue;
     }
     if (p[i] === '\\' && i + 1 < n && p[i + 1] === 'b') {
+      const inputIdx = i; // позиция \ в исходном паттерне
+      for (let k = 0; k < UNICODE_WORD_BOUNDARY.length; k++) {
+        inputByOutput.push(inputIdx);
+      }
       result += UNICODE_WORD_BOUNDARY;
       i += 2;
       continue;
     }
     if (p[i] === '\\' && i + 1 < n && p[i + 1] === 'B') {
+      const inputIdx = i;
+      for (let k = 0; k < UNICODE_NON_WORD_BOUNDARY.length; k++) {
+        inputByOutput.push(inputIdx);
+      }
       result += UNICODE_NON_WORD_BOUNDARY;
       i += 2;
       continue;
     }
     result += p[i];
+    inputByOutput.push(i);
     i++;
   }
-  return result;
+  return { pattern: result, inputByOutput };
+}
+
+/**
+ * Проверка баланса скобок ( ), с учётом [ ] и экранирования.
+ * Собирает все ошибочные позиции: каждая лишняя ) и каждая незакрытая (.
+ * @param {string} p
+ * @returns {number[] | null}
+ */
+function getBracketErrorIndices(p) {
+  const len = p.length;
+  let i = 0;
+  let depth = 0;
+  const openIndices = [];
+  const errorIndices = [];
+  let inCharClass = false;
+  while (i < len) {
+    if (p[i] === '\\') {
+      i += 2;
+      continue;
+    }
+    if (inCharClass) {
+      if (p[i] === '\\') {
+        i += 2;
+        continue;
+      }
+      if (p[i] === ']') inCharClass = false;
+      i++;
+      continue;
+    }
+    if (p[i] === '[') {
+      inCharClass = true;
+      i++;
+      continue;
+    }
+    if (p[i] === '(') {
+      depth++;
+      openIndices.push(i);
+      i++;
+      continue;
+    }
+    if (p[i] === ')') {
+      depth--;
+      if (depth < 0) {
+        errorIndices.push(i);
+        i++;
+        continue;
+      }
+      openIndices.pop();
+      i++;
+      continue;
+    }
+    i++;
+  }
+  if (depth > 0) {
+    errorIndices.push(...openIndices.slice(-depth));
+  }
+  return errorIndices.length ? errorIndices : null;
+}
+
+/**
+ * Собирает индексы лишних `}` — не входящих в валидный квантификатор {n}, {n,}, {n,m}.
+ * Учитывает символьные классы [...] и экранирование.
+ * @param {string} p
+ * @returns {number[]}
+ */
+function getMisplacedBraceIndices(p) {
+  const len = p.length;
+  const errorIndices = [];
+  const braceStack = []; // индексы неэкранированных {
+  let i = 0;
+  let inCharClass = false;
+  while (i < len) {
+    if (p[i] === '\\') {
+      i += 2;
+      continue;
+    }
+    if (inCharClass) {
+      if (p[i] === ']') inCharClass = false;
+      i++;
+      continue;
+    }
+    if (p[i] === '[') {
+      inCharClass = true;
+      i++;
+      continue;
+    }
+    if (p[i] === '{') {
+      braceStack.push(i);
+      i++;
+      continue;
+    }
+    if (p[i] === '}') {
+      if (braceStack.length === 0) {
+        errorIndices.push(i);
+        i++;
+        continue;
+      }
+      const start = braceStack.pop();
+      const content = p.slice(start + 1, i);
+      // Валидный квантификатор: цифры, опционально запятая и цифры (без пробелов в обработанном паттерне)
+      if (!/^\d+(,\d*)?$/.test(content)) {
+        errorIndices.push(i);
+      }
+      i++;
+      continue;
+    }
+    i++;
+  }
+  return errorIndices;
+}
+
+/**
+ * Позиция ошибки из сообщения движка (нестандартно).
+ * @param {string} message
+ * @param {string} p
+ * @returns {number[]}
+ */
+function getErrorIndicesFromMessage(message, p) {
+  if (typeof message !== 'string') return [];
+  const m = message.match(/(?:index|position|at)\s*(\d+)/i);
+  if (m) return [Math.max(0, parseInt(m[1], 10))];
+  if (/nothing to repeat/i.test(message) && /^\s*\|/.test(p)) return [0];
+  if (/unmatched|unclosed|\)\s*$|\(\s*\)/i.test(message)) {
+    const bracket = getBracketErrorIndices(p);
+    if (bracket && bracket.length) return bracket;
+  }
+  if (/unexpected\s*\}|\}\s*$|invalid\s*quantifier|nothing\s*to\s*repeat/i.test(message)) {
+    const brace = getMisplacedBraceIndices(p);
+    if (brace.length) return brace;
+  }
+  return [];
 }
 
 /**
@@ -127,70 +281,17 @@ export function runMatch(pattern, flagsState, str) {
   /** Одно сообщение для всех ошибок regex; в UI показывается только оно, детали — в подсветке. */
   const REGEX_ERROR_MESSAGE = 'Invalid regex';
 
-  /**
-   * Проверка баланса скобок ( ), с учётом [ ] и экранирования.
-   * Собирает все ошибочные позиции за один проход: каждая лишняя ) и каждая незакрытая (.
-   * @param {string} p
-   * @returns {number[] | null}
-   */
-  function getBracketErrorIndices(p) {
-    const len = p.length;
-    let i = 0;
-    let depth = 0;
-    const openIndices = [];
-    const errorIndices = [];
-    let inCharClass = false;
-
-    while (i < len) {
-      if (p[i] === '\\') {
-        i += 2;
-        continue;
-      }
-      if (inCharClass) {
-        if (p[i] === '\\') {
-          i += 2;
-          continue;
-        }
-        if (p[i] === ']') inCharClass = false;
-        i++;
-        continue;
-      }
-      if (p[i] === '[') {
-        inCharClass = true;
-        i++;
-        continue;
-      }
-      if (p[i] === '(') {
-        depth++;
-        openIndices.push(i);
-        i++;
-        continue;
-      }
-      if (p[i] === ')') {
-        depth--;
-        if (depth < 0) {
-          errorIndices.push(i);
-          i++;
-          continue;
-        }
-        openIndices.pop();
-        i++;
-        continue;
-      }
-      i++;
-    }
-    if (depth > 0) {
-      errorIndices.push(...openIndices.slice(-depth));
-    }
-    return errorIndices.length ? errorIndices : null;
-  }
-
-  // Собираем все ошибочные позиции за один проход: скобки + лишняя | (начало, конец, ||)
+  // Собираем все ошибочные позиции: скобки, лишняя }, лишняя | (начало, конец, ||)
   const allErrorIndices = [];
 
   const bracketIndices = getBracketErrorIndices(processedPattern);
   if (bracketIndices && bracketIndices.length > 0) {
     allErrorIndices.push(...bracketIndices);
+  }
+
+  const misplacedBraces = getMisplacedBraceIndices(processedPattern);
+  if (misplacedBraces.length > 0) {
+    allErrorIndices.push(...misplacedBraces);
   }
 
   const leadingPipe = processedPattern.match(/^\s*\|/);
@@ -214,8 +315,8 @@ export function runMatch(pattern, flagsState, str) {
   }
 
   if (allErrorIndices.length > 0) {
-    allErrorIndices.sort((a, b) => a - b);
-    return { error: REGEX_ERROR_MESSAGE, errorIndices: allErrorIndices };
+    const unique = [...new Set(allErrorIndices)].sort((a, b) => a - b);
+    return { error: REGEX_ERROR_MESSAGE, errorIndices: unique };
   }
 
   let flagsStr = buildFlagsString(flagsState);
@@ -223,24 +324,6 @@ export function runMatch(pattern, flagsState, str) {
     new RegExp('', flagsStr + 'd');
     flagsStr += 'd';
   } catch (_) {}
-
-  /**
-   * Позиция ошибки из сообщения движка (нестандартно).
-   * @param {string} message
-   * @param {string} p
-   * @returns {number[]}
-   */
-  function getErrorIndicesFromMessage(message, p) {
-    if (typeof message !== 'string') return [];
-    const m = message.match(/(?:index|position|at)\s*(\d+)/i);
-    if (m) return [Math.max(0, parseInt(m[1], 10))];
-    if (/nothing to repeat/i.test(message) && /^\s*\|/.test(p)) return [0];
-    if (/unmatched|unclosed|\)\s*$|\(\s*\)/i.test(message)) {
-      const bracket = getBracketErrorIndices(p);
-      if (bracket && bracket.length) return bracket;
-    }
-    return [];
-  }
 
   let re;
   try {
@@ -267,4 +350,99 @@ export function runMatch(pattern, flagsState, str) {
 
   const matches = collectMatches(re, str);
   return { matches };
+}
+
+const REGEX_ERROR_MESSAGE_UI = 'Invalid regex';
+
+/**
+ * Валидирует паттерн с тем же препроцессингом и флагами, что и runMatch.
+ * Возвращает индексы ошибок в исходном (raw) паттерне для подсветки в UI.
+ *
+ * @param {string} raw — исходный паттерн (как в поле ввода)
+ * @param {{ g?: boolean, m?: boolean, i?: boolean, s?: boolean, u?: boolean, x?: boolean, a?: boolean }} flagsState
+ * @returns {{ valid: true } | { valid: false, error: string, errorIndices: number[] }}
+ */
+export function validatePatternForUI(raw, flagsState) {
+  if (typeof raw !== 'string') {
+    return { valid: true };
+  }
+
+  let p1;
+  let rawByProcessed; // p1 index -> raw index (length = p1.length)
+  if (flagsState.x) {
+    const out = applyExtendedFlagWithMap(raw);
+    p1 = out.pattern;
+    rawByProcessed = out.rawByProcessed;
+  } else {
+    p1 = raw;
+    rawByProcessed = Array.from({ length: raw.length }, (_, i) => i);
+  }
+
+  const state = flagsState && typeof flagsState === 'object' ? flagsState : {};
+  const hasWordBoundary = /\\b/.test(p1) || /\\B/.test(p1);
+  let p2;
+  let processedToRaw; // p2 index -> raw index (length = p2.length)
+  if (!state.a && !state.i && hasWordBoundary) {
+    const out = replaceUnicodeWordBoundariesWithMap(p1);
+    p2 = out.pattern;
+    processedToRaw = out.inputByOutput.map((idx1) => rawByProcessed[idx1]);
+  } else {
+    p2 = p1;
+    processedToRaw = rawByProcessed.slice();
+  }
+
+  const allErrorIndices = [];
+  const bracketIndices = getBracketErrorIndices(p2);
+  if (bracketIndices && bracketIndices.length > 0) {
+    allErrorIndices.push(...bracketIndices);
+  }
+  const misplacedBraces = getMisplacedBraceIndices(p2);
+  if (misplacedBraces.length > 0) {
+    allErrorIndices.push(...misplacedBraces);
+  }
+  const leadingPipe = p2.match(/^\s*\|/);
+  if (leadingPipe) {
+    const idx = p2.indexOf('|');
+    if (idx >= 0 && !allErrorIndices.includes(idx)) allErrorIndices.push(idx);
+  }
+  const trailingPipe = p2.match(/\|\s*$/);
+  if (trailingPipe) {
+    const idx = p2.lastIndexOf('|');
+    const i = idx >= 0 ? idx : Math.max(0, p2.length - 1);
+    if (!allErrorIndices.includes(i)) allErrorIndices.push(i);
+  }
+  if (/\|\|/.test(p2)) {
+    let m;
+    const rePipe = /\|\|/g;
+    while ((m = rePipe.exec(p2)) !== null) {
+      if (!allErrorIndices.includes(m.index)) allErrorIndices.push(m.index);
+      if (!allErrorIndices.includes(m.index + 1)) allErrorIndices.push(m.index + 1);
+    }
+  }
+
+  if (allErrorIndices.length > 0) {
+    const rawIndices = allErrorIndices
+      .map((j) => (j < processedToRaw.length ? processedToRaw[j] : undefined))
+      .filter((r) => r !== undefined);
+    const unique = [...new Set(rawIndices)].sort((a, b) => a - b);
+    return { valid: false, error: REGEX_ERROR_MESSAGE_UI, errorIndices: unique };
+  }
+
+  let flagsStr = buildFlagsString(flagsState);
+  try {
+    new RegExp('', flagsStr + 'd');
+    flagsStr += 'd';
+  } catch (_) {}
+
+  try {
+    new RegExp(p2, flagsStr);
+    return { valid: true };
+  } catch (e) {
+    const indices = getErrorIndicesFromMessage(e.message, p2);
+    const rawIndices = indices
+      .map((j) => (j < processedToRaw.length ? processedToRaw[j] : undefined))
+      .filter((r) => r !== undefined);
+    const unique = [...new Set(rawIndices)].sort((a, b) => a - b);
+    return { valid: false, error: e.message, errorIndices: unique.length ? unique : [0] };
+  }
 }

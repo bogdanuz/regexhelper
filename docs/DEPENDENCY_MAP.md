@@ -28,6 +28,7 @@
 | tools/converter/css/tooltips.css | ✅ |
 | tools/converter/css/zones.css | ✅ |
 | tools/converter/css/linkedBuilder.css | ✅ |
+| tools/editor/css/editor.css | ✅ |
 | tools/visualizer/css/visualizer.css | ✅ |
 | assets/libs/regexper/regexper.css | ✅ |
 | tools/visualizer/css/regexper-overrides.css | ✅ |
@@ -87,6 +88,10 @@ main.js
 │   │   ├── shared/utils/storage.js
 │   │   └── shared/utils/escape.js
 │   └── shared/utils/storage.js
+├── tools/editor/app.js      # Ручной редактор: setEditorContent, saveEditorToHistory, вставка в курсор, Проверить, Инвертировать выделенное (parseRegexPattern, convertLinkedBuilder)
+│   ├── shared/ui/notifications.js
+│   ├── shared/utils/storage.js
+│   └── tools/converter/logic/regexParser.js (analyzePatternForUI — подсветка ошибок)
 ├── tools/visualizer/app.js
 │   └── shared/ui/notifications.js
 ├── tools/case/app.js
@@ -113,6 +118,8 @@ main.js
 - tools/converter/logic/: simpleConverter, linkedBuilderConverter, parameterApplier, regexBuilder, distanceBuilder, resultFormatter, compatibilityChecker, conversionManager, **regexParser** (обратный конвертер)
 - tools/converter/converters/: autoReplace, declensions, latinCyrillic, optionalChars, wildcard, transliteration
 - tools/converter/ui/: linkedBuilder, linkedBuilderUI, modals, settingsUI, resultPanel, historyUI, layoutManager, badges, inlinePopup
+
+**Tools/editor:** tools/editor/app.js (storage, notifications, regexParser для подсветки ошибок и инверсии выделенного; convertLinkedBuilder для инверсии; historyUI.displayHistory при сохранении в историю)  
 
 **Tools/visualizer:** tools/visualizer/app.js  
 
@@ -144,7 +151,7 @@ main.js
 - **tests/test.html** — браузерные тесты (235+ тестов, 5 вкладок)
 - **tests/p0-logic-test.mjs** — Node тесты логики (137 тестов)
 - **tests/converter-reference-test.mjs** — референсные тесты
-- **tests/visualizer-test.mjs**, **tests/texthelper-test.mjs**, **tests/tester-test.mjs** — тесты инструментов
+- **tests/visualizer-test.mjs**, **tests/texthelper-test.mjs**, **tests/tester-test.mjs** (69 тестов: runMatch, флаги, ошибки паттерна, validatePatternForUI) — тесты инструментов
 
 ---
 
@@ -161,7 +168,7 @@ main.js
 
 - **main.js** → `initTester` из **tools/tester/app.js**
 - **tools/converter/app.js** → `resetTesterPanel` (при «Сбросить»)
-- Секция #tester на странице
+- Секция #tester на странице. Реал-тайм валидация: **testerUI.js** вызывает **validatePatternForUI** (matchRunner.js) до запуска воркера; маппинг позиций через **patternPreprocess.applyExtendedFlagWithMap** и **replaceUnicodeWordBoundariesWithMap**.
 - **Стили:** tools/tester/css/tester.css
 
 ### Визуализатор

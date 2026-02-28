@@ -293,6 +293,55 @@ async function runBrowserTests(which) {
           console.error('Editor browser tests: no history card to-editor button found');
           anyFailed = true;
         }
+
+        // Кнопка «Инвертировать выделенное»: скрыта без выделения, по клику добавляет обратный вариант в конец
+        const invertBtn = await editorPage.$('#editor-invert-selection-btn');
+        if (!invertBtn) {
+          console.error('Editor browser tests: #editor-invert-selection-btn not found');
+          anyFailed = true;
+        } else {
+          await editorPage.evaluate(() => {
+            const ta = document.getElementById('editor-textarea');
+            ta.value = '';
+            ta.focus();
+            ta.setSelectionRange(0, 0);
+            ta.dispatchEvent(new Event('select', { bubbles: true }));
+          });
+          await editorPage.waitForTimeout(50);
+          const hiddenWhenEmpty = await editorPage.$eval('#editor-invert-selection-btn', (el) => el.style.display === 'none');
+          if (!hiddenWhenEmpty) {
+            console.error('Editor browser tests: invert button should be hidden when no selection');
+            anyFailed = true;
+          } else {
+            console.log('Editor browser: invert button hidden when no selection OK');
+          }
+
+          await editorPage.evaluate(() => {
+            const ta = document.getElementById('editor-textarea');
+            ta.value = 'a|b';
+            ta.focus();
+            ta.setSelectionRange(0, 3);
+            ta.dispatchEvent(new Event('select', { bubbles: true }));
+          });
+          await editorPage.waitForTimeout(100);
+          const visibleWithSelection = await editorPage.$eval('#editor-invert-selection-btn', (el) => el.style.display !== 'none');
+          if (!visibleWithSelection) {
+            console.error('Editor browser tests: invert button should be visible when text selected');
+            anyFailed = true;
+          } else {
+            console.log('Editor browser: invert button visible when selection OK');
+          }
+
+          await editorPage.click('#editor-invert-selection-btn');
+          await editorPage.waitForTimeout(200);
+          const valueAfterInvert = await editorPage.$eval('#editor-textarea', (el) => el.value);
+          if (valueAfterInvert !== 'a|b|b|a') {
+            console.error('Editor browser tests: invert selection failed, value=', valueAfterInvert);
+            anyFailed = true;
+          } else {
+            console.log('Editor browser: invert selection append OK (a|b -> a|b|b|a)');
+          }
+        }
       } catch (e) {
         console.error('Editor browser tests exception:', e.message);
         anyFailed = true;

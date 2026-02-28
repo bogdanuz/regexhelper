@@ -27,6 +27,42 @@
     flex-direction: column;
 }
 
+/* Подсказка и кнопка «Инвертировать выделенное» в одну строку */
+.editor-header-hint-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.editor-header-hint-row .panel-hint-compact {
+    margin-top: 0;
+}
+
+.editor-invert-selection-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: var(--radius-small);
+    border: 1px solid var(--color-border-default);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    white-space: nowrap;
+    min-height: 28px;
+}
+
+.editor-invert-selection-btn:hover {
+    border-color: var(--color-border-hover);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
+}
+
 .editor-body {
     display: flex;
     flex-direction: column;

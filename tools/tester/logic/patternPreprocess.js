@@ -5,29 +5,34 @@
  */
 
 /**
- * Применяет режим extended (Python re.VERBOSE / flag x):
- * вне символьного класса [...] удаляются пробелы, табы, переводы строк
- * и комментарии от # до конца строки.
+ * Применяет режим extended (Python re.VERBOSE / flag x) и возвращает паттерн + маппинг позиций.
+ * Вне символьного класса [...] удаляются пробелы, табы, переводы строк и комментарии (# до \n).
  *
  * @param {string} pattern — исходный паттерн
- * @returns {string} — обработанный паттерн
+ * @returns {{ pattern: string, rawByProcessed: number[] }} — обработанный паттерн и для каждой позиции в нём индекс в raw
  */
-export function applyExtendedFlag(pattern) {
-  if (!pattern || typeof pattern !== 'string') return pattern;
+export function applyExtendedFlagWithMap(pattern) {
+  if (!pattern || typeof pattern !== 'string') {
+    const p = pattern || '';
+    return { pattern: p, rawByProcessed: Array.from({ length: p.length }, (_, i) => i) };
+  }
 
   let result = '';
+  /** rawByProcessed[индекс в result] = индекс в pattern */
+  const rawByProcessed = [];
   let i = 0;
   const n = pattern.length;
   let inClass = false;
-  let classFirstChar = false; // после [ возможен ^
 
   while (i < n) {
     const c = pattern[i];
 
     if (inClass) {
       result += c;
+      rawByProcessed.push(i);
       if (c === '\\' && i + 1 < n) {
         result += pattern[i + 1];
+        rawByProcessed.push(i + 1);
         i += 2;
         continue;
       }
@@ -38,14 +43,15 @@ export function applyExtendedFlag(pattern) {
 
     if (c === '[') {
       inClass = true;
-      classFirstChar = true;
       result += c;
+      rawByProcessed.push(i);
       i++;
       continue;
     }
 
     if (c === '\\' && i + 1 < n) {
       result += c + pattern[i + 1];
+      rawByProcessed.push(i, i + 1);
       i += 2;
       continue;
     }
@@ -61,8 +67,21 @@ export function applyExtendedFlag(pattern) {
     }
 
     result += c;
+    rawByProcessed.push(i);
     i++;
   }
 
-  return result;
+  return { pattern: result, rawByProcessed };
+}
+
+/**
+ * Применяет режим extended (Python re.VERBOSE / flag x):
+ * вне символьного класса [...] удаляются пробелы, табы, переводы строк
+ * и комментарии от # до конца строки.
+ *
+ * @param {string} pattern — исходный паттерн
+ * @returns {string} — обработанный паттерн
+ */
+export function applyExtendedFlag(pattern) {
+  return applyExtendedFlagWithMap(pattern).pattern;
 }

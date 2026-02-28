@@ -18,7 +18,7 @@ export function buildFlagsString(flagsState) {
   if (state.i) parts.push('i');
   if (state.m) parts.push('m');
   if (state.s) parts.push('s');
-  // Эмуляция Python: по умолчанию Unicode (\b, \w работают с кириллицей). u всегда, кроме явного a (ascii).
-  if (!state.a) parts.push('u');
+  // u добавляется только если не включён a и пользователь включил чекбокс unicode (по умолчанию чекбокс включён).
+  if (!state.a && state.u) parts.push('u');
   return parts.join('');
 }

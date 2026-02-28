@@ -15,12 +15,13 @@ regexhelper/
 │   └── update-version.yml  # Автообновление version.json при push в main
 ├── tests/                  # Все тесты: Node (.mjs) и браузер (test.html)
 │   ├── run-tests.mjs       # Единый запуск: node tests/run-tests.mjs (Node и/или --browser)
-│   ├── test.html           # Страница браузерных тестов (пять вкладок, 235+ тестов)
-│   ├── p0-logic-test.mjs   # Node тесты логики (137 тестов)
+│   ├── test.html           # Страница браузерных тестов (пять вкладок, 275+ тестов)
+│   ├── p0-logic-test.mjs   # Node тесты логики (141 тест)
 │   ├── converter-reference-test.mjs
 │   ├── visualizer-test.mjs
 │   ├── texthelper-test.mjs # Node тесты Текстового помощника (60 тестов)
-│   └── tester-test.mjs
+│   ├── tester-test.mjs
+│   └── editor-test.mjs     # Node тесты редактора (setEditorContent, эвристики подсветки ошибок, invert selection pipeline)
 │
 ├── core/                   # Ядро: конфиг, иконки, общие стили
 │   ├── config.js
@@ -31,7 +32,7 @@ regexhelper/
 │
 ├── shared/                 # Общее для инструментов
 │   ├── utils/
-│   │   ├── storage.js
+│   │   ├── storage.js      # localStorage: история (типы simple, linked, manual — «Из редактора»), настройки, триггеры
 │   │   ├── validation.js
 │   │   ├── escape.js
 │   │   └── versionChecker.js  # Проверка обновлений (version.json)
@@ -84,12 +85,15 @@ regexhelper/
 │   │   ├── app.js
 │   │   ├── css/            # visualizer.css, regexper-overrides.css, regexper-reset.css
 │   │   └── scripts/        # fetch-regexper-static.ps1
-│   ├── tester/             # Тестер — проверка regex на тестовой строке
+│   ├── tester/             # Тестер — проверка regex на тестовой строке, реал-тайм подсветка ошибок
 │   │   ├── app.js
-│   │   ├── logic/          # patternPreprocess.js, flagsBuilder.js, matchRunner.js
+│   │   ├── logic/          # patternPreprocess.js (applyExtendedFlagWithMap), flagsBuilder.js, matchRunner.js (validatePatternForUI, getMisplacedBraceIndices)
 │   │   ├── worker/         # matchWorker.js (Web Worker)
 │   │   ├── ui/             # testerUI.js
 │   │   └── css/            # tester.css
+│   ├── editor/             # Ручной редактор regex — ввод/правка, вставка параметров в курсор, Инвертировать выделенное, Сохранить в историю, В визуализатор/тестер
+│   │   ├── app.js          # setEditorContent, initEditor, saveEditorToHistory
+│   │   └── css/            # editor.css
 │   └── texthelper/         # Текстовый помощник — утилиты для работы с текстом (включает смену регистра)
 │       ├── app.js
 │       ├── logic/          # columnToRow.js, rowToColumn.js, removeDuplicates.js, removeEmpty.js, prefixSuffix.js, trim.js, stats.js, changeCase.js
@@ -121,7 +125,7 @@ regexhelper/
 
 1. Браузер открывает **index.html**.
 2. **index.html** подключает стили и скрипты.
-3. **main.js** импортирует и вызывает `initApp`, `initVisualizer`, `initTester`, `initTexthelper`, `initFeedback`.
+3. **main.js** импортирует и вызывает `initApp`, `initEditor`, `initVisualizer`, `initTester`, `initTexthelper`, `initFeedback`.
 4. Каждый инструмент инициализируется независимо.
 
 ### Импорты (правила путей)
@@ -134,11 +138,11 @@ regexhelper/
 
 ### Тесты
 
-- **tests/test.html** — браузерная страница (235+ тестов, 5 вкладок)
-- **tests/run-tests.mjs** — единый скрипт запуска
-- **tests/p0-logic-test.mjs** — тесты логики конвертера (137 тестов)
+- **tests/test.html** — браузерная страница (275+ тестов, 5 вкладок)
+- **tests/run-tests.mjs** — единый скрипт запуска (Node и/или Playwright)
+- **tests/p0-logic-test.mjs** — тесты логики конвертера (141 тест)
 - **tests/converter-reference-test.mjs** — референсные тесты
-- **tests/visualizer-test.mjs**, **tests/texthelper-test.mjs**, **tests/tester-test.mjs** — тесты инструментов
+- **tests/visualizer-test.mjs**, **tests/texthelper-test.mjs**, **tests/tester-test.mjs**, **tests/editor-test.mjs** — тесты инструментов
 
 ---
 

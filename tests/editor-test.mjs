@@ -7,8 +7,11 @@ import {
   parseErrorIndex,
   heuristicErrorPosition,
   findCharClassEnd,
-  setEditorContent
+  setEditorContent,
+  invertTopLevelElements
 } from '../tools/editor/app.js';
+import { parseRegexPattern } from '../tools/converter/logic/regexParser.js';
+import { convertLinkedBuilder } from '../tools/converter/logic/linkedBuilderConverter.js';
 
 let passed = 0;
 let failed = 0;
@@ -88,6 +91,37 @@ try {
   assert(typeof setEditorContent === 'function', 'setEditorContent is a function');
 } catch (e) {
   assert(false, 'setEditorContent exception: ' + e.message);
+}
+
+// Инвертировать выделенное: parse + invertTopLevelElements + convertLinkedBuilder
+console.log('\nInvert selection pipeline (parse + invert + convert)');
+try {
+  // Простая альтернация a|b -> b|a
+  const r1 = parseRegexPattern('a|b');
+  assert(r1.success && r1.elements && r1.elements.length === 2, 'parse a|b');
+  const inv1 = invertTopLevelElements(r1.elements);
+  const conv1 = convertLinkedBuilder(inv1);
+  assert(conv1.success && conv1.result === 'b|a', 'invert a|b -> b|a');
+
+  // Один элемент — инверсия даёт тот же regex
+  const r2 = parseRegexPattern('(мама|папа)');
+  assert(r2.success && r2.elements && r2.elements.length === 1, 'parse single group');
+  const inv2 = invertTopLevelElements(r2.elements);
+  const conv2 = convertLinkedBuilder(inv2);
+  assert(conv2.success && conv2.result.includes('мама') && conv2.result.includes('папа'), 'invert single group unchanged');
+
+  // Референсный паттерн: (мама[\s\S]+папа)[^\n]+брат.{0,10}сестра -> сестра.{0,10}брат[^\n]+(мама[\s\S]+папа)
+  const pattern = '(мама[\\s\\S]+папа)[^\\n]+брат.{0,10}сестра';
+  const r3 = parseRegexPattern(pattern);
+  assert(r3.success && r3.elements && r3.elements.length >= 2, 'parse reference pattern');
+  const inv3 = invertTopLevelElements(r3.elements);
+  const conv3 = convertLinkedBuilder(inv3);
+  assert(conv3.success && conv3.result.length > 0, 'invert reference pattern success');
+  assert(conv3.result.includes('сестра') && conv3.result.includes('брат'), 'inverted order: сестра...брат');
+  assert(conv3.result.includes('(мама[\\s\\S]+папа)'), 'inverted contains group');
+  assert(conv3.result.includes('.{0,10}') && conv3.result.includes('[^\\n]+'), 'inverted contains connectors');
+} catch (e) {
+  assert(false, 'Invert selection pipeline exception: ' + e.message);
 }
 
 console.log(`\nEditor logic tests: passed=${passed}, failed=${failed}\n`);
