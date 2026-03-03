@@ -11,7 +11,7 @@ import {
   invertTopLevelElements
 } from '../tools/editor/app.js';
 import { parseRegexPattern } from '../tools/converter/logic/regexParser.js';
-import { convertLinkedBuilder } from '../tools/converter/logic/linkedBuilderConverter.js';
+import { convertLinkedBuilder, buildRawInvertedRegex } from '../tools/converter/logic/linkedBuilderConverter.js';
 
 let passed = 0;
 let failed = 0;
@@ -122,6 +122,44 @@ try {
   assert(conv3.result.includes('.{0,10}') && conv3.result.includes('[^\\n]+'), 'inverted contains connectors');
 } catch (e) {
   assert(false, 'Invert selection pipeline exception: ' + e.message);
+}
+
+// Ручной редактор: инверт без автозамен (forManualEditorInvert + buildRawInvertedRegex)
+console.log('\nManual editor invert (raw, no auto-replace)');
+try {
+  // parseRegexPattern с forManualEditorInvert возвращает sourceString и rawSourceStart/End на элементах
+  const raw1 = parseRegexPattern('пульт.{0,10}сч[её]тчик', { forManualEditorInvert: true });
+  assert(raw1.success && raw1.sourceString === 'пульт.{0,10}сч[её]тчик', 'forManualEditorInvert returns sourceString');
+  assert(raw1.elements && raw1.elements.length === 2, 'two segments');
+  assert(
+    typeof raw1.elements[0].rawSourceStart === 'number' && typeof raw1.elements[0].rawSourceEnd === 'number',
+    'first element has rawSourceStart/End'
+  );
+  const seg0 = raw1.sourceString.slice(raw1.elements[0].rawSourceStart, raw1.elements[0].rawSourceEnd);
+  const seg1 = raw1.sourceString.slice(raw1.elements[1].rawSourceStart, raw1.elements[1].rawSourceEnd);
+  assert(seg0 === 'пульт', 'first segment raw is "пульт"');
+  assert(seg1 === 'сч[её]тчик', 'second segment raw is "сч[её]тчик"');
+
+  // buildRawInvertedRegex: порядок меняется, текст без автозамен (не добавляем [ьъ] к пульт)
+  const invRaw1 = invertTopLevelElements(raw1.elements);
+  const built1 = buildRawInvertedRegex(invRaw1, raw1.sourceString);
+  assert(built1.success && built1.result === 'сч[её]тчик.{0,10}пульт', 'raw invert: сч[её]тчик.{0,10}пульт (no [ьъ])');
+  assert(!built1.result.includes('[ьъ]'), 'raw invert does not add [ьъ] to пульт');
+
+  // Сохранение \b и скобок как в исходном выражении
+  const raw2 = parseRegexPattern('\\b((tg|тг)\\b|телег).{0,30}ограничени[еяюи]', { forManualEditorInvert: true });
+  assert(raw2.success && raw2.sourceString.includes('\\b'), 'forManualEditorInvert does not strip \\b');
+  const invRaw2 = invertTopLevelElements(raw2.elements);
+  const built2 = buildRawInvertedRegex(invRaw2, raw2.sourceString);
+  assert(built2.success, 'raw invert \\b pattern success');
+  assert(built2.result.includes('\\b((tg|тг)\\b|телег)'), 'inverted preserves \\b and brackets as in source');
+  assert(built2.result.startsWith('ограничени[еяюи]'), 'inverted order: ограничени first');
+
+  // buildRawInvertedRegex: пустой/невалидный ввод
+  const emptyBuild = buildRawInvertedRegex([], 'abc');
+  assert(!emptyBuild.success && emptyBuild.result === '', 'buildRawInvertedRegex empty elements fails');
+} catch (e) {
+  assert(false, 'Manual editor invert exception: ' + e.message);
 }
 
 console.log(`\nEditor logic tests: passed=${passed}, failed=${failed}\n`);

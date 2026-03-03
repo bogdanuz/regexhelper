@@ -6,10 +6,24 @@
 import { runMatch } from '../logic/matchRunner.js';
 
 self.onmessage = (e) => {
-  const { pattern, flagsState, str } = e.data;
+  const { pattern, patternTrue, patternFalse, flagsState, str } = e.data || {};
+  const mainPattern = typeof patternTrue === 'string' ? patternTrue : pattern;
+
   try {
-    const result = runMatch(pattern, flagsState, str);
-    self.postMessage(result);
+    if (typeof mainPattern !== 'string') {
+      self.postMessage({ error: 'Pattern is not a string' });
+      return;
+    }
+
+    const trueResult = runMatch(mainPattern, flagsState, str);
+
+    if (typeof patternFalse === 'string' && patternFalse.length > 0) {
+      const falseResult = runMatch(patternFalse, flagsState, str);
+      self.postMessage({ trueResult, falseResult });
+      return;
+    }
+
+    self.postMessage(trueResult);
   } catch (err) {
     self.postMessage({ error: String(err.message) });
   }

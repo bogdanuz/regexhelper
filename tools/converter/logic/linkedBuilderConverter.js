@@ -46,6 +46,33 @@ function getConnectorPattern(connector) {
 }
 
 /**
+ * Собирает инвертированную regex-строку из элементов с сырыми диапазонами (для ручного редактора).
+ * Не применяет автозамены и параметры — только порядок и соединители.
+ * @param {Array} invertedElements - элементы после invertTopLevelElements, с rawSourceStart, rawSourceEnd, connector
+ * @param {string} sourceString - строка, по которой резать (исходное выделение)
+ * @returns {{ success: boolean, result: string }}
+ */
+export function buildRawInvertedRegex(invertedElements, sourceString) {
+  if (!Array.isArray(invertedElements) || invertedElements.length === 0 || typeof sourceString !== 'string') {
+    return { success: false, result: '' };
+  }
+  const parts = [];
+  for (let i = 0; i < invertedElements.length; i++) {
+    const el = invertedElements[i];
+    const start = el.rawSourceStart;
+    const end = el.rawSourceEnd;
+    if (typeof start !== 'number' || typeof end !== 'number' || start > end) {
+      return { success: false, result: '' };
+    }
+    parts.push(sourceString.slice(start, end));
+    if (i < invertedElements.length - 1) {
+      parts.push(getConnectorPattern(el.connector));
+    }
+  }
+  return { success: true, result: parts.join('') };
+}
+
+/**
  * Применить параметры к тексту триггера
  * @param {string} text - текст триггера
  * @param {Object} params - параметры

@@ -238,8 +238,13 @@ export function showUpdateAvailable() {
     notification.classList.add('show');
   }, 10);
 
-  notification.querySelector('[data-action="refresh"]').onclick = () => {
-    window.location.reload();
+  notification.querySelector('[data-action="refresh"]').onclick = async () => {
+    try {
+      const { forceReload } = await import('../utils/forceReload.js');
+      forceReload();
+    } catch (e) {
+      window.location.reload();
+    }
   };
 
   notification.querySelector('[data-action="later"]').onclick = () => {

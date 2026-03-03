@@ -87,11 +87,11 @@ regexhelper/
 │   │   └── scripts/        # fetch-regexper-static.ps1
 │   ├── tester/             # Тестер — проверка regex на тестовой строке, реал-тайм подсветка ошибок
 │   │   ├── app.js
-│   │   ├── logic/          # patternPreprocess.js (applyExtendedFlagWithMap), flagsBuilder.js, matchRunner.js (validatePatternForUI, getMisplacedBraceIndices)
+│   │   ├── logic/          # patternPreprocess.js (applyExtendedFlagWithMap), flagsBuilder.js, matchRunner.js (validatePatternForUI, getMisplacedBraceIndices, filterMatchesByFalse)
 │   │   ├── worker/         # matchWorker.js (Web Worker)
-│   │   ├── ui/             # testerUI.js
+│   │   ├── ui/             # testerUI.js (поля TRUE/FALSE, подсветка совпадений и ошибок)
 │   │   └── css/            # tester.css
-│   ├── editor/             # Ручной редактор regex — ввод/правка, вставка параметров в курсор, Инвертировать выделенное, Сохранить в историю, В визуализатор/тестер
+│   ├── editor/             # Ручной редактор regex — ввод/правка, вставка параметров в курсор, Инвертировать выделенное (сырое инвертирование без автозамен), Сохранить в историю, В визуализатор/тестер
 │   │   ├── app.js          # setEditorContent, initEditor, saveEditorToHistory
 │   │   └── css/            # editor.css
 │   └── texthelper/         # Текстовый помощник — утилиты для работы с текстом (включает смену регистра)

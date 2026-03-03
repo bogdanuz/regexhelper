@@ -88,7 +88,7 @@ main.js
 │   │   ├── shared/utils/storage.js
 │   │   └── shared/utils/escape.js
 │   └── shared/utils/storage.js
-├── tools/editor/app.js      # Ручной редактор: setEditorContent, saveEditorToHistory, вставка в курсор, Проверить, Инвертировать выделенное (parseRegexPattern, convertLinkedBuilder)
+├── tools/editor/app.js      # Ручной редактор: setEditorContent, saveEditorToHistory, вставка в курсор, Проверить, Инвертировать выделенное (parseRegexPattern с forManualEditorInvert, buildRawInvertedRegex), resetEditorPanel
 │   ├── shared/ui/notifications.js
 │   ├── shared/utils/storage.js
 │   └── tools/converter/logic/regexParser.js (analyzePatternForUI — подсветка ошибок)
@@ -110,7 +110,7 @@ main.js
 
 **Core:** core/config.js, core/icons.js  
 
-**Shared:** shared/utils/storage.js, shared/utils/validation.js, shared/utils/escape.js, shared/content/WIKI.js, shared/ui/notifications.js, shared/ui/feedback.js  
+**Shared:** shared/utils/storage.js, shared/utils/validation.js, shared/utils/escape.js, shared/utils/versionChecker.js, shared/utils/forceReload.js, shared/content/WIKI.js, shared/ui/notifications.js, shared/ui/feedback.js  
 
 **Tools/converter:**
 - tools/converter/app.js
@@ -119,7 +119,7 @@ main.js
 - tools/converter/converters/: autoReplace, declensions, latinCyrillic, optionalChars, wildcard, transliteration
 - tools/converter/ui/: linkedBuilder, linkedBuilderUI, modals, settingsUI, resultPanel, historyUI, layoutManager, badges, inlinePopup
 
-**Tools/editor:** tools/editor/app.js (storage, notifications, regexParser для подсветки ошибок и инверсии выделенного; convertLinkedBuilder для инверсии; historyUI.displayHistory при сохранении в историю)  
+**Tools/editor:** tools/editor/app.js (storage, notifications, regexParser/analyzePatternForUI для подсветки ошибок, parseRegexPattern в режиме forManualEditorInvert + buildRawInvertedRegex для инверсии выделенного без автозамен, resetEditorPanel при «Сбросить»; historyUI.displayHistory при сохранении в историю)  
 
 **Tools/visualizer:** tools/visualizer/app.js  
 
@@ -156,13 +156,6 @@ main.js
 ---
 
 ## Инструменты
-
-### Регистр
-
-- **main.js** → `initCase` из **tools/case/app.js**
-- **tools/converter/app.js** → `resetCasePanel` (при «Сбросить»)
-- Модальное окно по кнопке «Регистр» в навигации
-- **Стили:** tools/case/css/case.css
 
 ### Тестер
 

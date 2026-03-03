@@ -69,6 +69,9 @@
                 <button id="reset-btn" class="btn-secondary btn-ghost btn-reset" title="Сбросить все панели и параметры (история сохраняется)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Сбросить
                 </button>
+                <button id="hard-reload-btn" class="btn-secondary btn-ghost btn-reset" title="Жёсткая перезагрузка страницы без очистки истории">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M21 8a9 9 0 1 0 3 7.36"/></svg> Жёсткая перезагрузка
+                </button>
             </div>
         </div>
     </header>
@@ -443,12 +446,26 @@
                 </div>
                 <div class="panel-body tester-panel-body">
                     <div class="tester-regex-row">
-                        <label class="tester-label" for="tester-regex-input">Регулярное выражение</label>
+                        <label class="tester-label" for="tester-regex-input">Регулярное выражение (TRUE – что ловить)</label>
                         <div class="tester-regex-wrap tester-regex-overlay-wrap">
                             <div class="tester-regex-highlight-layer" id="tester-regex-highlight-layer" aria-hidden="true"></div>
                             <textarea id="tester-regex-input" class="tester-regex-input tester-regex-input-overlay" placeholder="Введите регулярное выражение" spellcheck="false" autocomplete="off" rows="4"></textarea>
                         </div>
                         <div class="tester-regex-error" id="tester-regex-error" role="alert" aria-live="polite" hidden></div>
+                    </div>
+                    <div class="tester-regex-row">
+                        <label class="tester-label" for="tester-regex-false-input">Регулярное выражение (FALSE – что исключить)</label>
+                        <div class="tester-regex-wrap">
+                            <textarea
+                                id="tester-regex-false-input"
+                                class="tester-regex-input"
+                                placeholder="Введите регулярное выражение для исключений (опционально)"
+                                spellcheck="false"
+                                autocomplete="off"
+                                rows="2"
+                            ></textarea>
+                        </div>
+                        <div class="tester-regex-error" id="tester-regex-false-error" role="alert" aria-live="polite" hidden></div>
                     </div>
                     <div class="tester-test-row">
                         <label class="tester-label" for="tester-test-input">Тестовый текст</label>

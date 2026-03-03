@@ -341,6 +341,70 @@ async function runBrowserTests(which) {
           } else {
             console.log('Editor browser: invert selection append OK (a|b -> a|b|b|a)');
           }
+
+          // Ручной редактор: инверт без автозамен — не добавляет [ьъ] к «пульт»
+          await editorPage.evaluate(() => {
+            const ta = document.getElementById('editor-textarea');
+            ta.value = 'пульт.{0,10}сч[её]тчик';
+            ta.focus();
+            ta.setSelectionRange(0, ta.value.length);
+            ta.dispatchEvent(new Event('select', { bubbles: true }));
+          });
+          await editorPage.waitForTimeout(100);
+          await editorPage.click('#editor-invert-selection-btn');
+          await editorPage.waitForTimeout(200);
+          const valueRawInvert = await editorPage.$eval('#editor-textarea', (el) => el.value);
+          const expectedRaw = 'пульт.{0,10}сч[её]тчик|сч[её]тчик.{0,10}пульт';
+          if (valueRawInvert !== expectedRaw) {
+            console.error('Editor browser tests: raw invert failed, value=', valueRawInvert, 'expected', expectedRaw);
+            anyFailed = true;
+          } else if (valueRawInvert.includes('пул[ьъ]т')) {
+            console.error('Editor browser tests: raw invert must not add [ьъ] to пульт');
+            anyFailed = true;
+          } else {
+            console.log('Editor browser: raw invert (no auto-replace) OK');
+          }
+        }
+
+        // Кнопка «Жёсткая перезагрузка» использует forceReload (без навигации в тестах)
+        await editorPage.evaluate(() => {
+          window.__REGEXHELPER_FORCE_RELOAD_TEST_ONLY__ = true;
+          window.__REGEXHELPER_FORCE_RELOAD_CALLED__ = false;
+        });
+        const hardReloadExists = await editorPage.$('#hard-reload-btn');
+        if (!hardReloadExists) {
+          console.error('Header tests: #hard-reload-btn not found');
+          anyFailed = true;
+        } else {
+          await editorPage.evaluate(() => document.getElementById('hard-reload-btn').click());
+          await editorPage.waitForTimeout(200);
+          const called = await editorPage.evaluate(() => !!window.__REGEXHELPER_FORCE_RELOAD_CALLED__);
+          if (!called) {
+            console.error('Header tests: hard reload button did not trigger forceReload (test flag)');
+            anyFailed = true;
+          } else {
+            console.log('Header tests: hard reload button wired to forceReload OK');
+          }
+        }
+
+        // Уведомление об обновлении: кнопка «Обновить» также использует forceReload
+        await editorPage.evaluate(() => {
+          window.__REGEXHELPER_FORCE_RELOAD_TEST_ONLY__ = true;
+          window.__REGEXHELPER_FORCE_RELOAD_CALLED__ = false;
+        });
+        await editorPage.evaluate(async () => {
+          const { showUpdateAvailable } = await import('./shared/ui/notifications.js');
+          showUpdateAvailable();
+        });
+        await editorPage.waitForSelector('.notification-update [data-action="refresh"]', { timeout: 5000 });
+        await editorPage.click('.notification-update [data-action="refresh"]');
+        await editorPage.waitForTimeout(200);
+        const calledFromToast = await editorPage.evaluate(() => !!window.__REGEXHELPER_FORCE_RELOAD_CALLED__);
+        if (!calledFromToast) {
+          console.error('Header tests: update toast refresh did not trigger forceReload (test flag)');
+          anyFailed = true;
+        } else {
+          console.log('Header tests: update toast refresh wired to forceReload OK');
         }
       } catch (e) {
         console.error('Editor browser tests exception:', e.message);

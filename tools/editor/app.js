@@ -11,7 +11,7 @@
 import { showError, showSuccess } from '../../shared/ui/notifications.js';
 import { saveToHistory } from '../../shared/utils/storage.js';
 import { analyzePatternForUI, parseRegexPattern } from '../converter/logic/regexParser.js';
-import { convertLinkedBuilder } from '../converter/logic/linkedBuilderConverter.js';
+import { convertLinkedBuilder, buildRawInvertedRegex } from '../converter/logic/linkedBuilderConverter.js';
 
 const TOAST_INSERT_CURSOR = 'Поставьте курсор в поле редактора в то место, куда нужно вставить параметр';
 const TOAST_INVERT_PARSE_ERROR = 'Не удалось разобрать выделенный фрагмент как регулярное выражение. Попробуйте воспользоваться конвертером для построения выражения.';
@@ -109,7 +109,7 @@ function handleInvertSelection() {
     showError('Выделенный фрагмент пуст после обрезки пробелов');
     return;
   }
-  const parsed = parseRegexPattern(selectedText);
+  const parsed = parseRegexPattern(selectedText, { forManualEditorInvert: true });
   if (!parsed.success) {
     showError(TOAST_INVERT_PARSE_ERROR);
     return;
@@ -119,7 +119,10 @@ function handleInvertSelection() {
     return;
   }
   const inverted = invertTopLevelElements(parsed.elements);
-  const conversion = convertLinkedBuilder(inverted);
+  // В ручном редакторе: только перестановка, без автозамен и нормализации — используем сырые диапазоны
+  const conversion = typeof parsed.sourceString === 'string'
+    ? buildRawInvertedRegex(inverted, parsed.sourceString)
+    : convertLinkedBuilder(inverted);
   if (!conversion.success || conversion.result === '') {
     showError(TOAST_INVERT_PARSE_ERROR);
     return;
@@ -457,10 +460,15 @@ function sendEditorToVisualizer() {
   showSuccess('Выражение вставлено в визуализатор');
 }
 
-function clearEditor() {
+export function resetEditorPanel() {
   const ta = getEditorTextarea();
   if (ta) ta.value = '';
   hideValidationState();
+  updateInvertSelectionButtonVisibility();
+}
+
+function clearEditor() {
+  resetEditorPanel();
   showSuccess('Поле редактора очищено');
 }
 

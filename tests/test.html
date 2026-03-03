@@ -744,6 +744,45 @@
             return { pass: !r.error && r.matches?.length === 1 && r.matches[0].fullMatch === 'a1b a2b', msg: r.matches?.[0]?.fullMatch || '' };
         });
 
+        // TRUE/FALSE helper: filterMatchesByFalse
+        testTester('Тестер TRUE/FALSE', 'пересекающееся FALSE исключает совпадение TRUE', async () => {
+            const { runMatch, filterMatchesByFalse } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const text = 'слово1 слово2 слово3';
+            const trueRes = runMatch('слово\\d', fullFlags(), text);
+            const falseRes = runMatch('слово3', fullFlags(), text);
+            const cleaned = filterMatchesByFalse(trueRes.matches, falseRes.matches);
+            const hasFalseInCleaned = cleaned.some(m => m.fullMatch === 'слово3');
+            return {
+                pass: !trueRes.error && !falseRes.error && cleaned.length === 2 && !hasFalseInCleaned,
+                msg: 'cleaned=' + cleaned.map(m => m.fullMatch).join(',')
+            };
+        });
+
+        testTester('Тестер TRUE/FALSE', 'непересекающееся FALSE не влияет на TRUE', async () => {
+            const { runMatch, filterMatchesByFalse } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const text = 'дрон танк пехота';
+            const trueRes = runMatch('дрон|танк|пехота', fullFlags(), text);
+            const falseRes = runMatch('самолёт', fullFlags(), text); // нет совпадений
+            const cleaned = filterMatchesByFalse(trueRes.matches, falseRes.matches);
+            const sameLength = (trueRes.matches?.length || 0) === cleaned.length;
+            return {
+                pass: !trueRes.error && !falseRes.error && sameLength,
+                msg: 'len=' + cleaned.length
+            };
+        });
+
+        testTester('Тестер TRUE/FALSE', 'пустое FALSE → TRUE без изменений', async () => {
+            const { runMatch, filterMatchesByFalse } = await testerImport('../tools/tester/logic/matchRunner.js');
+            const text = 'a b c';
+            const trueRes = runMatch('\\w', fullFlags(), text);
+            const cleaned = filterMatchesByFalse(trueRes.matches, []);
+            const sameLength = (trueRes.matches?.length || 0) === cleaned.length;
+            return {
+                pass: !trueRes.error && sameLength,
+                msg: 'len=' + cleaned.length
+            };
+        });
+
         // ═══════════════════════════════════════════════════════════════
         // ТЕКСТОВЫЙ ПОМОЩНИК — все инструменты
         // ═══════════════════════════════════════════════════════════════
@@ -2268,6 +2307,44 @@
             const conv = convertLinkedBuilder(inv);
             if (!conv.success || conv.result !== 'b|a') return { pass: false, msg: 'invert result: ' + (conv.result || conv.error) };
             return { pass: true, msg: 'a|b -> b|a OK' };
+        });
+        test('Editor', 'parseRegexPattern forManualEditorInvert: sourceString and rawSourceStart/End', async () => {
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const r = parseRegexPattern('пульт.{0,10}сч[её]тчик', { forManualEditorInvert: true });
+            if (!r.success || !r.sourceString) return { pass: false, msg: 'sourceString missing' };
+            if (r.sourceString !== 'пульт.{0,10}сч[её]тчик') return { pass: false, msg: 'sourceString content' };
+            if (!r.elements || r.elements.length !== 2) return { pass: false, msg: 'elements length' };
+            const el0 = r.elements[0];
+            if (typeof el0.rawSourceStart !== 'number' || typeof el0.rawSourceEnd !== 'number') return { pass: false, msg: 'rawSourceStart/End' };
+            const seg0 = r.sourceString.slice(el0.rawSourceStart, el0.rawSourceEnd);
+            if (seg0 !== 'пульт') return { pass: false, msg: 'segment 0: ' + seg0 };
+            return { pass: true, msg: 'forManualEditorInvert OK' };
+        });
+        test('Editor', 'buildRawInvertedRegex: invert without auto-replace (no [ьъ])', async () => {
+            const { invertTopLevelElements } = await import('../tools/editor/app.js');
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const { buildRawInvertedRegex } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const parsed = parseRegexPattern('пульт.{0,10}сч[её]тчик', { forManualEditorInvert: true });
+            if (!parsed.success || !parsed.sourceString) return { pass: false, msg: 'parse failed' };
+            const inv = invertTopLevelElements(parsed.elements);
+            const res = buildRawInvertedRegex(inv, parsed.sourceString);
+            if (!res.success || res.result !== 'сч[её]тчик.{0,10}пульт') return { pass: false, msg: 'result: ' + (res.result || '') };
+            if (res.result.includes('[ьъ]')) return { pass: false, msg: 'must not add [ьъ]' };
+            return { pass: true, msg: 'raw invert OK' };
+        });
+        test('Editor', 'buildRawInvertedRegex: preserves \\b and brackets', async () => {
+            const { invertTopLevelElements } = await import('../tools/editor/app.js');
+            const { parseRegexPattern } = await import('../tools/converter/logic/regexParser.js');
+            const { buildRawInvertedRegex } = await import('../tools/converter/logic/linkedBuilderConverter.js');
+            const pattern = '\\b((tg|тг)\\b|телег).{0,30}ограничени[еяюи]';
+            const parsed = parseRegexPattern(pattern, { forManualEditorInvert: true });
+            if (!parsed.success || !parsed.sourceString) return { pass: false, msg: 'parse failed' };
+            const inv = invertTopLevelElements(parsed.elements);
+            const res = buildRawInvertedRegex(inv, parsed.sourceString);
+            if (!res.success) return { pass: false, msg: res.result || 'build failed' };
+            if (!res.result.includes('\\b') || !res.result.includes('ограничени[еяюи]')) return { pass: false, msg: 'missing \\b or ending' };
+            if (!res.result.startsWith('ограничени[еяюи]')) return { pass: false, msg: 'order' };
+            return { pass: true, msg: 'preserves \\b and order OK' };
         });
 
         // ═══════════════════════════════════════════════════════════════

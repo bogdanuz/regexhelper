@@ -564,7 +564,13 @@ function generateId() {
 /**
  * Парсит regex и возвращает структуру для конструктора
  */
-export function parseRegexPattern(pattern) {
+/**
+ * @param {string} pattern - regex-паттерн
+ * @param {{ forManualEditorInvert?: boolean }} [options] - для ручного редактора: не менять паттерн и вернуть сырые диапазоны
+ */
+export function parseRegexPattern(pattern, options = {}) {
+  const forManualEditorInvert = options.forManualEditorInvert === true;
+
   const validation = validateRegexSyntax(pattern);
   if (!validation.valid) {
     return {
@@ -580,53 +586,59 @@ export function parseRegexPattern(pattern) {
   allHighlights = [];
   allWarnings = [];
   
-  // Проверяем \b в начале и конце всего паттерна
+  // Проверяем \b в начале и конце всего паттерна (в режиме инверта ручного редактора не трогаем паттерн)
   let cleanPattern = pattern;
   let wordBoundariesMode = null;
   
-  const hasStartBoundary = cleanPattern.startsWith('\\b');
-  const hasEndBoundary = cleanPattern.endsWith('\\b');
-  
-  if (hasStartBoundary) {
-    cleanPattern = cleanPattern.slice(2);
-    globalOffset += 2;
-  }
-  if (hasEndBoundary) {
-    cleanPattern = cleanPattern.slice(0, -2);
-  }
-  
-  if (hasStartBoundary && hasEndBoundary) {
-    wordBoundariesMode = { mode: 'both' };
-  } else if (hasStartBoundary) {
-    wordBoundariesMode = { mode: 'start' };
-  } else if (hasEndBoundary) {
-    wordBoundariesMode = { mode: 'end' };
-  }
-  
-  // Удаляем якоря ^ и $ (не поддерживаются)
-  if (cleanPattern.startsWith('^')) {
-    cleanPattern = cleanPattern.slice(1);
-    globalOffset += 1;
-  }
-  if (cleanPattern.endsWith('$')) {
-    cleanPattern = cleanPattern.slice(0, -1);
+  if (!forManualEditorInvert) {
+    const hasStartBoundary = cleanPattern.startsWith('\\b');
+    const hasEndBoundary = cleanPattern.endsWith('\\b');
+    
+    if (hasStartBoundary) {
+      cleanPattern = cleanPattern.slice(2);
+      globalOffset += 2;
+    }
+    if (hasEndBoundary) {
+      cleanPattern = cleanPattern.slice(0, -2);
+    }
+    
+    if (hasStartBoundary && hasEndBoundary) {
+      wordBoundariesMode = { mode: 'both' };
+    } else if (hasStartBoundary) {
+      wordBoundariesMode = { mode: 'start' };
+    } else if (hasEndBoundary) {
+      wordBoundariesMode = { mode: 'end' };
+    }
+    
+    // Удаляем якоря ^ и $ (не поддерживаются)
+    if (cleanPattern.startsWith('^')) {
+      cleanPattern = cleanPattern.slice(1);
+      globalOffset += 1;
+    }
+    if (cleanPattern.endsWith('$')) {
+      cleanPattern = cleanPattern.slice(0, -1);
+    }
   }
   
   try {
-    const elements = parseTopLevel(cleanPattern, allWarnings, globalOffset);
+    const elements = parseTopLevel(cleanPattern, allWarnings, globalOffset, options);
     
-    // Если есть wordBoundaries — применяем ко всем триггерам верхнего уровня
-    if (wordBoundariesMode) {
+    // Если есть wordBoundaries — применяем ко всем триггерам верхнего уровня (не в режиме инверта редактора)
+    if (!forManualEditorInvert && wordBoundariesMode) {
       applyParamToAllTriggers(elements, 'wordBoundaries', wordBoundariesMode);
     }
     
-    return {
+    const result = {
       success: true,
       elements,
       analysis,
       warnings: allWarnings,
       highlights: allHighlights
     };
+    if (forManualEditorInvert) {
+      result.sourceString = cleanPattern;
+    }
+    return result;
   } catch (e) {
     return {
       success: false,
@@ -652,15 +664,16 @@ function applyParamToAllTriggers(elements, paramName, paramValue) {
 /**
  * Парсит верхний уровень паттерна
  */
-function parseTopLevel(pattern, warnings, baseOffset) {
-  const result = parseExpression(pattern, 0, warnings, baseOffset);
+function parseTopLevel(pattern, warnings, baseOffset, options = {}) {
+  const result = parseExpression(pattern, 0, warnings, baseOffset, options);
   return result.elements;
 }
 
 /**
  * Парсит выражение и возвращает элементы конструктора
  */
-function parseExpression(pattern, startPos, warnings, baseOffset) {
+function parseExpression(pattern, startPos, warnings, baseOffset, options = {}) {
+  const forManualEditorInvert = options.forManualEditorInvert === true;
   let pos = startPos;
   const segments = [];
   let currentSegment = { items: [], connector: null, startPos: pos };
@@ -677,6 +690,7 @@ function parseExpression(pattern, startPos, warnings, baseOffset) {
     // Альтернация — начинаем новый сегмент
     if (char === '|') {
       if (currentSegment.items.length > 0) {
+        if (forManualEditorInvert) currentSegment.endPos = pos;
         segments.push(currentSegment);
       }
       currentSegment = { items: [], connector: null, startPos: pos + 1 };
@@ -689,6 +703,7 @@ function parseExpression(pattern, startPos, warnings, baseOffset) {
     if (anyMatch) {
       if (currentSegment.items.length > 0) {
         currentSegment.connector = { mode: 'any' };
+        if (forManualEditorInvert) currentSegment.endPos = pos;
         segments.push(currentSegment);
         currentSegment = { items: [], connector: null, startPos: pos + anyMatch[0].length };
       }
@@ -712,6 +727,7 @@ function parseExpression(pattern, startPos, warnings, baseOffset) {
       
       if (currentSegment.items.length > 0) {
         currentSegment.connector = connector;
+        if (forManualEditorInvert) currentSegment.endPos = pos;
         segments.push(currentSegment);
         currentSegment = { items: [], connector: null, startPos: pos + distMatch[0].length };
       }
@@ -724,6 +740,7 @@ function parseExpression(pattern, startPos, warnings, baseOffset) {
     if (lineMatch) {
       if (currentSegment.items.length > 0) {
         currentSegment.connector = { mode: 'line' };
+        if (forManualEditorInvert) currentSegment.endPos = pos;
         segments.push(currentSegment);
         currentSegment = { items: [], connector: null, startPos: pos + lineMatch[0].length };
       }
@@ -738,7 +755,7 @@ function parseExpression(pattern, startPos, warnings, baseOffset) {
       pos += isNonCapturing ? 3 : 1;
       
       // Рекурсивно парсим содержимое группы
-      const innerResult = parseExpression(pattern, pos, warnings, baseOffset);
+      const innerResult = parseExpression(pattern, pos, warnings, baseOffset, options);
       pos = innerResult.endPos;
       
       // Пропускаем закрывающую скобку
@@ -781,11 +798,12 @@ function parseExpression(pattern, startPos, warnings, baseOffset) {
   
   // Добавляем последний сегмент
   if (currentSegment.items.length > 0) {
+    if (forManualEditorInvert) currentSegment.endPos = pos;
     segments.push(currentSegment);
   }
   
   // Конвертируем сегменты в элементы конструктора
-  const elements = convertSegmentsToElements(segments, baseOffset);
+  const elements = convertSegmentsToElements(segments, baseOffset, options);
   
   return {
     elements,
@@ -945,7 +963,9 @@ function createGroupFromElements(elements, quantifier) {
 /**
  * Конвертирует сегменты в элементы конструктора
  */
-function convertSegmentsToElements(segments, baseOffset) {
+function convertSegmentsToElements(segments, baseOffset, options = {}) {
+  const forManualEditorInvert = options.forManualEditorInvert === true;
+
   if (segments.length === 0) {
     return [];
   }
@@ -968,26 +988,35 @@ function convertSegmentsToElements(segments, baseOffset) {
         segmentElement.connector = { mode: 'alternation' };
       }
       
+      if (forManualEditorInvert && segment.startPos != null && segment.endPos != null) {
+        segmentElement.rawSourceStart = segment.startPos;
+        segmentElement.rawSourceEnd = segment.endPos;
+      }
+      
       delete segmentElement._quantifier;
       elements.push(segmentElement);
     }
   }
   
-  cleanupElements(elements);
+  cleanupElements(elements, options);
   
   return elements;
 }
 
 /**
- * Рекурсивно удаляет служебные поля из элементов
+ * Рекурсивно удаляет служебные поля из элементов (rawSourceStart/rawSourceEnd не трогаем при forManualEditorInvert)
  */
-function cleanupElements(elements) {
+function cleanupElements(elements, options = {}) {
+  const preserveRawRanges = options.forManualEditorInvert === true;
   for (const el of elements) {
     delete el._quantifier;
     delete el.startOffset;
     delete el.endOffset;
+    if (preserveRawRanges) {
+      // rawSourceStart, rawSourceEnd оставляем для сборки инвертированной строки в ручном редакторе
+    }
     if (el.type === 'group' && el.children) {
-      cleanupElements(el.children);
+      cleanupElements(el.children, options);
     }
   }
 }

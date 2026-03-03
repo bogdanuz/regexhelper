@@ -5,7 +5,7 @@
 
 import { showError, showSuccess } from '../../../shared/ui/notifications.js';
 import { buildFlagsString } from '../logic/flagsBuilder.js';
-import { validatePatternForUI } from '../logic/matchRunner.js';
+import { validatePatternForUI, filterMatchesByFalse } from '../logic/matchRunner.js';
 
 const DEBOUNCE_MS = 180;
 const LOADING_THRESHOLD_MS = 250;
@@ -271,11 +271,13 @@ function applyResult(
  */
 export function initTesterUI() {
   const regexInput = document.getElementById('tester-regex-input');
+  const regexFalseInput = document.getElementById('tester-regex-false-input');
   const testInput = document.getElementById('tester-test-input');
   const highlightLayer = document.getElementById('tester-highlight-layer');
   const matchInfoEl = document.getElementById('tester-match-info');
   const errorEl = document.getElementById('tester-error');
   const regexErrorEl = document.getElementById('tester-regex-error');
+  const regexFalseErrorEl = document.getElementById('tester-regex-false-error');
   const regexWrap = regexInput?.closest('.tester-regex-wrap') ?? null;
   const regexOverlayLayer = document.getElementById('tester-regex-highlight-layer');
   const loadingEl = document.getElementById('tester-loading');
@@ -302,10 +304,13 @@ export function initTesterUI() {
   }
 
   async function runWithWorkerOrSync() {
-    const pattern = regexInput?.value ?? '';
+    const patternTrue = regexInput?.value ?? '';
+    const patternFalseRaw = regexFalseInput?.value ?? '';
     const str = testInput?.value ?? '';
     const flags = getFlagsState();
     const seq = ++workerSeq;
+    const useFalse =
+      !!patternFalseRaw && (!regexFalseErrorEl || regexFalseErrorEl.hidden === true);
 
     if (!loadingShown) {
       loadingTimer = window.setTimeout(() => {
@@ -328,19 +333,101 @@ export function initTesterUI() {
         loadingEl.setAttribute('aria-busy', 'false');
         loadingShown = false;
       }
-      applyResult(
-        result,
-        str,
-        highlightLayer,
-        matchInfoEl,
-        errorEl,
-        !fromTimeout,
-        regexErrorEl,
-        regexWrap,
-        regexOverlayLayer,
-        pattern,
-        flagsStr
-      );
+      const hasFalseEnabled = useFalse;
+
+      if (
+        !result ||
+        typeof result !== 'object' ||
+        Object.prototype.hasOwnProperty.call(result, 'matches') ||
+        (Object.prototype.hasOwnProperty.call(result, 'error') &&
+          !Object.prototype.hasOwnProperty.call(result, 'trueResult'))
+      ) {
+        applyResult(
+          result,
+          str,
+          highlightLayer,
+          matchInfoEl,
+          errorEl,
+          !fromTimeout,
+          regexErrorEl,
+          regexWrap,
+          regexOverlayLayer,
+          patternTrue,
+          flagsStr
+        );
+      } else {
+        const { trueResult, falseResult } = result;
+        if (!trueResult || typeof trueResult !== 'object') {
+          applyResult(
+            { error: MSG_NO_RESULT },
+            str,
+            highlightLayer,
+            matchInfoEl,
+            errorEl,
+            !fromTimeout,
+            regexErrorEl,
+            regexWrap,
+            regexOverlayLayer,
+            patternTrue,
+            flagsStr
+          );
+        } else if (trueResult.error) {
+          applyResult(
+            trueResult,
+            str,
+            highlightLayer,
+            matchInfoEl,
+            errorEl,
+            !fromTimeout,
+            regexErrorEl,
+            regexWrap,
+            regexOverlayLayer,
+            patternTrue,
+            flagsStr
+          );
+        } else {
+          const trueMatches = Array.isArray(trueResult.matches) ? trueResult.matches : [];
+          let falseMatches = [];
+
+          const cleanedTrueMatches =
+            hasFalseEnabled && falseResult && !falseResult.error
+              ? (() => {
+                  const fm = Array.isArray(falseResult.matches) ? falseResult.matches : [];
+                  falseMatches = fm;
+                  return filterMatchesByFalse(trueMatches, fm);
+                })()
+              : trueMatches;
+
+          const displayResult = { matches: cleanedTrueMatches };
+          applyResult(
+            displayResult,
+            str,
+            highlightLayer,
+            matchInfoEl,
+            errorEl,
+            !fromTimeout,
+            regexErrorEl,
+            regexWrap,
+            regexOverlayLayer,
+            patternTrue,
+            flagsStr
+          );
+
+          if (matchInfoEl && hasFalseEnabled) {
+            let html = '';
+            if (flagsStr) {
+              html += `<div class="tester-flags-used">Флаги: <code>${escapeHtml(
+                flagsStr
+              )}</code></div>`;
+            }
+            html += `<div><strong>Совпадения TRUE (после исключения FALSE)</strong></div>`;
+            html += buildMatchInfoHtml(cleanedTrueMatches);
+            html += `<div style="margin-top: 0.5em;"><strong>Совпадения FALSE (исключения)</strong></div>`;
+            html += buildMatchInfoHtml(falseMatches);
+            matchInfoEl.innerHTML = html;
+          }
+        }
+      }
       if (highlightLayer && testInput) {
         syncHighlightSize();
         highlightLayer.scrollTop = testInput.scrollTop;
@@ -355,8 +442,13 @@ export function initTesterUI() {
     if (!worker) worker = createWorker();
     if (!worker) {
       const { runMatch } = await import('../logic/matchRunner.js');
-      const result = runMatch(pattern, flags, str);
-      finish(result);
+      const trueResult = runMatch(patternTrue, flags, str);
+      if (useFalse && patternFalseRaw) {
+        const falseResult = runMatch(patternFalseRaw, flags, str);
+        finish({ trueResult, falseResult });
+      } else {
+        finish(trueResult);
+      }
       return;
     }
 
@@ -376,7 +468,12 @@ export function initTesterUI() {
       finish({ error: 'Worker error. Try again.' });
     };
 
-    worker.postMessage({ pattern, flagsState: flags, str });
+    worker.postMessage({
+      patternTrue,
+      patternFalse: useFalse ? patternFalseRaw : '',
+      flagsState: flags,
+      str,
+    });
 
     workerTimeoutId = window.setTimeout(() => {
       workerTimeoutId = 0;
@@ -419,6 +516,20 @@ export function initTesterUI() {
       if (regexErrorEl) regexErrorEl.hidden = true;
       if (regexWrap) regexWrap.classList.remove('tester-has-error');
       if (regexOverlayLayer) regexOverlayLayer.innerHTML = escapeHtml(pattern);
+
+      const falsePatternRaw = regexFalseInput?.value ?? '';
+      if (regexFalseErrorEl) {
+        regexFalseErrorEl.textContent = '';
+        regexFalseErrorEl.hidden = true;
+      }
+      if (falsePatternRaw) {
+        const falseValidation = validatePatternForUI(falsePatternRaw, getFlagsState());
+        if (!falseValidation.valid && regexFalseErrorEl) {
+          regexFalseErrorEl.textContent = MSG_REGEX_INVALID;
+          regexFalseErrorEl.hidden = false;
+        }
+      }
+
       runWithWorkerOrSync();
     }, DEBOUNCE_MS);
   }

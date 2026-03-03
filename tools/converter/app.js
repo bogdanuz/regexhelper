@@ -14,12 +14,14 @@ import { displayHistory, initFullHistoryHandlers } from './ui/historyUI.js';
 import { initLayout } from './ui/layoutManager.js';
 import { updateBadges } from './ui/badges.js';
 import { showSuccess, showError, showInfo } from '../../shared/ui/notifications.js';
+import { forceReload } from '../../shared/utils/forceReload.js';
 import { resetVisualizerPanel } from '../visualizer/app.js';
 import { resetTesterPanel } from '../tester/app.js';
 import { RESET_MODAL } from './resetModalConfig.js';
 import { createWildcardPopup, createDeclensionsPopup, createOptionalCharsPopup, removeAllPopups } from './ui/inlinePopup.js';
 import { initLinkedBuilder, getBuilderData, setBuilderData } from './ui/linkedBuilder.js';
 import { convertLinkedBuilder } from './logic/linkedBuilderConverter.js';
+import { resetEditorPanel } from '../editor/app.js';
 
 // Логика
 import { convert } from './logic/conversionManager.js';
@@ -120,6 +122,14 @@ function initUIComponents() {
   const resetBtn = document.getElementById('reset-btn');
   if (resetBtn) {
     resetBtn.onclick = resetAll;
+  }
+
+  const hardReloadBtn = document.getElementById('hard-reload-btn');
+  if (hardReloadBtn) {
+    hardReloadBtn.onclick = () => {
+      showInfo('Выполняется жёсткая перезагрузка страницы...', 2000);
+      forceReload();
+    };
   }
 
   // Полная история: модалка
@@ -973,6 +983,9 @@ function resetAll() {
       AppState.simpleTriggersAtLastApply = [];
       AppState.linkedGroups = [];
       AppState.lastConversionData = null;
+
+      // Сброс панели ручного редактора (поле, подсветка, кнопка инверта)
+      resetEditorPanel();
 
       // Сброс панели визуализатора (поле, диаграмма, hash)
       resetVisualizerPanel();

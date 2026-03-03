@@ -352,6 +352,31 @@ export function runMatch(pattern, flagsState, str) {
   return { matches };
 }
 
+/**
+ * Фильтрует совпадения TRUE, исключая те, которые пересекаются по диапазону с любым совпадением FALSE.
+ *
+ * @param {MatchEntry[]} trueMatches
+ * @param {MatchEntry[]} falseMatches
+ * @returns {MatchEntry[]}
+ */
+export function filterMatchesByFalse(trueMatches, falseMatches) {
+  const tList = Array.isArray(trueMatches) ? trueMatches : [];
+  const fList = Array.isArray(falseMatches) ? falseMatches : [];
+  if (!tList.length || !fList.length) return tList;
+
+  return tList.filter((t) => {
+    if (!t || t.index == null || !t.fullMatch) return true;
+    const tStart = t.index;
+    const tEnd = t.index + t.fullMatch.length;
+    return !fList.some((f) => {
+      if (!f || f.index == null || !f.fullMatch) return false;
+      const fStart = f.index;
+      const fEnd = f.index + f.fullMatch.length;
+      return fStart < tEnd && fEnd > tStart;
+    });
+  });
+}
+
 const REGEX_ERROR_MESSAGE_UI = 'Invalid regex';
 
 /**
