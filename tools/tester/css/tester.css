@@ -168,8 +168,6 @@
   font-size: 14px;
   line-height: 1.5;
   white-space: pre-wrap;
-  overflow-wrap: break-word;
-  word-break: break-word;
   overflow: auto;
   pointer-events: none;
   z-index: 0;
@@ -287,8 +285,6 @@
   font-size: 14px;
   line-height: 1.5;
   white-space: pre-wrap;
-  overflow-wrap: break-word;
-  word-break: break-word;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
@@ -419,113 +415,113 @@
 /* Highlight spans — цвета в стиле сайта (full match, group 1, 2, 3...) */
 .tester-hl-full {
   background: rgba(var(--color-primary-rgb), 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g1 {
   background: rgba(52, 211, 153, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g2 {
   background: rgba(251, 191, 36, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g3 {
   background: rgba(167, 139, 250, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g4 {
   background: rgba(251, 146, 60, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g5 {
   background: rgba(96, 165, 250, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g6 {
   background: rgba(244, 114, 182, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g7 {
   background: rgba(34, 211, 238, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g8 {
   background: rgba(190, 242, 100, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 .tester-hl-g9 {
   background: rgba(251, 113, 133, 0.35);
-  padding: 1px 2px;
+  padding: 1px 0;
   border-radius: 2px;
 }
 
 /* Группы 10–60: запас 50+ разных цветов (HSL hue шаг ~7°) */
-.tester-hl-g10 { background: hsla(0, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g11 { background: hsla(7, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g12 { background: hsla(14, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g13 { background: hsla(21, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g14 { background: hsla(28, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g15 { background: hsla(35, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g16 { background: hsla(42, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g17 { background: hsla(49, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g18 { background: hsla(56, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g19 { background: hsla(63, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g20 { background: hsla(70, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g21 { background: hsla(77, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g22 { background: hsla(84, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g23 { background: hsla(91, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g24 { background: hsla(98, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g25 { background: hsla(105, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g26 { background: hsla(112, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g27 { background: hsla(119, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g28 { background: hsla(126, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g29 { background: hsla(133, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g30 { background: hsla(140, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g31 { background: hsla(147, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g32 { background: hsla(154, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g33 { background: hsla(161, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g34 { background: hsla(168, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g35 { background: hsla(175, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g36 { background: hsla(182, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g37 { background: hsla(189, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g38 { background: hsla(196, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g39 { background: hsla(203, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g40 { background: hsla(210, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g41 { background: hsla(217, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g42 { background: hsla(224, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g43 { background: hsla(231, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g44 { background: hsla(238, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g45 { background: hsla(245, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g46 { background: hsla(252, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g47 { background: hsla(259, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g48 { background: hsla(266, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g49 { background: hsla(273, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g50 { background: hsla(280, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g51 { background: hsla(287, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g52 { background: hsla(294, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g53 { background: hsla(301, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g54 { background: hsla(308, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g55 { background: hsla(315, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g56 { background: hsla(322, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g57 { background: hsla(329, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g58 { background: hsla(336, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g59 { background: hsla(343, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
-.tester-hl-g60 { background: hsla(350, 60%, 55%, 0.35); padding: 1px 2px; border-radius: 2px; }
+.tester-hl-g10 { background: hsla(0, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g11 { background: hsla(7, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g12 { background: hsla(14, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g13 { background: hsla(21, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g14 { background: hsla(28, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g15 { background: hsla(35, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g16 { background: hsla(42, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g17 { background: hsla(49, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g18 { background: hsla(56, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g19 { background: hsla(63, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g20 { background: hsla(70, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g21 { background: hsla(77, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g22 { background: hsla(84, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g23 { background: hsla(91, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g24 { background: hsla(98, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g25 { background: hsla(105, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g26 { background: hsla(112, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g27 { background: hsla(119, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g28 { background: hsla(126, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g29 { background: hsla(133, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g30 { background: hsla(140, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g31 { background: hsla(147, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g32 { background: hsla(154, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g33 { background: hsla(161, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g34 { background: hsla(168, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g35 { background: hsla(175, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g36 { background: hsla(182, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g37 { background: hsla(189, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g38 { background: hsla(196, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g39 { background: hsla(203, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g40 { background: hsla(210, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g41 { background: hsla(217, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g42 { background: hsla(224, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g43 { background: hsla(231, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g44 { background: hsla(238, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g45 { background: hsla(245, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g46 { background: hsla(252, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g47 { background: hsla(259, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g48 { background: hsla(266, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g49 { background: hsla(273, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g50 { background: hsla(280, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g51 { background: hsla(287, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g52 { background: hsla(294, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g53 { background: hsla(301, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g54 { background: hsla(308, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g55 { background: hsla(315, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g56 { background: hsla(322, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g57 { background: hsla(329, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g58 { background: hsla(336, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g59 { background: hsla(343, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }
+.tester-hl-g60 { background: hsla(350, 60%, 55%, 0.35); padding: 1px 0; border-radius: 2px; }

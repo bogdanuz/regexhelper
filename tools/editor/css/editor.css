@@ -297,14 +297,14 @@
     background: rgba(239, 68, 68, 0.25);
     color: var(--color-error);
     border-radius: 2px;
-    padding: 0 1px;
+    padding: 0;
 }
 
 .editor-highlight-layer .import-highlight-warning {
     background: rgba(251, 191, 36, 0.25);
     color: var(--color-warning);
     border-radius: 2px;
-    padding: 0 1px;
+    padding: 0;
 }
 
 @media (max-width: 900px) {
