@@ -354,6 +354,24 @@
   gap: var(--spacing-xs);
 }
 
+.tester-match-info-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-s);
+}
+
+.tester-selection-stats {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.tester-selection-stats[hidden] {
+  display: none !important;
+}
+
 .tester-flags-used {
   font-size: 12px;
   color: var(--color-text-tertiary);

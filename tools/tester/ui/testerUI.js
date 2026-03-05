@@ -278,6 +278,7 @@ export function initTesterUI() {
   const errorEl = document.getElementById('tester-error');
   const regexErrorEl = document.getElementById('tester-regex-error');
   const regexFalseErrorEl = document.getElementById('tester-regex-false-error');
+  const selectionStatsEl = document.getElementById('tester-selection-stats');
   const regexWrap = regexInput?.closest('.tester-regex-wrap') ?? null;
   const regexOverlayLayer = document.getElementById('tester-regex-highlight-layer');
   const loadingEl = document.getElementById('tester-loading');
@@ -290,6 +291,46 @@ export function initTesterUI() {
   let worker = null;
   let workerTimeoutId = 0;
   let workerSeq = 0;
+
+  const numberFormatter =
+    typeof Intl !== 'undefined' && Intl.NumberFormat
+      ? new Intl.NumberFormat('ru-RU')
+      : { format: (n) => String(n) };
+
+  function hideSelectionStats() {
+    if (!selectionStatsEl) return;
+    selectionStatsEl.hidden = true;
+    selectionStatsEl.textContent = '';
+  }
+
+  function updateSelectionStats() {
+    if (!selectionStatsEl || !testInput) return;
+    const start = testInput.selectionStart ?? 0;
+    const end = testInput.selectionEnd ?? 0;
+    if (start === end) {
+      hideSelectionStats();
+      return;
+    }
+    const from = Math.min(start, end);
+    const to = Math.max(start, end);
+    const selected = testInput.value.slice(from, to);
+    if (!selected) {
+      hideSelectionStats();
+      return;
+    }
+    const total = selected.length;
+    let spaces = 0;
+    for (let i = 0; i < selected.length; i++) {
+      if (selected[i] === ' ') spaces++;
+    }
+    const noSpaces = total - spaces;
+    selectionStatsEl.textContent = `Символов всего: ${numberFormatter.format(
+      total
+    )} • Без пробелов: ${numberFormatter.format(noSpaces)} • Пробелов: ${numberFormatter.format(
+      spaces
+    )}`;
+    selectionStatsEl.hidden = false;
+  }
 
   /** Версия воркера — при изменении логики тестера увеличить, чтобы браузер не использовал кэш. */
   const WORKER_VERSION = 4;
@@ -595,6 +636,15 @@ export function initTesterUI() {
       testInput.setSelectionRange(start + inserted.length, start + inserted.length);
       schedule();
     });
+    const handleSelectionChange = () => {
+      updateSelectionStats();
+    };
+    testInput.addEventListener('select', handleSelectionChange);
+    testInput.addEventListener('keyup', handleSelectionChange);
+    testInput.addEventListener('mouseup', handleSelectionChange);
+    testInput.addEventListener('blur', () => {
+      hideSelectionStats();
+    });
   }
 
   document.getElementById('tester-flag-g')?.addEventListener('change', schedule);
@@ -656,6 +706,7 @@ export function initTesterUI() {
       if (regexErrorEl) regexErrorEl.hidden = true;
       if (regexWrap) regexWrap.classList.remove('tester-has-error');
       if (regexOverlayLayer) regexOverlayLayer.innerHTML = '';
+      hideSelectionStats();
       showSuccess('Тестер очищен');
     });
   }

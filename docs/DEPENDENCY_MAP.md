@@ -161,8 +161,8 @@ main.js
 
 - **main.js** → `initTester` из **tools/tester/app.js**
 - **tools/converter/app.js** → `resetTesterPanel` (при «Сбросить»)
-- Секция #tester на странице. Реал-тайм валидация: **testerUI.js** вызывает **validatePatternForUI** (matchRunner.js) до запуска воркера; маппинг позиций через **patternPreprocess.applyExtendedFlagWithMap** и **replaceUnicodeWordBoundariesWithMap**.
-- **Стили:** tools/tester/css/tester.css
+- Секция #tester на странице. Реал-тайм валидация: **testerUI.js** вызывает **validatePatternForUI** (matchRunner.js) до запуска воркера; маппинг позиций через **patternPreprocess.applyExtendedFlagWithMap** и **replaceUnicodeWordBoundariesWithMap**. Там же реализована логика строки статистики выделения (`#tester-selection-stats`), которая читает `selectionStart`/`selectionEnd` из `#tester-test-input` и отображает три счётчика (всего символов, без пробелов, пробелов).
+- **Стили:** tools/tester/css/tester.css (панель, оверлеи, блок совпадений и header с `.tester-selection-stats`)
 
 ### Визуализатор
 

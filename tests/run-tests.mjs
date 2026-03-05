@@ -187,6 +187,72 @@ async function runBrowserTests(which) {
       } else {
         console.log(`Тестер browser: ${passed}/${total} passed.`);
       }
+
+      // Дополнительный UI-тест: статистика выделения в поле тестового текста
+      const testerPage = await browser.newPage();
+      try {
+        await testerPage.goto(`${base}/index.html#tester`, { waitUntil: 'networkidle' });
+        await testerPage.waitForSelector('#tester-test-input');
+        await testerPage.waitForSelector('#tester-selection-stats', { state: 'attached' });
+
+        // Заполняем тестовый текст и выделяем всё содержимое
+        await testerPage.evaluate(() => {
+          const ta = document.getElementById('tester-test-input');
+          if (!ta) return;
+          ta.value = 'ab c\nd ';
+          ta.focus();
+          ta.setSelectionRange(0, ta.value.length);
+          ta.dispatchEvent(new Event('select', { bubbles: true }));
+        });
+        await testerPage.waitForTimeout(150);
+
+        const statsState = await testerPage.$eval('#tester-selection-stats', (el) => ({
+          hidden: el.hidden,
+          text: el.textContent.trim(),
+        }));
+
+        const expected =
+          'Символов всего: 7 • Без пробелов: 5 • Пробелов: 2';
+
+        if (statsState.hidden) {
+          console.error('Tester UI: selection stats should be visible when text is selected');
+          anyFailed = true;
+        } else if (statsState.text !== expected) {
+          console.error(
+            'Tester UI: selection stats text mismatch',
+            '\n  actual:   ',
+            statsState.text,
+            '\n  expected: ',
+            expected
+          );
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: selection stats visible and text OK');
+        }
+
+        // При потере фокуса (уход с поля тестового текста) панель должна скрываться
+        await testerPage.evaluate(() => {
+          const regexInput = document.getElementById('tester-regex-input');
+          if (regexInput) regexInput.focus();
+        });
+        await testerPage.waitForTimeout(150);
+
+        const hiddenAfterBlur = await testerPage.$eval(
+          '#tester-selection-stats',
+          (el) => el.hidden
+        );
+        if (!hiddenAfterBlur) {
+          console.error('Tester UI: selection stats should be hidden after blur');
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: selection stats hides on blur OK');
+        }
+      } catch (e) {
+        console.error('Tester UI: exception during selection stats test:', e);
+        anyFailed = true;
+      } finally {
+        await testerPage.close();
+      }
     }
 
     if (which === 'editor' || which === 'all') {
