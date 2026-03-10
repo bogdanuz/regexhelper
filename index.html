@@ -52,8 +52,8 @@
             <nav class="header-nav">
                 <a href="#converter-section" class="nav-link active">Конвертер</a>
                 <a href="#editor" class="nav-link">Редактор</a>
-                <a href="#visualizer" class="nav-link">Визуализатор</a>
                 <a href="#tester" class="nav-link">Тестер</a>
+                <a href="#visualizer" class="nav-link">Визуализатор</a>
                 <a href="#history-section" class="nav-link">История</a>
                 <button type="button" class="nav-link nav-link-button" id="texthelper-btn" title="Открыть «Текстовый помощник»">Текстовый помощник</button>
             </nav>
@@ -309,108 +309,6 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════ -->
-    <!--              VISUALIZER SECTION (отдельная секция)          -->
-    <!-- ═══════════════════════════════════════════════════════════ -->
-
-    <section id="visualizer" class="visualizer-section">
-        <div class="visualizer-container">
-            <div class="panel visualizer-panel">
-                <div class="panel-header panel-header-compact visualizer-panel-header">
-                    <div class="visualizer-header-text">
-                        <h2 class="panel-title panel-title-compact"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg> Визуализатор</h2>
-                        <p class="panel-hint panel-hint-compact">Введите регулярное выражение и нажмите «Визуализировать» для построения диаграммы.</p>
-                    </div>
-                    <button type="button" class="btn-header-clear btn-danger" id="visualizer-clear-btn" title="Очистить панель: удаляет regex из поля ввода и диаграмму">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        <span>Очистить</span>
-                    </button>
-                </div>
-                <!-- Regexper ищет document.body.querySelector('#content .application') — нужен .application внутри #content -->
-                <div id="content">
-                    <div class="application">
-                    <div class="panel-body visualizer-body">
-                        <form id="regexp-form" class="visualizer-input-row" aria-label="Регулярное выражение">
-                            <div class="visualizer-input-wrap">
-                                <textarea id="regexp-input" class="visualizer-regex-input" placeholder="Введите регулярное выражение, напр.: (a|b)+ или \d+" rows="2" name="regexp" autocomplete="off"></textarea>
-                            </div>
-                            <div class="visualizer-input-actions">
-                                <button type="button" class="btn-secondary" id="visualizer-paste-btn" title="Вставить из буфера">Вставить</button>
-                                <button type="submit" class="btn-primary" id="visualizer-visualize-btn" title="Построить диаграмму">Визуализировать</button>
-                            </div>
-                            <!-- Ссылки для regexper updateLinks() (скрыты, наши кнопки экспорта дублируют действие) -->
-                            <ul class="visualizer-regexper-links" id="visualizer-regexper-links" aria-hidden="true">
-                                <li><a href="#" data-action="download-svg" download="diagram.svg">SVG</a></li>
-                                <li><a href="#" data-action="download-png" download="diagram.png">PNG</a></li>
-                                <li><a href="#" data-action="permalink">Permalink</a></li>
-                            </ul>
-                        </form>
-                        <div id="error" class="visualizer-regexper-error" role="alert" aria-live="assertive"></div>
-                        <div id="warnings" class="visualizer-regexper-warnings" aria-hidden="true"></div>
-                        <div id="visualizer-diagram-block" class="visualizer-diagram-block">
-                            <div class="visualizer-diagram-area" id="visualizer-diagram-area">
-                                <div class="visualizer-diagram-placeholder" id="visualizer-diagram-placeholder">Диаграмма появится здесь после нажатия «Визуализировать».</div>
-                                <div class="visualizer-loading" id="visualizer-loading" aria-hidden="true" aria-label="Построение диаграммы" role="status">
-                                    <span class="visualizer-loading-dot"></span>
-                                    <span class="visualizer-loading-dot"></span>
-                                    <span class="visualizer-loading-dot"></span>
-                                </div>
-                                <div class="visualizer-diagram-viewport" id="visualizer-diagram-viewport" style="display:none;">
-                                    <div class="visualizer-diagram-scroll" id="visualizer-diagram-scroll">
-                                        <div class="visualizer-diagram-scroll-wrap">
-                                            <div class="visualizer-diagram-inner" id="regexp-render"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="visualizer-toolbar visualizer-export-actions" id="visualizer-export-actions" style="display:none;">
-                                <div class="visualizer-toolbar-export visualizer-download-dropdown">
-                                    <button type="button" class="btn-secondary" id="visualizer-download-btn" title="Скачать диаграмму" aria-expanded="false" aria-haspopup="true">Скачать</button>
-                                    <div class="visualizer-download-menu" id="visualizer-download-menu" role="menu" aria-label="Формат скачивания" aria-hidden="true">
-                                        <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-svg" title="Скачать SVG">SVG</button>
-                                        <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-png" title="Скачать PNG">PNG</button>
-                                    </div>
-                                </div>
-                                <div class="visualizer-diagram-zoom-controls">
-                                    <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-out" title="Уменьшить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Уменьшить">−</button>
-                                    <span class="visualizer-zoom-value" id="visualizer-zoom-value">100%</span>
-                                    <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-in" title="Увеличить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Увеличить">+</button>
-                                    <button type="button" class="btn-secondary visualizer-toolbar-btn visualizer-fullscreen-btn-text" id="visualizer-fullscreen-btn" title="Раскрыть на весь экран" aria-label="Раскрыть на весь экран">Раскрыть на весь экран</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Модальное окно: диаграмма на весь экран (зум, экспорт, пан) -->
-        <div class="visualizer-fullscreen-overlay" id="visualizer-fullscreen-overlay" aria-hidden="true">
-            <div class="visualizer-fullscreen-modal" id="visualizer-fullscreen-modal">
-                <div class="visualizer-fullscreen-header">
-                    <span class="visualizer-fullscreen-title">Диаграмма</span>
-                    <div class="visualizer-fullscreen-header-actions">
-                        <div class="visualizer-toolbar-export">
-                            <button type="button" class="btn-secondary" id="visualizer-modal-export-svg" title="Скачать SVG">SVG</button>
-                            <button type="button" class="btn-secondary" id="visualizer-modal-export-png" title="Скачать PNG">PNG</button>
-                        </div>
-                        <div class="visualizer-diagram-zoom-controls">
-                            <button type="button" class="btn-icon btn-secondary" id="visualizer-modal-zoom-out" title="Уменьшить" aria-label="Уменьшить">−</button>
-                            <span class="visualizer-zoom-value" id="visualizer-modal-zoom-value">100%</span>
-                            <button type="button" class="btn-icon btn-secondary" id="visualizer-modal-zoom-in" title="Увеличить" aria-label="Увеличить">+</button>
-                        </div>
-                        <button type="button" class="btn-icon btn-secondary visualizer-fullscreen-close" id="visualizer-fullscreen-close" title="Закрыть" aria-label="Закрыть">×</button>
-                    </div>
-                </div>
-                <div class="visualizer-fullscreen-scroll" id="visualizer-fullscreen-scroll">
-                    <div class="visualizer-fullscreen-scroll-wrap">
-                        <div class="visualizer-fullscreen-inner" id="visualizer-fullscreen-inner"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════════ -->
     <!--              TESTER SECTION (Тестер regex)                   -->
     <!-- ═══════════════════════════════════════════════════════════ -->
 
@@ -465,7 +363,7 @@
                                 rows="2"
                             ></textarea>
                         </div>
-                        <div class="tester-regex-error" id="tester-regex-false-error" role="alert" aria-live="polite" hidden></div>
+                        <div class="tester-regex-error" id="tester-regex-false-error" role="alert" aria-live="полite" hidden></div>
                     </div>
                     <div class="tester-test-row">
                         <label class="tester-label" for="tester-test-input">Тестовый текст</label>
@@ -474,7 +372,7 @@
                             <textarea id="tester-test-input" class="tester-textarea tester-textarea-overlay" placeholder="Введите тестовый текст" rows="18" spellcheck="false"></textarea>
                         </div>
                     </div>
-                    <div class="tester-loading" id="tester-loading" aria-live="polite" aria-busy="false" hidden>
+                    <div class="tester-loading" id="tester-loading" aria-live="полite" aria-busy="false" hidden>
                         <span class="tester-loading-spinner" aria-hidden="true"></span>
                         <span class="tester-loading-text">Подождите...</span>
                     </div>
@@ -485,6 +383,88 @@
                             <div class="tester-selection-stats" id="tester-selection-stats" hidden></div>
                         </div>
                         <div class="tester-match-info" id="tester-match-info"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--              VISUALIZER SECTION (отдельная секция)          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <section id="visualizer" class="visualizer-section">
+        <div class="visualizer-container">
+            <div class="panel visualizer-panel">
+                <div class="panel-header panel-header-compact visualizer-panel-header">
+                    <div class="visualizer-header-text">
+                        <h2 class="panel-title panel-title-compact"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg> Визуализатор</h2>
+                        <p class="panel-hint panel-hint-compact">Введите регулярное выражение и нажмите «Визуализировать» для построения диаграммы.</p>
+                    </div>
+                    <button type="button" class="btn-secondary visualizer-header-new-tab-btn" id="visualizer-tab-add-btn" title="Добавить новую диаграмму">
+                        + Новая диаграмма
+                    </button>
+                    <button type="button" class="btn-header-clear btn-danger" id="visualizer-clear-btn" title="Очистить панель: удаляет regex из поля ввода и диаграмму">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <span>Очистить</span>
+                    </button>
+                </div>
+                <div class="visualizer-tabs-bar" id="visualizer-tabs-bar">
+                    <div class="visualizer-tabs" id="visualizer-tabs" aria-label="Диаграммы"></div>
+                </div>
+                <!-- Regexper ищет document.body.querySelector('#content .application') — нужен .application внутри #content -->
+                <div id="content">
+                    <div class="application">
+                    <div class="panel-body visualizer-body">
+                        <form id="regexp-form" class="visualizer-input-row" aria-label="Регулярное выражение">
+                            <div class="visualizer-input-wrap">
+                                <textarea id="regexp-input" class="visualizer-regex-input" placeholder="Введите регулярное выражение, напр.: (a|b)+ или \d+" rows="2" name="regexp" autocomplete="off"></textarea>
+                            </div>
+                            <div class="visualizer-input-actions">
+                                <button type="button" class="btn-secondary" id="visualizer-paste-btn" title="Вставить из буфера">Вставить</button>
+                                <button type="submit" class="btn-primary" id="visualizer-visualize-btn" title="Построить диаграмму">Визуализировать</button>
+                            </div>
+                            <!-- Ссылки для regexper updateLinks() (скрыты, наши кнопки экспорта дублируют действие) -->
+                            <ul class="visualizer-regexper-links" id="visualizer-regexper-links" aria-hidden="true">
+                                <li><a href="#" data-action="download-svg" download="diagram.svg">SVG</a></li>
+                                <li><a href="#" data-action="download-png" download="diagram.png">PNG</a></li>
+                                <li><a href="#" data-action="permalink">Permalink</a></li>
+                            </ul>
+                        </form>
+                        <div id="error" class="visualizer-regexper-error" role="alert" aria-live="assertive"></div>
+                        <div id="warnings" class="visualizer-regexper-warnings" aria-hidden="true"></div>
+                        <div id="visualizer-diagram-block" class="visualizer-diagram-block">
+                            <div class="visualizer-diagram-area" id="visualizer-diagram-area">
+                                <div class="visualizer-diagram-placeholder" id="visualizer-diagram-placeholder">Диаграмма появится здесь после нажатия «Визуализировать».</div>
+                                <div class="visualizer-loading" id="visualizer-loading" aria-hidden="true" aria-label="Построение диаграммы" role="status">
+                                    <span class="visualizer-loading-dot"></span>
+                                    <span class="visualizer-loading-dot"></span>
+                                    <span class="visualizer-loading-dot"></span>
+                                </div>
+                                <div class="visualizer-diagram-viewport" id="visualizer-diagram-viewport" style="display:none;">
+                                    <div class="visualizer-diagram-scroll" id="visualizer-diagram-scroll">
+                                        <div class="visualizer-diagram-scroll-wrap">
+                                            <div class="visualizer-diagram-inner" id="regexp-render"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="visualizer-toolbar visualizer-export-actions" id="visualizer-export-actions" style="display:none;">
+                                <div class="visualizer-toolbar-export visualizer-download-dropdown">
+                                    <button type="button" class="btn-secondary" id="visualizer-download-btn" title="Скачать диаграмму" aria-expanded="false" aria-haspopup="true">Скачать</button>
+                                    <div class="visualizer-download-menu" id="visualizer-download-menu" role="menu" aria-label="Формат скачивания" aria-hidden="true">
+                                        <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-svg" title="Скачать SVG">SVG</button>
+                                        <button type="button" class="btn-secondary" role="menuitem" id="visualizer-export-png" title="Скачать PNG">PNG</button>
+                                    </div>
+                                </div>
+                                <div class="visualizer-diagram-zoom-controls">
+                                    <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-out" title="Уменьшить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Уменьшить">−</button>
+                                    <span class="visualizer-zoom-value" id="visualizer-zoom-value">100%</span>
+                                    <button type="button" class="btn-icon btn-secondary visualizer-toolbar-btn" id="visualizer-zoom-in" title="Увеличить. Масштаб можно менять колёсиком мыши при зажатой клавише Ctrl" aria-label="Увеличить">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

@@ -42,6 +42,64 @@
   flex-shrink: 0;
 }
 
+.visualizer-header-new-tab-btn {
+  flex-shrink: 0;
+}
+
+.visualizer-tabs-bar {
+  display: block;
+  margin-top: var(--spacing-m);
+}
+
+.visualizer-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.visualizer-tab {
+  display: inline-flex;
+  align-items: center;
+  max-width: 220px;
+  padding: 4px 8px;
+  border-radius: var(--radius-small);
+  border: 1px solid var(--color-border-default);
+  background: rgba(15, 23, 42, 0.7);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.visualizer-tab-active {
+  border-color: var(--color-primary);
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.visualizer-tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visualizer-tab-close {
+  margin-left: 6px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.visualizer-tab-close:hover {
+  opacity: 1;
+}
+
+.visualizer-tab-add-btn {
+  white-space: nowrap;
+}
+
 .visualizer-body {
   display: flex;
   flex-direction: column;
@@ -52,7 +110,6 @@
 .visualizer-diagram-block {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 260px);
   min-height: 0;
 }
 
@@ -134,8 +191,8 @@
   background: var(--color-bg-panel);
   border: none;
   border-radius: var(--radius-medium);
-  min-height: min(280px, 35vh);
-  max-height: 60vh;
+  min-height: 280px;
+  max-height: none;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -143,8 +200,8 @@
 }
 /* С диаграммой: высота ~3× для удобного просмотра больших диаграмм */
 .visualizer-diagram-area.has-diagram {
-  min-height: min(960px, 75vh);
-  max-height: min(1260px, 85vh);
+  min-height: 960px;
+  max-height: none;
 }
 
 /* Приветственный экран (диаграммы ещё нет): светлый текст на тёмном фоне */
@@ -279,6 +336,17 @@
   display: block;
 }
 
+/* Hover-подсветка элементов диаграммы: лёгкая тень и усиленная рамка */
+#regexp-render .literal rect:hover,
+#regexp-render .escape rect:hover,
+#regexp-render .charset-escape rect:hover,
+#regexp-render .repeat rect:hover,
+#regexp-render .anchor rect:hover,
+#regexp-render .any-character rect:hover {
+  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.5));
+  stroke-width: 1.75;
+}
+
 /* Панель под диаграммой: экспорт (SVG/PNG) слева, зум справа */
 .visualizer-toolbar.visualizer-export-actions {
   display: flex;
@@ -349,7 +417,7 @@
   padding-right: var(--spacing-m);
 }
 
-/* Кнопки панели (масштаб, раскрыть): одного размера с кнопкой «Скачать» */
+/* Кнопки панели (масштаб): одного размера с кнопкой «Скачать» */
 .visualizer-toolbar-btn {
   height: 40px;
   min-height: 40px;
@@ -365,15 +433,6 @@
   font-size: 18px;
   font-weight: 600;
   padding: 0;
-}
-/* Кнопка «Раскрыть на весь экран» снизу: текст внутри обводки, не выходит за границы */
-.visualizer-fullscreen-btn-text {
-  white-space: nowrap;
-  text-align: center;
-  min-width: 200px;
-  padding-left: var(--spacing-l);
-  padding-right: var(--spacing-l);
-  box-sizing: border-box;
 }
 
 .visualizer-diagram-zoom-controls {
@@ -426,123 +485,4 @@
   clip: rect(0, 0, 0, 0);
 }
 
-/* Модальное окно «на весь экран» */
-.visualizer-fullscreen-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.5);
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-.visualizer-fullscreen-overlay.is-open {
-  display: flex;
-}
-.visualizer-fullscreen-modal {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 100%;
-  height: 100%;
-  max-height: 100%;
-  /* Та же тёмная панель, что и .panel (панель визуализатора) */
-  background: var(--color-bg-panel);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-.visualizer-fullscreen-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-m);
-  flex-shrink: 0;
-  padding: var(--spacing-m) var(--spacing-l);
-  border-bottom: 1px solid var(--color-border-default);
-  /* Тот же тёмный фон, что у .panel-header (панели визуализатора/конвертера) */
-  background: rgba(26, 35, 50, 0.5);
-}
-.visualizer-fullscreen-title {
-  font-weight: 600;
-  font-size: 1rem;
-}
-.visualizer-fullscreen-header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-m);
-  flex-wrap: wrap;
-}
-.visualizer-fullscreen-close {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  font-size: 24px;
-  line-height: 1;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.visualizer-fullscreen-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--spacing-m);
-  padding: var(--spacing-m) var(--spacing-l);
-  border-bottom: 1px solid var(--color-border-default);
-  flex-shrink: 0;
-}
-.visualizer-fullscreen-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  cursor: grab;
-  background: #fff;
-}
-.visualizer-fullscreen-scroll:active {
-  cursor: grabbing;
-}
-/* Размер по контенту, как в основной панели — центрирование через transform единообразно */
-.visualizer-fullscreen-scroll-wrap {
-  min-width: 0;
-  min-height: 0;
-  width: fit-content;
-  height: fit-content;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-}
-.visualizer-fullscreen-scroll-wrap.visualizer-scroll-wrap--zoomed {
-  min-width: 0;
-  min-height: 0;
-  width: auto;
-  height: auto;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-.visualizer-fullscreen-inner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: fit-content;
-  max-width: 100%;
-  padding: 36px;
-  min-width: min-content;
-  min-height: min-content;
-  background: #fff;
-  flex: 0 0 auto;
-}
-.visualizer-fullscreen-inner.visualizer-fullscreen-inner--zoomed {
-  justify-content: flex-start;
-  align-items: flex-start;
-  box-sizing: border-box;
-  min-width: 0;
-  min-height: 0;
-}
-.visualizer-fullscreen-inner svg {
-  display: block;
-}
+/* Модальное окно «на весь экран» удалено */

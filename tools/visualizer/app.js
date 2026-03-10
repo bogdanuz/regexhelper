@@ -38,6 +38,153 @@ let errorToastShownThisAttempt = false;
 /** ID таймера отложенного показа тоста при has-error. */
 let errorToastTimeoutId = 0;
 
+// Вкладки визуализатора
+const MAX_VISUALIZER_TABS = 20;
+let visualizerTabs = [];
+let activeTabId = null;
+let tabsContainerEl = null;
+let tabAddBtnEl = null;
+let tabIdCounter = 1;
+let visualizerInputEl = null;
+let visualizerFormEl = null;
+
+function buildTabTitle(pattern) {
+  const text = String(pattern ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return 'Новая диаграмма';
+  const maxLen = 40;
+  return text.length > maxLen ? text.slice(0, maxLen) + '…' : text;
+}
+
+function createTab(pattern) {
+  return {
+    id: String(tabIdCounter++),
+    pattern: String(pattern ?? ''),
+    title: buildTabTitle(pattern),
+  };
+}
+
+function renderTabs() {
+  if (!tabsContainerEl) return;
+  tabsContainerEl.innerHTML = '';
+  for (const tab of visualizerTabs) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'visualizer-tab' + (tab.id === activeTabId ? ' visualizer-tab-active' : '');
+    btn.setAttribute('data-tab-id', tab.id);
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'visualizer-tab-title';
+    titleSpan.textContent = tab.title;
+    btn.appendChild(titleSpan);
+
+    if (visualizerTabs.length > 1) {
+      const closeSpan = document.createElement('span');
+      closeSpan.className = 'visualizer-tab-close';
+      closeSpan.setAttribute('aria-label', 'Закрыть вкладку');
+      closeSpan.textContent = '×';
+      btn.appendChild(closeSpan);
+    }
+
+    tabsContainerEl.appendChild(btn);
+  }
+}
+
+function resetTabsToSingleEmpty() {
+  visualizerTabs = [createTab('')];
+  activeTabId = visualizerTabs[0].id;
+  renderTabs();
+}
+
+function updateActiveTabPattern(pattern) {
+  const value = String(pattern ?? '');
+  if (!activeTabId || !visualizerTabs.length) {
+    if (visualizerTabs.length >= MAX_VISUALIZER_TABS) return;
+    const tab = createTab(value);
+    visualizerTabs.push(tab);
+    activeTabId = tab.id;
+  } else {
+    const tab = visualizerTabs.find((t) => t.id === activeTabId);
+    if (!tab) {
+      if (visualizerTabs.length >= MAX_VISUALIZER_TABS) return;
+      const newTab = createTab(value);
+      visualizerTabs.push(newTab);
+      activeTabId = newTab.id;
+    } else {
+      tab.pattern = value;
+      tab.title = buildTabTitle(value);
+    }
+  }
+  renderTabs();
+}
+
+function addNewTab(initialPattern = '') {
+  if (visualizerTabs.length >= MAX_VISUALIZER_TABS) {
+    showError('Слишком много вкладок диаграммы, закройте ненужные');
+    return null;
+  }
+  const tab = createTab(initialPattern);
+  visualizerTabs.push(tab);
+  activeTabId = tab.id;
+  renderTabs();
+  return tab;
+}
+
+function findTabById(id) {
+  return visualizerTabs.find((t) => t.id === id) || null;
+}
+
+function setActiveTab(id, options = {}) {
+  const { triggerVisualize = false, inputEl, formEl } = options;
+  if (!id) return;
+  const tab = findTabById(id);
+  if (!tab) return;
+  activeTabId = id;
+  renderTabs();
+  if (inputEl) {
+    inputEl.value = tab.pattern;
+  }
+  if (triggerVisualize && tab.pattern && formEl) {
+    const evt = new Event('submit', { bubbles: true, cancelable: true });
+    formEl.dispatchEvent(evt);
+  }
+}
+
+function closeTab(id, { inputEl, formEl }) {
+  if (!id || !visualizerTabs.length) return;
+  if (visualizerTabs.length === 1) {
+    visualizerTabs[0].pattern = '';
+    visualizerTabs[0].title = buildTabTitle('');
+    activeTabId = visualizerTabs[0].id;
+    renderTabs();
+    if (inputEl) inputEl.value = '';
+    return;
+  }
+  const idx = visualizerTabs.findIndex((t) => t.id === id);
+  if (idx === -1) return;
+  const wasActive = visualizerTabs[idx].id === activeTabId;
+  visualizerTabs.splice(idx, 1);
+  if (!visualizerTabs.length) {
+    resetTabsToSingleEmpty();
+    if (inputEl) inputEl.value = '';
+    return;
+  }
+  if (wasActive) {
+    const nextIdx = Math.max(0, idx - 1);
+    const nextTab = visualizerTabs[nextIdx];
+    activeTabId = nextTab.id;
+    renderTabs();
+    if (inputEl) inputEl.value = nextTab.pattern;
+    if (formEl && nextTab.pattern) {
+      const evt = new Event('submit', { bubbles: true, cancelable: true });
+      formEl.dispatchEvent(evt);
+    }
+  } else {
+    renderTabs();
+  }
+}
+
 /**
  * Синхронизация нашего UI с состоянием regexper.
  * Regexper устанавливает state на document.body (root), поэтому наблюдаем body.
@@ -146,10 +293,9 @@ function tryDecodeHash(hashValue) {
 }
 
 /**
- * Сброс панели визуализатора в начальное состояние (пустое поле, нет диаграммы).
- * Вызывается при загрузке страницы и при нажатии «Сбросить» в шапке.
+ * Сброс UI панели визуализатора в начальное состояние (пустое поле, нет диаграммы).
  */
-export function resetVisualizerPanel() {
+function resetVisualizerUI() {
   const input = document.getElementById('regexp-input');
   const placeholder = document.getElementById('visualizer-diagram-placeholder');
   const viewport = document.getElementById('visualizer-diagram-viewport');
@@ -180,11 +326,22 @@ export function resetVisualizerPanel() {
   history.replaceState(null, '', window.location.pathname + window.location.search);
 }
 
+/**
+ * Сброс панели визуализатора в начальное состояние (UI + вкладки).
+ * Вызывается при загрузке страницы и при нажатии «Сбросить» в шапке и глобальном сбросе.
+ */
+export function resetVisualizerPanel() {
+  resetVisualizerUI();
+  resetTabsToSingleEmpty();
+}
+
 export function initVisualizer() {
   const input = document.getElementById('regexp-input');
   const pasteBtn = document.getElementById('visualizer-paste-btn');
   const visualizeBtn = document.getElementById('visualizer-visualize-btn');
   const clearBtn = document.getElementById('visualizer-clear-btn');
+  const tabsContainer = document.getElementById('visualizer-tabs');
+  const tabAddBtn = document.getElementById('visualizer-tab-add-btn');
   const diagramArea = document.getElementById('visualizer-diagram-area');
   const placeholder = document.getElementById('visualizer-diagram-placeholder');
   const viewport = document.getElementById('visualizer-diagram-viewport');
@@ -194,7 +351,11 @@ export function initVisualizer() {
   const exportPngBtn = document.getElementById('visualizer-export-png');
   if (!input || !diagramArea) return;
 
-  // При загрузке страницы всегда сбрасываем панель визуализатора (пустое поле, без диаграммы)
+  visualizerInputEl = input;
+  tabsContainerEl = tabsContainer;
+  tabAddBtnEl = tabAddBtn;
+
+  // При загрузке страницы всегда сбрасываем панель визуализатора (пустое поле, без диаграммы, одна вкладка)
   resetVisualizerPanel();
 
   clearBtn?.addEventListener('click', () => resetVisualizerPanel());
@@ -256,30 +417,39 @@ export function initVisualizer() {
 
   // Сабмит формы: валидация пустого поля; при ошибке загрузки скрипта — сообщение
   const form = document.getElementById('regexp-form');
+  visualizerFormEl = form;
+
+  function visualizeExpression(expr) {
+    lastShownVisualizerError = '';
+    errorToastScheduled = false;
+    errorToastShownThisAttempt = false;
+    if (errorToastTimeoutId) clearTimeout(errorToastTimeoutId);
+    errorToastTimeoutId = 0;
+
+    const value = expr?.trim();
+    if (!value) {
+      showError('Введите регулярное выражение');
+      return false;
+    }
+    const regexperScript = document.getElementById('regexper-js');
+    if (regexperScript?.hasAttribute('data-failed')) {
+      showError('Бандл regexper не загружен. Выполните скрипт fetch-regexper-static.ps1 (см. assets/libs/regexper/README.md)');
+      return false;
+    }
+
+    updateActiveTabPattern(value);
+
+    // Regexper слушает hashchange и вызывает showExpression(_getHash()).
+    const encoded = encodeRegexForHash(value);
+    location.hash = encoded;
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    return true;
+  }
+
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      lastShownVisualizerError = '';
-      errorToastScheduled = false;
-      errorToastShownThisAttempt = false;
-      if (errorToastTimeoutId) clearTimeout(errorToastTimeoutId);
-      errorToastTimeoutId = 0;
-
-      const expr = input?.value?.trim();
-      if (!expr) {
-        showError('Введите регулярное выражение');
-        return;
-      }
-      const regexperScript = document.getElementById('regexper-js');
-      if (regexperScript?.hasAttribute('data-failed')) {
-        showError('Бандл regexper не загружен. Выполните скрипт fetch-regexper-static.ps1 (см. assets/libs/regexper/README.md)');
-        return;
-      }
-
-      // Regexper слушает hashchange и вызывает showExpression(_getHash()).
-      const encoded = encodeRegexForHash(expr);
-      location.hash = encoded;
-      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      visualizeExpression(input?.value ?? '');
     });
   }
 
@@ -453,6 +623,29 @@ text { fill: #1a1a1a; }
     regexperScript.addEventListener('error', () => regexperScript.setAttribute('data-failed', '1'));
   }
 
+  // Вкладки: обработчики кликов
+  tabsContainerEl?.addEventListener('click', (e) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement)) return;
+    const closeEl = target.closest('.visualizer-tab-close');
+    const tabEl = target.closest('.visualizer-tab');
+    if (!tabEl) return;
+    const tabId = tabEl.getAttribute('data-tab-id');
+    if (!tabId) return;
+    if (closeEl) {
+      closeTab(tabId, { inputEl: input, formEl: form });
+      return;
+    }
+    setActiveTab(tabId, { triggerVisualize: true, inputEl: input, formEl: form });
+  });
+
+  tabAddBtnEl?.addEventListener('click', () => {
+    const tab = addNewTab('');
+    if (!tab) return;
+    if (input) input.value = '';
+    resetVisualizerUI();
+  });
+
   // Zoom 25–300% — только когда есть диаграмма
   const zoomOutBtn = document.getElementById('visualizer-zoom-out');
   const zoomInBtn = document.getElementById('visualizer-zoom-in');
@@ -521,7 +714,10 @@ text { fill: #1a1a1a; }
     const vh = diagramScroll.clientHeight || diagramScroll.getBoundingClientRect().height;
     if (!vw || !vh) return;
 
-    const scale = Math.min(1, vw / totalW, vh / totalH);
+    // Fit диаграммы по ширине в область просмотра.
+    // Высота остаётся «натуральной» (может быть больше высоты окна),
+    // поэтому ограничиваем масштаб только по ширине, не по высоте.
+    const scale = Math.min(1, vw / totalW);
     currentZoom = Math.round(scale * 100);
     const scaledW = totalW * scale;
     const scaledH = totalH * scale;
@@ -614,176 +810,38 @@ text { fill: #1a1a1a; }
   document.addEventListener('mouseup', stopPan);
   document.addEventListener('mouseleave', stopPan);
 
-  // Модальное окно «на весь экран»: кнопка, открытие/закрытие, клон диаграммы, зум, пан, экспорт
-  const fullscreenBtn = document.getElementById('visualizer-fullscreen-btn');
-  const overlay = document.getElementById('visualizer-fullscreen-overlay');
-  const modal = document.getElementById('visualizer-fullscreen-modal');
-  const modalCloseBtn = document.getElementById('visualizer-fullscreen-close');
-  const modalScroll = document.getElementById('visualizer-fullscreen-scroll');
-  const modalScrollWrap = modalScroll?.firstElementChild;
-  const modalInner = document.getElementById('visualizer-fullscreen-inner');
-  const modalZoomOutBtn = document.getElementById('visualizer-modal-zoom-out');
-  const modalZoomInBtn = document.getElementById('visualizer-modal-zoom-in');
-  const modalZoomValueEl = document.getElementById('visualizer-modal-zoom-value');
-  const modalExportSvgBtn = document.getElementById('visualizer-modal-export-svg');
-  const modalExportPngBtn = document.getElementById('visualizer-modal-export-png');
+  // Полноэкранное модальное окно удалено: диаграмма всегда работает в основной области.
+}
 
-  let modalZoom = 100;
-  let modalPanX = 0;
-  let modalPanY = 0;
-  let naturalDiagramWidthModal = 0;
-  let naturalDiagramHeightModal = 0;
-  let modalPanStart = null;
-
-  /** Получить натуральные размеры SVG в модальном окне */
-  function getModalNaturalSvgSize() {
-    const svg = modalInner?.querySelector('svg');
-    if (!svg) return { width: 0, height: 0 };
-    const bbox = svg.getBBox();
-    if (bbox.width > 0 && bbox.height > 0) {
-      return { width: bbox.width, height: bbox.height };
-    }
-    const vb = svg.viewBox?.baseVal;
-    if (vb && vb.width > 0 && vb.height > 0) {
-      return { width: vb.width, height: vb.height };
-    }
-    return { width: svg.clientWidth || 0, height: svg.clientHeight || 0 };
+/**
+ * Открывает выражение в визуализаторе: новая вкладка, авто-визуализация и скролл к секции.
+ * Используется другими инструментами (конвертер, ручной редактор, история).
+ * @param {string} pattern
+ */
+export function openInVisualizer(pattern) {
+  const value = String(pattern ?? '').trim();
+  if (!value) {
+    showError('Нет регулярного выражения для визуализации');
+    return;
+  }
+  const input = visualizerInputEl || document.getElementById('regexp-input');
+  const form = visualizerFormEl || document.getElementById('regexp-form');
+  if (!input || !form) {
+    showError('Визуализатор ещё не инициализирован');
+    return;
   }
 
-  function applyModalZoom() {
-    if (modalZoomValueEl) modalZoomValueEl.textContent = modalZoom + '%';
-    if (!modalScrollWrap) return;
-    const scale = modalZoom / 100;
-    modalScrollWrap.style.transformOrigin = '0 0';
-    modalScrollWrap.style.transform = `translate(${modalPanX}px, ${modalPanY}px) scale(${scale})`;
+  const newTab = addNewTab(value);
+  if (!newTab) {
+    return;
   }
+  input.value = value;
 
-  function applyModalFitToView() {
-    if (!modalScroll || !modalInner || !modalScrollWrap) return;
-    const svg = modalInner.querySelector('svg');
-    if (!svg) return;
-    const svgSize = getModalNaturalSvgSize();
-    naturalDiagramWidthModal = svgSize.width;
-    naturalDiagramHeightModal = svgSize.height;
-    if (naturalDiagramWidthModal <= 0 || naturalDiagramHeightModal <= 0) return;
-    const totalW = naturalDiagramWidthModal + DIAGRAM_PADDING * 2;
-    const totalH = naturalDiagramHeightModal + DIAGRAM_PADDING * 2;
-    const vw = modalScroll.clientWidth || modalScroll.getBoundingClientRect().width;
-    const vh = modalScroll.clientHeight || modalScroll.getBoundingClientRect().height;
-    if (!vw || !vh) return;
-    const scale = Math.min(1, vw / totalW, vh / totalH);
-    modalZoom = Math.round(scale * 100);
-    const scaledW = totalW * scale;
-    const scaledH = totalH * scale;
-    modalPanX = (vw - scaledW) / 2;
-    modalPanY = (vh - scaledH) / 2;
-    applyModalZoom();
+  const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+  form.dispatchEvent(submitEvent);
+
+  const visualizerSection = document.getElementById('visualizer');
+  if (visualizerSection) {
+    visualizerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-
-  function modalZoomAtPoint(viewportX, viewportY, deltaZoom) {
-    if (!modalScroll || !modalScrollWrap) return;
-    const oldZoom = modalZoom;
-    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, oldZoom + deltaZoom));
-    if (newZoom === oldZoom) return;
-    const scale = oldZoom / 100;
-    const diagramX = (viewportX - modalPanX) / scale;
-    const diagramY = (viewportY - modalPanY) / scale;
-    const newScale = newZoom / 100;
-    modalZoom = newZoom;
-    modalPanX = viewportX - diagramX * newScale;
-    modalPanY = viewportY - diagramY * newScale;
-    applyModalZoom();
-  }
-
-  modalScroll?.addEventListener('wheel', (e) => {
-    if (!e.ctrlKey) return;
-    e.preventDefault();
-    const rect = modalScroll.getBoundingClientRect();
-    const viewportX = e.clientX - rect.left;
-    const viewportY = e.clientY - rect.top;
-    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
-    modalZoomAtPoint(viewportX, viewportY, delta);
-  }, { passive: false });
-
-  function openFullscreenModal() {
-    if (!hasDiagram()) {
-      showError('Сначала визуализируйте regex');
-      return;
-    }
-    if (!modalInner || !regexpRender) return;
-    modalInner.innerHTML = regexpRender.innerHTML;
-    naturalDiagramWidthModal = 0;
-    naturalDiagramHeightModal = 0;
-    modalZoom = 100;
-    modalPanX = 0;
-    modalPanY = 0;
-    applyModalZoom();
-    requestAnimationFrame(() => {
-      applyModalFitToView();
-    });
-    if (overlay) {
-      overlay.classList.add('is-open');
-      overlay.setAttribute('aria-hidden', 'false');
-    }
-  }
-
-  function closeFullscreenModal() {
-    modalPanStart = null;
-    if (modalScroll) modalScroll.style.cursor = 'grab';
-    if (overlay) {
-      overlay.classList.remove('is-open');
-      overlay.setAttribute('aria-hidden', 'true');
-    }
-  }
-
-  fullscreenBtn?.addEventListener('click', () => openFullscreenModal());
-  modalCloseBtn?.addEventListener('click', () => closeFullscreenModal());
-  overlay?.addEventListener('click', (e) => {
-    if (e.target === overlay) closeFullscreenModal();
-  });
-  modal?.addEventListener('click', (e) => e.stopPropagation());
-
-  modalZoomOutBtn?.addEventListener('click', () => {
-    if (!modalScroll) return;
-    const centerX = modalScroll.clientWidth / 2;
-    const centerY = modalScroll.clientHeight / 2;
-    modalZoomAtPoint(centerX, centerY, -ZOOM_STEP);
-  });
-  modalZoomInBtn?.addEventListener('click', () => {
-    if (!modalScroll) return;
-    const centerX = modalScroll.clientWidth / 2;
-    const centerY = modalScroll.clientHeight / 2;
-    modalZoomAtPoint(centerX, centerY, ZOOM_STEP);
-  });
-
-  modalExportSvgBtn?.addEventListener('click', () => exportSvgBtn?.click());
-  modalExportPngBtn?.addEventListener('click', () => exportPngBtn?.click());
-
-  modalScroll?.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
-    modalPanStart = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      panX: modalPanX,
-      panY: modalPanY
-    };
-    modalScroll.style.cursor = 'grabbing';
-  });
-  document.addEventListener('mousemove', (e) => {
-    if (modalPanStart === null || !modalScroll) return;
-    e.preventDefault();
-    const dx = e.clientX - modalPanStart.mouseX;
-    const dy = e.clientY - modalPanStart.mouseY;
-    modalPanX = modalPanStart.panX + dx;
-    modalPanY = modalPanStart.panY + dy;
-    applyModalZoom();
-  });
-  document.addEventListener('mouseup', () => {
-    modalPanStart = null;
-    if (modalScroll) modalScroll.style.cursor = 'grab';
-  });
-  document.addEventListener('mouseleave', () => {
-    modalPanStart = null;
-    if (modalScroll) modalScroll.style.cursor = 'grab';
-  });
 }

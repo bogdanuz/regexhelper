@@ -12,6 +12,7 @@ import { showError, showSuccess } from '../../shared/ui/notifications.js';
 import { saveToHistory } from '../../shared/utils/storage.js';
 import { analyzePatternForUI, parseRegexPattern } from '../converter/logic/regexParser.js';
 import { convertLinkedBuilder, buildRawInvertedRegex } from '../converter/logic/linkedBuilderConverter.js';
+import { openInVisualizer } from '../visualizer/app.js';
 
 const TOAST_INSERT_CURSOR = 'Поставьте курсор в поле редактора в то место, куда нужно вставить параметр';
 const TOAST_INVERT_PARSE_ERROR = 'Не удалось разобрать выделенный фрагмент как регулярное выражение. Попробуйте воспользоваться конвертером для построения выражения.';
@@ -450,14 +451,7 @@ function sendEditorToVisualizer() {
     showError('Введите выражение в редакторе');
     return;
   }
-  const visualizerInput = document.getElementById('regexp-input');
-  if (visualizerInput) {
-    visualizerInput.value = value;
-    visualizerInput.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-  const section = document.getElementById('visualizer');
-  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  showSuccess('Выражение вставлено в визуализатор');
+  openInVisualizer(value);
 }
 
 export function resetEditorPanel() {

@@ -10,6 +10,7 @@
  */
 
 import { showCopySuccess, showError, showSuccess } from '../../../shared/ui/notifications.js';
+import { openInVisualizer } from '../../visualizer/app.js';
 
 // ═══════════════════════════════════════════════════════════════════
 // ОТОБРАЖЕНИЕ РЕЗУЛЬТАТА
@@ -140,19 +141,7 @@ export function sendToVisualizer() {
     showError('Сначала выполните конвертацию');
     return;
   }
-
-  const visualizerInput = document.getElementById('regexp-input');
-  if (visualizerInput) {
-    visualizerInput.value = regex;
-    visualizerInput.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-
-  const visualizerSection = document.getElementById('visualizer');
-  if (visualizerSection) {
-    visualizerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  
-  showSuccess('Regex вставлен в визуализатор');
+  openInVisualizer(regex);
 }
 
 /**

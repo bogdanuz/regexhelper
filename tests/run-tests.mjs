@@ -472,6 +472,58 @@ async function runBrowserTests(which) {
         } else {
           console.log('Header tests: update toast refresh wired to forceReload OK');
         }
+
+        // Визуализатор: отправка результата из панели «Результат» в новую вкладку визуализатора
+        await editorPage.evaluate(() => {
+          const ta = document.getElementById('result-textarea');
+          if (ta) ta.value = '(a|b)+';
+        });
+        await editorPage.click('#to-visualizer-btn');
+        await editorPage.waitForTimeout(300);
+        const visInputValue = await editorPage.$eval('#regexp-input', (el) => el.value);
+        const visTabsInfo = await editorPage.$eval('#visualizer-tabs', (el) => {
+          const tabs = el.querySelectorAll('.visualizer-tab');
+          return {
+            count: tabs.length,
+            firstTitle: tabs[0]?.textContent?.trim() || '',
+          };
+        });
+        if (visInputValue !== '(a|b)+') {
+          console.error('Visualizer browser tests: to-visualizer from result did not set input, value=', visInputValue);
+          anyFailed = true;
+        } else if (!visTabsInfo || visTabsInfo.count < 1) {
+          console.error('Visualizer browser tests: no visualizer tabs created after to-visualizer');
+          anyFailed = true;
+        } else {
+          console.log('Visualizer browser: to-visualizer creates tab and sets input OK');
+        }
+
+        // Визуализатор: отправка из ручного редактора в новую вкладку визуализатора
+        await editorPage.$eval('#editor-textarea', (el) => { el.value = 'abc123'; });
+        await editorPage.click('#editor-to-visualizer-btn');
+        await editorPage.waitForTimeout(300);
+        const visInputAfterEditor = await editorPage.$eval('#regexp-input', (el) => el.value);
+        const visTabsCountAfterEditor = await editorPage.$eval('#visualizer-tabs', (el) => el.querySelectorAll('.visualizer-tab').length);
+        if (visInputAfterEditor !== 'abc123') {
+          console.error('Visualizer browser tests: editor-to-visualizer did not set input, value=', visInputAfterEditor);
+          anyFailed = true;
+        } else if (visTabsCountAfterEditor < 2) {
+          console.warn('Visualizer browser tests: expected at least 2 tabs after two sends, got', visTabsCountAfterEditor);
+        } else {
+          console.log('Visualizer browser: editor-to-visualizer creates additional tab OK');
+        }
+
+        // Вкладки визуализатора: кнопка «Новая диаграмма» создаёт пустую вкладку
+        const tabsMetaBefore = await editorPage.$eval('#visualizer-tabs', (el) => el.querySelectorAll('.visualizer-tab').length);
+        await editorPage.click('#visualizer-tab-add-btn');
+        await editorPage.waitForTimeout(150);
+        const tabsMetaAfter = await editorPage.$eval('#visualizer-tabs', (el) => el.querySelectorAll('.visualizer-tab').length);
+        if (!(tabsMetaAfter > tabsMetaBefore)) {
+          console.error('Visualizer browser tests: + Новая диаграмма did not add a tab (before=', tabsMetaBefore, 'after=', tabsMetaAfter, ')');
+          anyFailed = true;
+        } else {
+          console.log('Visualizer browser: + Новая диаграмма adds a tab OK');
+        }
       } catch (e) {
         console.error('Editor browser tests exception:', e.message);
         anyFailed = true;

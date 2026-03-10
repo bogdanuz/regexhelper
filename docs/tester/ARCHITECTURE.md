@@ -106,7 +106,7 @@
 
 ## Интеграция
 
-- **index.html:** секция `#tester.tester-section` между Визуализатором и Историей; ссылка «Тестер» в навигации; подключён `tools/tester/css/tester.css`.
+- **index.html:** секция `#tester.tester-section` между Редактором и Визуализатором; ссылка «Тестер» в навигации; подключён `tools/tester/css/tester.css`.
 - **main.js:** импорт и вызов `initTester()` при загрузке DOM.
 - **tools/converter/app.js:** в `initHeaderNav()` добавлена секция `#tester` в IntersectionObserver; кнопка «Сбросить» вызывает `resetTesterPanel()`.
 
