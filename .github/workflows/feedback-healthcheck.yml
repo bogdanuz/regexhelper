@@ -1,0 +1,25 @@
+name: Supabase feedback healthcheck
+
+on:
+  # Запуск раз в 3 дня в 09:00 UTC
+  schedule:
+    - cron: '0 9 */3 * *'
+  # Возможность запустить вручную из вкладки Actions
+  workflow_dispatch:
+
+jobs:
+  ping-feedback:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Supabase feedback function
+        run: |
+          curl -X POST "https://teuatabseokbnjlxkahn.supabase.co/functions/v1/feedback" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "type": "healthcheck",
+              "message": "GitHub Actions healthcheck ping",
+              "email": null,
+              "page": "/healthcheck",
+              "website": "github-actions"
+            }'
