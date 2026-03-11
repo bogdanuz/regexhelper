@@ -60,6 +60,8 @@ export const AppState = {
   }
 };
 
+const CONVERTER_MIN_HEIGHT = 'calc(100vh - 64px)';
+
 // ═══════════════════════════════════════════════════════════════════
 // ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
 // ═══════════════════════════════════════════════════════════════════
@@ -137,15 +139,15 @@ function initUIComponents() {
 
   // Навигация в шапке: подчёркивание под выбранным инструментом
   initHeaderNav();
+  initConstructorTabs();
 }
 
 /**
- * Навигация в шапке: при клике и при скролле подчёркивание переходит под активный раздел (Конвертер / История).
+ * Навигация в шапке: при клике и при скролле подчёркивание переходит под активный раздел (Конструктор / История).
  */
 function initHeaderNav() {
   const headerNav = document.querySelector('.header-nav');
   const converterSection = document.getElementById('converter-section');
-  const editorSection = document.getElementById('editor');
   const visualizerSection = document.getElementById('visualizer');
   const testerSection = document.getElementById('tester');
   const historySection = document.getElementById('history-section');
@@ -168,7 +170,15 @@ function initHeaderNav() {
   navLinks.forEach((link) => {
     link.addEventListener('click', () => {
       const href = link.getAttribute('href');
-      if (href?.startsWith('#')) setActiveNav(href.slice(1));
+      if (!href?.startsWith('#')) return;
+
+      const sectionId = href.slice(1);
+      setActiveNav(sectionId);
+
+      // Специальное поведение для конструктора: всегда переключаем в режим редактора
+      if (sectionId === 'converter-section' && typeof window.__regexhelper_setConstructorMode === 'function') {
+        window.__regexhelper_setConstructorMode('editor', true);
+      }
     });
   });
 
@@ -184,25 +194,24 @@ function initHeaderNav() {
     { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
   );
   observer.observe(converterSection);
-  if (editorSection) observer.observe(editorSection);
   if (visualizerSection) observer.observe(visualizerSection);
   if (testerSection) observer.observe(testerSection);
   observer.observe(historySection);
 }
 
 /**
- * Инициализирует переключение режима панели (Простые / Связанные)
+ * Переключает режим панели триггеров (Простые / Связанные)
+ * @param {'simple'|'linked'} newMode
  */
-function initPanelModeSwitch() {
+function switchPanelMode(newMode) {
   const triggersPanel = document.getElementById('triggers-panel');
-  const modeSwitch = document.getElementById('panel-mode-switch');
   const modeIcon = document.getElementById('panel-mode-icon');
   const modeTitle = document.getElementById('panel-mode-title');
   const modeHint = document.getElementById('panel-mode-hint');
   const contentLinked = document.getElementById('panel-content-linked');
   const contentSimple = document.getElementById('panel-content-simple');
 
-  if (!triggersPanel || !modeSwitch) return;
+  if (!triggersPanel || !modeIcon || !modeTitle || !modeHint || !contentLinked || !contentSimple) return;
 
   // Иконки для разных режимов
   const iconLinked = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
@@ -218,46 +227,117 @@ function initPanelModeSwitch() {
   const clearLinkedPanelBtn = document.getElementById('clear-linked-panel-btn');
   const importPatternBtn = document.getElementById('import-pattern-btn');
 
-  function switchMode(newMode) {
-    const currentMode = triggersPanel.dataset.mode;
-    if (newMode === currentMode) return;
+  const currentMode = triggersPanel.dataset.mode;
+  if (newMode === currentMode) return;
 
-    triggersPanel.dataset.mode = newMode;
+  triggersPanel.dataset.mode = newMode;
 
-    if (newMode === 'simple') {
-      modeIcon.innerHTML = iconSimple;
-      modeTitle.textContent = 'Простые триггеры';
-      modeSwitch.title = tooltipSimple;
-      modeHint.textContent = hintSimple;
-      contentLinked.style.display = 'none';
-      contentSimple.style.display = 'flex';
-      contentSimple.style.animation = 'none';
-      void contentSimple.offsetHeight;
-      contentSimple.style.animation = 'fadeIn 0.25s ease';
-      if (clearSimplePanelBtn) clearSimplePanelBtn.style.display = 'inline-flex';
-      if (clearLinkedPanelBtn) clearLinkedPanelBtn.style.display = 'none';
-      if (importPatternBtn) importPatternBtn.style.display = 'none';
+  if (newMode === 'simple') {
+    modeIcon.innerHTML = iconSimple;
+    modeTitle.textContent = 'Простые триггеры';
+    const modeSwitch = document.getElementById('panel-mode-switch');
+    if (modeSwitch) modeSwitch.title = tooltipSimple;
+    modeHint.textContent = hintSimple;
+    contentLinked.style.display = 'none';
+    contentSimple.style.display = 'flex';
+    contentSimple.style.animation = 'none';
+    void contentSimple.offsetHeight;
+    contentSimple.style.animation = 'fadeIn 0.25s ease';
+    if (clearSimplePanelBtn) clearSimplePanelBtn.style.display = 'inline-flex';
+    if (clearLinkedPanelBtn) clearLinkedPanelBtn.style.display = 'none';
+    if (importPatternBtn) importPatternBtn.style.display = 'none';
+  } else {
+    modeIcon.innerHTML = iconLinked;
+    modeTitle.textContent = 'Связанные триггеры';
+    const modeSwitch = document.getElementById('panel-mode-switch');
+    if (modeSwitch) modeSwitch.title = tooltipLinked;
+    modeHint.textContent = hintLinked;
+    contentSimple.style.display = 'none';
+    contentLinked.style.display = 'flex';
+    contentLinked.style.animation = 'none';
+    void contentLinked.offsetHeight;
+    contentLinked.style.animation = 'fadeIn 0.25s ease';
+    if (clearSimplePanelBtn) clearSimplePanelBtn.style.display = 'none';
+    if (clearLinkedPanelBtn) clearLinkedPanelBtn.style.display = 'inline-flex';
+    if (importPatternBtn) importPatternBtn.style.display = 'inline-flex';
+  }
+}
+
+/**
+ * Инициализирует переключение режима панели (Простые / Связанные)
+ */
+function initPanelModeSwitch() {
+  const triggersPanel = document.getElementById('triggers-panel');
+  if (!triggersPanel) return;
+
+  const initialMode = triggersPanel.dataset.mode === 'simple' ? 'simple' : 'linked';
+  switchPanelMode(initialMode);
+}
+
+/**
+ * Инициализирует табы конструктора (Ручной редактор / Связанные / Простые)
+ * Переключает видимость секций и режим панели триггеров.
+ */
+function initConstructorTabs() {
+  const tabsContainer = document.getElementById('constructor-tabs');
+  const editorPanel = document.getElementById('constructor-editor');
+  const converterSection = document.getElementById('converter-section');
+  if (!tabsContainer || !editorPanel || !converterSection) return;
+
+  const tabs = tabsContainer.querySelectorAll('.constructor-tab');
+  if (!tabs.length) return;
+
+  /**
+   * @param {'editor'|'linked'|'simple'} mode
+   * @param {boolean} [withScroll]
+   */
+  function setMode(mode, withScroll = true) {
+    tabs.forEach((btn) => {
+      const btnMode = btn.getAttribute('data-mode');
+      btn.classList.toggle('constructor-tab-active', btnMode === mode);
+    });
+
+    const triggersPanel = document.getElementById('triggers-panel');
+    const resultPanel = document.getElementById('result-panel');
+
+    if (mode === 'editor') {
+      // Показываем редактор в конструкторе, скрываем панели триггеров и результата
+      editorPanel.style.display = '';
+      if (triggersPanel) triggersPanel.style.display = 'none';
+      if (resultPanel) resultPanel.style.display = 'none';
+      // В режиме редактора убираем жёсткий min-height, чтобы не было лишнего пустого пространства
+      converterSection.style.minHeight = '0';
+      if (withScroll) {
+        converterSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     } else {
-      modeIcon.innerHTML = iconLinked;
-      modeTitle.textContent = 'Связанные триггеры';
-      modeSwitch.title = tooltipLinked;
-      modeHint.textContent = hintLinked;
-      contentSimple.style.display = 'none';
-      contentLinked.style.display = 'flex';
-      contentLinked.style.animation = 'none';
-      void contentLinked.offsetHeight;
-      contentLinked.style.animation = 'fadeIn 0.25s ease';
-      if (clearSimplePanelBtn) clearSimplePanelBtn.style.display = 'none';
-      if (clearLinkedPanelBtn) clearLinkedPanelBtn.style.display = 'inline-flex';
-      if (importPatternBtn) importPatternBtn.style.display = 'inline-flex';
+      // Показываем панели триггеров и результата, скрываем редактор
+      editorPanel.style.display = 'none';
+      if (triggersPanel) triggersPanel.style.display = '';
+      if (resultPanel) resultPanel.style.display = '';
+       // В режимах триггеров восстанавливаем min-height для 100vh-лейаута
+      converterSection.style.minHeight = CONVERTER_MIN_HEIGHT;
+      switchPanelMode(mode === 'simple' ? 'simple' : 'linked');
+      if (withScroll) {
+        converterSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 
-  modeSwitch.addEventListener('click', () => {
-    const currentMode = triggersPanel.dataset.mode;
-    const newMode = currentMode === 'linked' ? 'simple' : 'linked';
-    switchMode(newMode);
+  tabs.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-mode');
+      if (mode === 'editor' || mode === 'linked' || mode === 'simple') {
+        setMode(mode, true);
+      }
+    });
   });
+
+  // Режим по умолчанию — Ручной редактор
+  setMode('editor', false);
+
+  // Делаем переключатель доступным из других модулей (навигация в шапке)
+  window.__regexhelper_setConstructorMode = setMode;
 }
 
 /**

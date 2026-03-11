@@ -137,6 +137,7 @@
     display: flex;
     flex-direction: column;
     padding: 16px 24px;
+    scroll-margin-top: 80px;
 }
 
 .converter-main {
@@ -202,6 +203,91 @@
 }
 
 /* Убран converter-bottom — теперь вертикальный layout: triggers-panel + result-panel */
+
+/* Табы конструктора (Ручной / Связанные / Простые) */
+.constructor-tabs {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.constructor-tab {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-default);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.constructor-tab:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.constructor-tab-active {
+    background: linear-gradient(135deg, #4f46e5, #14b8a6);
+    border-color: transparent;
+    color: #f9fafb;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+}
+
+/* Видимость редактора при переключении режимов управляется через JS (display) */
+
+/* Табы конструктора (Ручной / Связанные / Простые) */
+.constructor-tabs {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.constructor-tab {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-default);
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.constructor-tab:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.constructor-tab-active {
+    background: linear-gradient(135deg, #4f46e5, #14b8a6);
+    border-color: transparent;
+    color: #f9fafb;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+}
+
+/* Видимость секций конструктора по режиму */
+body[data-constructor-mode="editor"] #converter-section {
+    display: none;
+}
+
+body[data-constructor-mode="editor"] #editor {
+    display: block;
+}
+
+body[data-constructor-mode="linked"] #editor,
+body[data-constructor-mode="simple"] #editor {
+    display: none;
+}
+
 
 /* ─────────────────────────────────────────────────────────────────
    ПАНЕЛИ (общие стили)
@@ -269,6 +355,19 @@
     flex: 0 0 auto;
 }
 
+/* Шапка панели результата: заголовок + кнопка очистки в одной строке */
+.output-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.output-header-top {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+}
+
 .panel-actions {
     display: flex;
     gap: var(--spacing-m);
@@ -310,6 +409,12 @@
     gap: 8px 16px;
 }
 
+.panel-mode-static {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* Кнопка очистки в шапке панели */
 .btn-header-clear {
     display: inline-flex;
@@ -333,28 +438,6 @@
 
 .btn-header-clear svg {
     flex-shrink: 0;
-}
-
-.panel-mode-switch {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px 8px;
-    margin: -4px -8px;
-    border-radius: var(--radius-small);
-    transition: background 0.2s ease;
-}
-
-.panel-mode-switch:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.panel-mode-switch:focus {
-    outline: none;
-    background: rgba(255, 255, 255, 0.08);
 }
 
 .panel-mode-icon {

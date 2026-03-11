@@ -157,9 +157,13 @@ export async function sendToEditor() {
   const { setEditorContent } = await import('../../editor/app.js');
   setEditorContent(regex);
 
-  const editorSection = document.getElementById('editor');
-  if (editorSection) {
-    editorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (typeof window.__regexhelper_setConstructorMode === 'function') {
+    window.__regexhelper_setConstructorMode('editor', true);
+  } else {
+    const constructorSection = document.getElementById('converter-section');
+    if (constructorSection) {
+      constructorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   showSuccess('Результат отправлен в редактор');

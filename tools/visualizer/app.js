@@ -337,7 +337,6 @@ export function resetVisualizerPanel() {
 
 export function initVisualizer() {
   const input = document.getElementById('regexp-input');
-  const pasteBtn = document.getElementById('visualizer-paste-btn');
   const visualizeBtn = document.getElementById('visualizer-visualize-btn');
   const clearBtn = document.getElementById('visualizer-clear-btn');
   const tabsContainer = document.getElementById('visualizer-tabs');
@@ -404,16 +403,6 @@ export function initVisualizer() {
     });
     diagramObserver.observe(regexpRender, { childList: true, subtree: true });
   }
-
-  // Вставить из буфера (заменяет текущее содержимое поля)
-  pasteBtn?.addEventListener('click', async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (input) input.value = text;
-    } catch (err) {
-      showError('Не удалось прочитать буфер обмена');
-    }
-  });
 
   // Сабмит формы: валидация пустого поля; при ошибке загрузки скрипта — сообщение
   const form = document.getElementById('regexp-form');
@@ -831,10 +820,29 @@ export function openInVisualizer(pattern) {
     return;
   }
 
-  const newTab = addNewTab(value);
-  if (!newTab) {
+  // Если активная вкладка пустая («Новая диаграмма» без содержимого) — переиспользуем её,
+  // иначе создаём новую вкладку, как и раньше.
+  let targetTab = null;
+  if (!visualizerTabs.length || !activeTabId) {
+    targetTab = addNewTab(value);
+  } else {
+    const activeTab = findTabById(activeTabId);
+    if (!activeTab) {
+      targetTab = addNewTab(value);
+    } else if (!activeTab.pattern?.trim()) {
+      activeTab.pattern = value;
+      activeTab.title = buildTabTitle(value);
+      targetTab = activeTab;
+      renderTabs();
+    } else {
+      targetTab = addNewTab(value);
+    }
+  }
+
+  if (!targetTab) {
     return;
   }
+
   input.value = value;
 
   const submitEvent = new Event('submit', { bubbles: true, cancelable: true });

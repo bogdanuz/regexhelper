@@ -10,135 +10,19 @@
 
 import { showError, showSuccess } from '../../shared/ui/notifications.js';
 import { saveToHistory } from '../../shared/utils/storage.js';
-import { analyzePatternForUI, parseRegexPattern } from '../converter/logic/regexParser.js';
-import { convertLinkedBuilder, buildRawInvertedRegex } from '../converter/logic/linkedBuilderConverter.js';
+import { analyzePatternForUI } from '../converter/logic/regexParser.js';
 import { openInVisualizer } from '../visualizer/app.js';
+import { initManualRegexPanel, invertTopLevelElements } from '../../shared/ui/manualRegexPanel.js';
 
-const TOAST_INSERT_CURSOR = 'Поставьте курсор в поле редактора в то место, куда нужно вставить параметр';
-const TOAST_INVERT_PARSE_ERROR = 'Не удалось разобрать выделенный фрагмент как регулярное выражение. Попробуйте воспользоваться конвертером для построения выражения.';
+const TOAST_INSERT_CURSOR =
+  'Поставьте курсор в поле редактора в то место, куда нужно вставить параметр';
+const TOAST_INVERT_PARSE_ERROR =
+  'Не удалось разобрать выделенный фрагмент как регулярное выражение. Попробуйте воспользоваться конвертером для построения выражения.';
 
 let validationActive = false;
 
-// Вариант A: запоминаем последнюю позицию курсора в поле редактора
-let lastEditorRef = null;
-let lastSelectionStart = 0;
-let lastSelectionEnd = 0;
-
-// ═══════════════════════════════════════════════════════════════════
-// ВСТАВКА В КУРСОР (по запомненной позиции)
-// ═══════════════════════════════════════════════════════════════════
-
 function getEditorTextarea() {
   return document.getElementById('editor-textarea');
-}
-
-function saveEditorSelection() {
-  const ta = getEditorTextarea();
-  if (!ta || document.activeElement !== ta) return;
-  lastEditorRef = ta;
-  lastSelectionStart = ta.selectionStart;
-  lastSelectionEnd = ta.selectionEnd;
-}
-
-function insertParamAtStoredPosition(text) {
-  const ta = getEditorTextarea();
-  if (!ta) return;
-  if (!lastEditorRef) {
-    showError(TOAST_INSERT_CURSOR);
-    return;
-  }
-  const start = lastSelectionStart;
-  const end = lastSelectionEnd;
-  const before = ta.value.slice(0, start);
-  const after = ta.value.slice(end);
-  ta.value = before + text + after;
-  const newPos = start + text.length;
-  ta.selectionStart = ta.selectionEnd = newPos;
-  lastSelectionStart = lastSelectionEnd = newPos;
-  lastEditorRef = ta;
-  ta.focus();
-  ta.dispatchEvent(new Event('input', { bubbles: true }));
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// ИНВЕРТИРОВАТЬ ВЫДЕЛЕННОЕ (порядок элементов наоборот, в конец через |)
-// ═══════════════════════════════════════════════════════════════════
-
-/**
- * Инвертирует порядок элементов верхнего уровня (как в конвертере для группы).
- * @param {Array} elements - массив элементов из parseRegexPattern
- * @returns {Array} новый массив с обратным порядком и перераспределёнными соединителями
- */
-export function invertTopLevelElements(elements) {
-  if (!Array.isArray(elements) || elements.length === 0) return elements;
-  const originalConnectors = elements.map((el) => (el.connector ? { ...el.connector } : null));
-  const inverted = [...elements].reverse();
-  const usedConnectors = originalConnectors.slice(0, -1).reverse();
-  inverted.forEach((el, i) => {
-    el.connector = i < inverted.length - 1
-      ? (usedConnectors[i] || { mode: 'alternation' })
-      : { mode: 'alternation' };
-  });
-  return inverted;
-}
-
-function getInvertSelectionBtn() {
-  return document.getElementById('editor-invert-selection-btn');
-}
-
-/** Показывать кнопку «Инвертировать выделенное» только при непустом выделении в поле редактора */
-function updateInvertSelectionButtonVisibility() {
-  const ta = getEditorTextarea();
-  const btn = getInvertSelectionBtn();
-  if (!ta || !btn) return;
-  const hasSelection = ta.selectionStart !== ta.selectionEnd;
-  btn.style.display = hasSelection ? '' : 'none';
-}
-
-function handleInvertSelection() {
-  const ta = getEditorTextarea();
-  const btn = getInvertSelectionBtn();
-  if (!ta || !btn) return;
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  if (start === end) {
-    showError('Выделите фрагмент регулярного выражения в поле редактора');
-    return;
-  }
-  const selectedText = ta.value.slice(start, end).trim();
-  if (!selectedText) {
-    showError('Выделенный фрагмент пуст после обрезки пробелов');
-    return;
-  }
-  const parsed = parseRegexPattern(selectedText, { forManualEditorInvert: true });
-  if (!parsed.success) {
-    showError(TOAST_INVERT_PARSE_ERROR);
-    return;
-  }
-  if (!parsed.elements || parsed.elements.length === 0) {
-    showError(TOAST_INVERT_PARSE_ERROR);
-    return;
-  }
-  const inverted = invertTopLevelElements(parsed.elements);
-  // В ручном редакторе: только перестановка, без автозамен и нормализации — используем сырые диапазоны
-  const conversion = typeof parsed.sourceString === 'string'
-    ? buildRawInvertedRegex(inverted, parsed.sourceString)
-    : convertLinkedBuilder(inverted);
-  if (!conversion.success || conversion.result === '') {
-    showError(TOAST_INVERT_PARSE_ERROR);
-    return;
-  }
-  const currentValue = ta.value;
-  const append = (currentValue ? '|' : '') + conversion.result;
-  ta.value = currentValue + append;
-  const newEnd = ta.value.length;
-  ta.selectionStart = ta.selectionEnd = newEnd;
-  lastEditorRef = ta;
-  lastSelectionStart = lastSelectionEnd = newEnd;
-  ta.focus();
-  ta.dispatchEvent(new Event('input', { bubbles: true }));
-  updateInvertSelectionButtonVisibility();
-  showSuccess('Обратный вариант добавлен в конец');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -458,7 +342,6 @@ export function resetEditorPanel() {
   const ta = getEditorTextarea();
   if (ta) ta.value = '';
   hideValidationState();
-  updateInvertSelectionButtonVisibility();
 }
 
 function clearEditor() {
@@ -510,29 +393,16 @@ export function initEditor() {
   const ta = getEditorTextarea();
   const highlightLayer = getHighlightLayer();
 
-  // Запоминание позиции курсора при фокусе и изменении выделения в поле редактора
   if (ta) {
-    ta.addEventListener('focus', saveEditorSelection);
-    ta.addEventListener('select', saveEditorSelection);
-    ta.addEventListener('keyup', saveEditorSelection);
-    ta.addEventListener('mouseup', saveEditorSelection);
-    document.addEventListener('selectionchange', () => {
-      if (document.activeElement === ta) saveEditorSelection();
-    });
-    // Видимость кнопки «Инвертировать выделенное» при изменении выделения
-    [ 'focus', 'select', 'mouseup', 'keyup' ].forEach((ev) => {
-      ta.addEventListener(ev, updateInvertSelectionButtonVisibility);
+    initManualRegexPanel({
+      textareas: [ta],
+      insertButtonsSelector: '.editor-param-btn[data-insert]',
+      invertButtonId: 'editor-invert-selection-btn',
+      toastInsertCursorMessage: TOAST_INSERT_CURSOR,
+      toastInvertParseError: TOAST_INVERT_PARSE_ERROR,
+      showSuccessToast: true,
     });
   }
-
-  // Кнопки вставки (data-insert) — вставка по запомненной позиции (вариант A)
-  document.querySelectorAll('.editor-param-btn[data-insert]').forEach((btn) => {
-    const insert = btn.getAttribute('data-insert');
-    if (insert == null) return;
-    btn.addEventListener('click', () => {
-      insertParamAtStoredPosition(insert);
-    });
-  });
 
   // Проверить (toggle)
   const checkBtn = getCheckBtn();
@@ -563,13 +433,6 @@ export function initEditor() {
   const saveToHistoryBtn = document.getElementById('editor-save-to-history-btn');
   if (saveToHistoryBtn) saveToHistoryBtn.addEventListener('click', saveEditorToHistory);
 
-  // Кнопка «Инвертировать выделенное» — видна только при выделении в поле
-  const invertBtn = getInvertSelectionBtn();
-  if (invertBtn) {
-    invertBtn.addEventListener('click', handleInvertSelection);
-    updateInvertSelectionButtonVisibility();
-  }
-
   // Изначально подсветка скрыта
   if (highlightLayer) {
     highlightLayer.style.display = 'none';
@@ -577,3 +440,6 @@ export function initEditor() {
 }
 
 export default { initEditor, setEditorContent };
+
+// Для тестов и переиспользования логики инверсии
+export { invertTopLevelElements };

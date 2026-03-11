@@ -188,7 +188,7 @@ async function runBrowserTests(which) {
         console.log(`Тестер browser: ${passed}/${total} passed.`);
       }
 
-      // Дополнительный UI-тест: статистика выделения в поле тестового текста
+      // Дополнительные UI-тесты: панель тестера (статистика выделения, панель параметров, инверсия)
       const testerPage = await browser.newPage();
       try {
         await testerPage.goto(`${base}/index.html#tester`, { waitUntil: 'networkidle' });
@@ -247,6 +247,138 @@ async function runBrowserTests(which) {
         } else {
           console.log('Tester UI: selection stats hides on blur OK');
         }
+
+        // Панель параметров тестера: вставка параметра (\w) в поле TRUE
+        await testerPage.evaluate(() => {
+          const trueInput = document.getElementById('tester-regex-input');
+          if (trueInput) {
+            trueInput.value = 'abc';
+            trueInput.focus();
+            trueInput.setSelectionRange(trueInput.value.length, trueInput.value.length);
+          }
+        });
+        await testerPage.waitForTimeout(100);
+        const hasTesterParamBtn = await testerPage.$('.tester-editor-param-btn[data-insert="\\\\w"]');
+        if (!hasTesterParamBtn) {
+          console.error('Tester UI: param button (\\w) for TRUE/FALSE not found');
+          anyFailed = true;
+        } else {
+          await testerPage.click('.tester-editor-param-btn[data-insert="\\\\w"]');
+          await testerPage.waitForTimeout(100);
+          const trueAfterInsert = await testerPage.$eval('#tester-regex-input', (el) => el.value);
+          if (!trueAfterInsert.endsWith('abc\\w')) {
+            console.error('Tester UI: param insert into TRUE failed, value=', trueAfterInsert);
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: param insert into TRUE OK');
+          }
+        }
+
+        // Панель параметров тестера: вставка параметра (\b) в поле FALSE
+        await testerPage.evaluate(() => {
+          const falseInput = document.getElementById('tester-regex-false-input');
+          if (falseInput) {
+            falseInput.value = 'x';
+            falseInput.focus();
+            falseInput.setSelectionRange(falseInput.value.length, falseInput.value.length);
+          }
+        });
+        await testerPage.waitForTimeout(100);
+        const hasFalseParamBtn = await testerPage.$('.tester-editor-param-btn[data-insert="\\\\b"]');
+        if (!hasFalseParamBtn) {
+          console.error('Tester UI: param button (\\b) not found for FALSE');
+          anyFailed = true;
+        } else {
+          await testerPage.click('.tester-editor-param-btn[data-insert="\\\\b"]');
+          await testerPage.waitForTimeout(100);
+          const falseAfterInsert = await testerPage.$eval('#tester-regex-false-input', (el) => el.value);
+          if (!falseAfterInsert.endsWith('x\\b')) {
+            console.error('Tester UI: param insert into FALSE failed, value=', falseAfterInsert);
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: param insert into FALSE OK');
+          }
+        }
+
+        // Инверсия выделенного: кнопка скрыта без выделения и появляется при выделении
+        const hasInvertBtnTester = await testerPage.$('#tester-invert-selection-btn');
+        if (!hasInvertBtnTester) {
+          console.error('Tester UI: #tester-invert-selection-btn not found');
+          anyFailed = true;
+        } else {
+          const hiddenNoSelection = await testerPage.$eval(
+            '#tester-invert-selection-btn',
+            (el) => el.style.display === 'none',
+          );
+          if (!hiddenNoSelection) {
+            console.error('Tester UI: invert button should be hidden when no selection');
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: invert button hidden without selection OK');
+          }
+
+          // Выделяем TRUE, проверяем появление кнопки и инверсию
+          await testerPage.evaluate(() => {
+            const ta = document.getElementById('tester-regex-input');
+            if (!ta) return;
+            ta.value = 'a|b';
+            ta.focus();
+            ta.setSelectionRange(0, ta.value.length);
+            ta.dispatchEvent(new Event('select', { bubbles: true }));
+          });
+          await testerPage.waitForTimeout(120);
+          const visibleWithSelectionTrue = await testerPage.$eval(
+            '#tester-invert-selection-btn',
+            (el) => el.style.display !== 'none',
+          );
+          if (!visibleWithSelectionTrue) {
+            console.error('Tester UI: invert button should be visible when TRUE selection exists');
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: invert button visible with TRUE selection OK');
+          }
+
+          await testerPage.click('#tester-invert-selection-btn');
+          await testerPage.waitForTimeout(150);
+          const trueAfterInvert = await testerPage.$eval('#tester-regex-input', (el) => el.value);
+          if (trueAfterInvert !== 'a|b|b|a') {
+            console.error('Tester UI: invert selection for TRUE failed, value=', trueAfterInvert);
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: invert selection for TRUE OK (a|b -> a|b|b|a)');
+          }
+
+          // Теперь выделяем FALSE и убеждаемся, что инверсия применяется к FALSE
+          await testerPage.evaluate(() => {
+            const ta = document.getElementById('tester-regex-false-input');
+            if (!ta) return;
+            ta.value = 'x|y';
+            ta.focus();
+            ta.setSelectionRange(0, ta.value.length);
+            ta.dispatchEvent(new Event('select', { bubbles: true }));
+          });
+          await testerPage.waitForTimeout(120);
+          const visibleWithSelectionFalse = await testerPage.$eval(
+            '#tester-invert-selection-btn',
+            (el) => el.style.display !== 'none',
+          );
+          if (!visibleWithSelectionFalse) {
+            console.error('Tester UI: invert button should be visible when FALSE selection exists');
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: invert button visible with FALSE selection OK');
+          }
+
+          await testerPage.click('#tester-invert-selection-btn');
+          await testerPage.waitForTimeout(150);
+          const falseAfterInvert = await testerPage.$eval('#tester-regex-false-input', (el) => el.value);
+          if (falseAfterInvert !== 'x|y|y|x') {
+            console.error('Tester UI: invert selection for FALSE failed, value=', falseAfterInvert);
+            anyFailed = true;
+          } else {
+            console.log('Tester UI: invert selection for FALSE OK (x|y -> x|y|y|x)');
+          }
+        }
       } catch (e) {
         console.error('Tester UI: exception during selection stats test:', e);
         anyFailed = true;
@@ -261,6 +393,14 @@ async function runBrowserTests(which) {
         await editorPage.goto(`${base}/index.html`, { waitUntil: 'networkidle' });
         await editorPage.waitForSelector('#editor-textarea');
 
+        // Для проверки кнопки «В редактор» переключаемся в режим триггеров, чтобы панель результата была видна
+        await editorPage.evaluate(() => {
+          if (typeof window.__regexhelper_setConstructorMode === 'function') {
+            window.__regexhelper_setConstructorMode('linked', false);
+          }
+        });
+        await editorPage.waitForTimeout(200);
+
         // Проверка: кнопка «В редактор» переносит результат
         await editorPage.evaluate(() => {
           const ta = document.getElementById('result-textarea');
@@ -274,6 +414,16 @@ async function runBrowserTests(which) {
           anyFailed = true;
         } else {
           console.log('Editor browser: sendToEditor OK');
+        }
+
+        // При отправке в редактор активируется таб «Ручной редактор», а панель триггеров скрывается
+        const activeTabText = await editorPage.$eval('.constructor-tab.constructor-tab-active', (el) => el.textContent.trim());
+        const triggersVisible = await editorPage.$eval('#triggers-panel', (el) => getComputedStyle(el).display !== 'none');
+        if (activeTabText !== 'Ручной редактор' || triggersVisible) {
+          console.error('Editor browser tests: constructor mode/tab after sendToEditor invalid', { activeTabText, triggersVisible });
+          anyFailed = true;
+        } else {
+          console.log('Editor browser: constructor tab & visibility after sendToEditor OK');
         }
 
         // Проверка: вставка параметра (\w) в позицию курсора
@@ -474,10 +624,15 @@ async function runBrowserTests(which) {
         }
 
         // Визуализатор: отправка результата из панели «Результат» в новую вкладку визуализатора
+        // Сначала убеждаемся, что активен режим триггеров, чтобы панель результата была видна
         await editorPage.evaluate(() => {
+          if (typeof window.__regexhelper_setConstructorMode === 'function') {
+            window.__regexhelper_setConstructorMode('linked', false);
+          }
           const ta = document.getElementById('result-textarea');
           if (ta) ta.value = '(a|b)+';
         });
+        await editorPage.waitForTimeout(200);
         await editorPage.click('#to-visualizer-btn');
         await editorPage.waitForTimeout(300);
         const visInputValue = await editorPage.$eval('#regexp-input', (el) => el.value);
@@ -499,7 +654,14 @@ async function runBrowserTests(which) {
         }
 
         // Визуализатор: отправка из ручного редактора в новую вкладку визуализатора
-        await editorPage.$eval('#editor-textarea', (el) => { el.value = 'abc123'; });
+        await editorPage.evaluate(() => {
+          if (typeof window.__regexhelper_setConstructorMode === 'function') {
+            window.__regexhelper_setConstructorMode('editor', false);
+          }
+          const ta = document.getElementById('editor-textarea');
+          if (ta) ta.value = 'abc123';
+        });
+        await editorPage.waitForTimeout(200);
         await editorPage.click('#editor-to-visualizer-btn');
         await editorPage.waitForTimeout(300);
         const visInputAfterEditor = await editorPage.$eval('#regexp-input', (el) => el.value);

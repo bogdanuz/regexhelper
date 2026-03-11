@@ -27,6 +27,19 @@
     flex-direction: column;
 }
 
+/* Шапка редактора: заголовок + очистка в одной строке */
+.editor-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.editor-header-top {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+}
+
 /* Подсказка и кнопка «Инвертировать выделенное» в одну строку */
 .editor-header-hint-row {
     display: flex;
@@ -260,14 +273,9 @@
     align-items: center;
 }
 
-.editor-actions .btn-secondary,
-.editor-actions .btn-header-clear {
+.editor-actions .btn-secondary {
     flex-shrink: 0;
     height: 36px;
-}
-
-.editor-actions .btn-header-clear {
-    margin-left: auto;
 }
 
 /* Кнопка «Проверить»: выкл — вторичная, вкл — акцент для явной индикации */

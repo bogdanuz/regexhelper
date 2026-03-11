@@ -40,10 +40,11 @@ regexhelper/
 │   │   └── WIKI.js
 │   └── ui/
 │       ├── notifications.js
-│       └── feedback.js     # Форма обратной связи (Supabase Edge Function + Telegram)
+│       ├── feedback.js           # Форма обратной связи (Supabase Edge Function + Telegram)
+│       └── manualRegexPanel.js   # Общая логика правой панели параметров (вставка параметров в курсор, «Инвертировать выделенное» для редактора и тестера)
 │
 ├── tools/
-│   ├── converter/          # Приложение конвертера
+│   ├── converter/          # Приложение конструктора (конвертер триггеров + панель редактора)
 │   │   ├── app.js          # Инициализация: UI + logic
 │   │   ├── resetModalConfig.js   # Текст модалки сброса
 │   │   ├── logic/          # Бизнес-логика
@@ -63,7 +64,7 @@ regexhelper/
 │   │   │   ├── optionalChars.js
 │   │   │   ├── wildcard.js
 │   │   │   └── transliteration.js
-│   │   ├── ui/             # Интерфейс конвертера
+│   │   ├── ui/             # Интерфейс конструктора/конвертера
 │   │   │   ├── linkedBuilder.js      # Визуальный конструктор связанных триггеров
 │   │   │   ├── linkedBuilderUI.js    # UI компоненты linkedBuilder
 │   │   │   ├── modals.js
@@ -73,7 +74,7 @@ regexhelper/
 │   │   │   ├── layoutManager.js
 │   │   │   ├── badges.js
 │   │   │   └── inlinePopup.js
-│   │   └── css/            # Стили конвертера
+│   │   └── css/            # Стили конструктора/конвертера
 │   │       ├── converter.css
 │   │       ├── linkedBuilder.css
 │   │       ├── badges.css
@@ -89,10 +90,10 @@ regexhelper/
 │   │   ├── app.js
 │   │   ├── logic/          # patternPreprocess.js (applyExtendedFlagWithMap), flagsBuilder.js, matchRunner.js (validatePatternForUI, getMisplacedBraceIndices, filterMatchesByFalse)
 │   │   ├── worker/         # matchWorker.js (Web Worker)
-│   │   ├── ui/             # testerUI.js (поля TRUE/FALSE, подсветка совпадений и ошибок)
+│   │   ├── ui/             # testerUI.js (поля TRUE/FALSE, подсветка совпадений и ошибок, правая панель параметров через manualRegexPanel)
 │   │   └── css/            # tester.css
-│   ├── editor/             # Ручной редактор regex — ввод/правка, вставка параметров в курсор, Инвертировать выделенное (сырое инвертирование без автозамен), Сохранить в историю, В визуализатор/тестер
-│   │   ├── app.js          # setEditorContent, initEditor, saveEditorToHistory
+│   ├── editor/             # Ручной редактор regex — ввод/правка, правая панель параметров, Инвертировать выделенное (сырое инвертирование без автозамен), Сохранить в историю, В визуализатор/тестер
+│   │   ├── app.js          # setEditorContent, initEditor, saveEditorToHistory, экспорт invertTopLevelElements для тестов/manualRegexPanel
 │   │   └── css/            # editor.css
 │   └── texthelper/         # Текстовый помощник — утилиты для работы с текстом (включает смену регистра)
 │       ├── app.js
@@ -111,7 +112,7 @@ regexhelper/
     ├── PROJECT_PRINCIPLES.md
     ├── USER_REGEX_EXAMPLES_REFERENCE.md
     ├── LINKED_TRIGGERS_REDESIGN_PLAN.md
-    ├── converter/          # Документы конвертера
+    ├── converter/          # Документы конструктора/конвертера
     ├── visualizer/         # Документы визуализатора
     ├── texthelper/         # Документы Текстового помощника
     └── tester/             # Документы Тестер

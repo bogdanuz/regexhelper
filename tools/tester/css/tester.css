@@ -8,7 +8,7 @@
 }
 
 .tester-section {
-  margin-top: var(--spacing-xxl);
+  margin-top: var(--spacing-l);
   padding: 0 48px var(--spacing-xl);
 }
 
@@ -34,6 +34,17 @@
   flex-wrap: wrap;
   gap: var(--spacing-m);
   margin-bottom: var(--spacing-xs);
+}
+
+.tester-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tester-flavor {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
 }
 
 .tester-panel-header .btn-header-clear {
@@ -112,9 +123,72 @@
   gap: var(--spacing-xs);
 }
 
+/* Блок regex + правая панель параметров (как в ручном редакторе) */
+.tester-regex-and-panel {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-l);
+}
+
+.tester-regex-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+/* TRUE/FALSE растягиваются по высоте колонки, чтобы совпадать с правой панелью */
+.tester-regex-main .tester-regex-row {
+  flex: 1 1 0;
+}
+
+.tester-regex-main .tester-regex-wrap {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tester-regex-main .tester-regex-wrap .tester-regex-input {
+  flex: 1 1 auto;
+}
+
+.tester-editor-panel {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+.tester-editor-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tester-editor-header .editor-invert-selection-btn {
+  align-self: flex-start;
+}
+
+.tester-editor-params {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
+}
+
+@media (max-width: 900px) {
+  .tester-regex-and-panel {
+    flex-direction: column;
+  }
+
+  .tester-editor-panel {
+    flex: 0 0 auto;
+  }
+}
+
 .tester-regex-input {
   width: 100%;
-  min-height: 88px;
+  min-height: 0;
   max-height: 400px;
   font-family: 'Fira Code', 'Courier New', monospace;
   font-size: 14px;

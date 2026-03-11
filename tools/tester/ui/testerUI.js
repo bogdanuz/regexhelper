@@ -4,6 +4,7 @@
  */
 
 import { showError, showSuccess } from '../../../shared/ui/notifications.js';
+import { initManualRegexPanel } from '../../../shared/ui/manualRegexPanel.js';
 import { buildFlagsString } from '../logic/flagsBuilder.js';
 import { validatePatternForUI, filterMatchesByFalse } from '../logic/matchRunner.js';
 
@@ -302,6 +303,140 @@ export function initTesterUI() {
     selectionStatsEl.hidden = true;
     selectionStatsEl.textContent = '';
   }
+
+  // Создание правой панели параметров для полей TRUE/FALSE (визуально как в ручном редакторе)
+  (function setupTesterEditorPanel() {
+    if (!regexInput || !regexFalseInput) return;
+    const panelBody = regexInput.closest('.tester-panel-body');
+    const trueRow = regexInput.closest('.tester-regex-row');
+    const falseRow = regexFalseInput.closest('.tester-regex-row');
+    if (!panelBody || !trueRow || !falseRow) return;
+
+    const container = document.createElement('div');
+    container.className = 'tester-regex-and-panel';
+
+    const mainCol = document.createElement('div');
+    mainCol.className = 'tester-regex-main';
+
+    // Вынести существующие строки TRUE/FALSE внутрь новой колонки
+    panelBody.insertBefore(container, trueRow);
+    container.appendChild(mainCol);
+    mainCol.appendChild(trueRow);
+    mainCol.appendChild(falseRow);
+
+    const panelCol = document.createElement('div');
+    panelCol.className = 'tester-editor-panel';
+    container.appendChild(panelCol);
+
+    const header = document.createElement('div');
+    header.className = 'tester-editor-header';
+    panelCol.appendChild(header);
+
+    const invertBtn = document.createElement('button');
+    invertBtn.type = 'button';
+    invertBtn.className = 'btn-secondary editor-invert-selection-btn';
+    invertBtn.id = 'tester-invert-selection-btn';
+    invertBtn.title =
+      'Выделите фрагмент regex в поле TRUE или FALSE и нажмите — в конец поля добавится обратный вариант через |';
+    invertBtn.textContent = 'Инвертировать выделенное';
+    header.appendChild(invertBtn);
+
+    const paramsWrap = document.createElement('div');
+    paramsWrap.className = 'tester-editor-params';
+    panelCol.appendChild(paramsWrap);
+
+    function createButton(text, insert, title, extraClass = '') {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `editor-param-btn tester-editor-param-btn${extraClass ? ' ' + extraClass : ''}`;
+      btn.setAttribute('data-insert', insert);
+      if (title) btn.title = title;
+      btn.textContent = text;
+      return btn;
+    }
+
+    // Параметры триггера
+    const groupParams = document.createElement('div');
+    groupParams.className = 'editor-params-group';
+    paramsWrap.appendChild(groupParams);
+
+    const paramsTitle = document.createElement('span');
+    paramsTitle.className = 'editor-params-group-title';
+    paramsTitle.textContent = 'Параметры триггера';
+    groupParams.appendChild(paramsTitle);
+
+    const paramsRow1 = document.createElement('div');
+    paramsRow1.className = 'editor-params-row editor-params-row-3';
+    paramsRow1.appendChild(createButton('(?)', '?', 'Опциональный символ'));
+    paramsRow1.appendChild(createButton('(\\w)', '\\w', 'Один буквенно-цифровой символ'));
+    paramsRow1.appendChild(
+      createButton('(\\w{0,10})', '\\w{0,10}', 'От 0 до 10 буквенно-цифровых'),
+    );
+    groupParams.appendChild(paramsRow1);
+
+    const paramsRow2 = document.createElement('div');
+    paramsRow2.className = 'editor-params-row editor-params-row-2';
+    paramsRow2.appendChild(createButton('(\\b)', '\\b', 'Граница слова'));
+    paramsRow2.appendChild(createButton('(\\s)', '\\s', 'Пробел после'));
+    groupParams.appendChild(paramsRow2);
+
+    // Соединители
+    const groupConnectors = document.createElement('div');
+    groupConnectors.className = 'editor-params-group';
+    paramsWrap.appendChild(groupConnectors);
+
+    const connectorsTitle = document.createElement('span');
+    connectorsTitle.className = 'editor-params-group-title';
+    connectorsTitle.textContent = 'Соединители';
+    groupConnectors.appendChild(connectorsTitle);
+
+    const connRow1 = document.createElement('div');
+    connRow1.className = 'editor-params-row editor-params-row-2';
+    connRow1.appendChild(createButton('|', '|', 'Альтернация (ИЛИ)'));
+    connRow1.appendChild(createButton('[\\s\\S]+', '[\\s\\S]+', 'Любое расстояние'));
+    groupConnectors.appendChild(connRow1);
+
+    const connRow2 = document.createElement('div');
+    connRow2.className = 'editor-params-row editor-params-row-2';
+    connRow2.appendChild(createButton('.+', '.+', 'В пределах абзаца'));
+    connRow2.appendChild(createButton('[^\\n]+', '[^\\n]+', 'В пределах строки'));
+    groupConnectors.appendChild(connRow2);
+
+    const connRow3 = document.createElement('div');
+    connRow3.className = 'editor-params-row editor-params-row-1';
+    connRow3.appendChild(createButton('.{0,10}', '.{0,10}', 'Своё расстояние 0–10'));
+    groupConnectors.appendChild(connRow3);
+
+    // Скобки
+    const groupBrackets = document.createElement('div');
+    groupBrackets.className = 'editor-params-group';
+    paramsWrap.appendChild(groupBrackets);
+
+    const bracketsTitle = document.createElement('span');
+    bracketsTitle.className = 'editor-params-group-title';
+    bracketsTitle.textContent = 'Скобки';
+    groupBrackets.appendChild(bracketsTitle);
+
+    const brRow = document.createElement('div');
+    brRow.className = 'editor-params-row editor-params-row-2';
+    brRow.appendChild(
+      createButton('Откр. скобка (', '(', 'Открывающая скобка', 'editor-param-btn-label'),
+    );
+    brRow.appendChild(
+      createButton('Закр. скобка )', ')', 'Закрывающая скобка', 'editor-param-btn-label'),
+    );
+    groupBrackets.appendChild(brRow);
+
+    // После построения панели и переноса полей инициализируем общую логику вставки/инверсии
+    initManualRegexPanel({
+      textareas: [regexInput, regexFalseInput].filter(Boolean),
+      insertButtonsSelector: '.tester-editor-param-btn[data-insert]',
+      invertButtonId: 'tester-invert-selection-btn',
+      toastInsertCursorMessage:
+        'Поставьте курсор в поле TRUE или FALSE, куда нужно вставить параметр',
+      showSuccessToast: true,
+    });
+  })();
 
   function updateSelectionStats() {
     if (!selectionStatsEl || !testInput) return;

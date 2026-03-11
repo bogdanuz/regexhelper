@@ -2445,7 +2445,6 @@
             const placeholder = doc.getElementById('visualizer-diagram-placeholder');
             const loadingEl = doc.getElementById('visualizer-loading');
             const vizBtn = doc.getElementById('visualizer-visualize-btn');
-            const pasteBtn = doc.getElementById('visualizer-paste-btn');
             const exportSvg = doc.getElementById('visualizer-export-svg');
             const exportPng = doc.getElementById('visualizer-export-png');
             const clearBtn = doc.getElementById('visualizer-clear-btn');
@@ -2453,12 +2452,11 @@
             const hasPlaceholder = !!placeholder;
             const hasLoading = !!loadingEl && loadingEl.querySelectorAll('.visualizer-loading-dot').length === 3;
             const hasVizBtn = !!vizBtn;
-            const hasPaste = !!pasteBtn;
             const hasSvg = !!exportSvg;
             const hasPng = !!exportPng;
             const hasClearBtn = !!clearBtn;
-            const pass = hasInput && hasPlaceholder && hasLoading && hasVizBtn && hasPaste && hasSvg && hasPng && hasClearBtn;
-            return { pass, msg: pass ? 'Все элементы найдены' : `input=${hasInput} placeholder=${hasPlaceholder} loading=${hasLoading} vizBtn=${hasVizBtn} paste=${hasPaste} svg=${hasSvg} png=${hasPng} clearBtn=${hasClearBtn}` };
+            const pass = hasInput && hasPlaceholder && hasLoading && hasVizBtn && hasSvg && hasPng && hasClearBtn;
+            return { pass, msg: pass ? 'Все элементы найдены' : `input=${hasInput} placeholder=${hasPlaceholder} loading=${hasLoading} vizBtn=${hasVizBtn} svg=${hasSvg} png=${hasPng} clearBtn=${hasClearBtn}` };
         });
 
         testVisualizer('Visualizer UI', 'placeholder поля ввода по смыслу', async () => {

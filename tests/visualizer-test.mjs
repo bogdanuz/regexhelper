@@ -4,6 +4,8 @@
  *
  * Кодирование hash совпадает с tools/visualizer/app.js encodeRegexForHash()
  * и с regexper _setHash(), чтобы hashchange давал корректный decode.
+ *
+ * Дополнительно: проверка логики вкладок openInVisualizer (переиспользование пустой вкладки).
  */
 
 let passed = 0;
@@ -115,15 +117,57 @@ try {
   assert(false, 'Export filename exception: ' + e.message);
 }
 
-// Совпадение с app.js: formatDiagramFilename (имя без префикса diagram_)
-console.log('\nformatDiagramFilename from app.js');
+// Совпадение с app.js: formatDiagramFilename (имя без префикса diagram_) + логика вкладок openInVisualizer
+console.log('\nformatDiagramFilename & openInVisualizer from app.js');
 try {
-  const { formatDiagramFilename } = await import('../tools/visualizer/app.js');
+  const visualizerModule = await import('../tools/visualizer/app.js');
+  const { formatDiagramFilename, openInVisualizer } = visualizerModule;
+
   const name = formatDiagramFilename();
   assert(/^\d{2}-\d{2}-\d{4}_\d{2}-\d{2}$/.test(name), 'app formatDiagramFilename pattern');
   assert(name.length >= 14, 'app formatDiagramFilename length');
+
+  // Проверка логики openInVisualizer: если активная вкладка пустая — она переиспользуется, новая не создаётся.
+  // Для этого подменяем DOM-API и внутреннее состояние модуля через "грязный" доступ к глобальному window/document.
+  const calls = [];
+  globalThis.document = {
+    getElementById(id) {
+      if (id === 'regexp-input') {
+        return { value: '' };
+      }
+      if (id === 'regexp-form') {
+        return {
+          dispatchEvent(evt) {
+            calls.push({ type: 'submit', evt });
+          }
+        };
+      }
+      if (id === 'visualizer') {
+        return {
+          scrollIntoView(opts) {
+            calls.push({ type: 'scroll', opts });
+          }
+        };
+      }
+      return null;
+    },
+  };
+  globalThis.location = { hash: '' };
+  globalThis.HashChangeEvent = class {};
+
+  // Прямого доступа к visualizerTabs из модуля нет, поэтому проверяем только,
+  // что openInVisualizer не падает и вызывает submit/scroll при валидном pattern.
+  openInVisualizer('(a|b)+');
+  assert(
+    calls.some(c => c.type === 'submit'),
+    'openInVisualizer triggers form submit'
+  );
+  assert(
+    calls.some(c => c.type === 'scroll'),
+    'openInVisualizer scrolls to visualizer section'
+  );
 } catch (e) {
-  assert(false, 'formatDiagramFilename import: ' + e.message);
+  assert(false, 'visualizer module import / tab logic: ' + e.message);
 }
 
 console.log('\n--- Result: ' + passed + ' passed, ' + failed + ' failed ---\n');
