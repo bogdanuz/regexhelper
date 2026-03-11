@@ -176,6 +176,61 @@ const multiPat = 'ключ[\\s\\S]+?(подарок|тг)';
 const multi = runMatch(multiPat, full(), multiText);
 assert(!multi.error && multi.matches?.length >= 2, 'Паттерн с [\\s\\S]+? даёт несколько совпадений, не одно большое');
 
+console.log('\n--- Lookbehind: базовые пресеты ---\n');
+
+// 1) Нет слова "не" перед словом (отдельное слово "не")
+// В этом простом сценарии "не" вообще не встречается перед "крс" — проверяем базовую работу шаблона.
+const lb1 = runMatch('(?<!\\bне\\b)\\bкрс\\b', full(), 'крс и ещё текст');
+assert(
+  !lb1.error && lb1.matches?.[0]?.fullMatch === 'крс',
+  'Lookbehind: (?<!\\bне\\b)\\bкрс\\b ловит отдельное "крс" без слова "не" перед ним',
+);
+
+// 2) Только если перед словом есть "не" (отдельное слово и пробел)
+const lb2 = runMatch('(?<=\\bне\\s)\\bкрс\\b', full(), 'крс не крс вообще не крс некрс');
+assert(
+  !lb2.error && lb2.matches?.length === 2,
+  'Lookbehind: (?<=\\bне\\s)\\bкрс\\b ловит оба случая "не крс"',
+);
+
+// 3) Нет "не " сразу перед словом (последовательность не + пробел)
+const lb3 = runMatch('(?<!не\\s)крс', full(), 'крс не крс вообще не   крс');
+assert(
+  !lb3.error && lb3.matches?.some((m) => m.fullMatch === 'крс') && lb3.matches?.some((m) => m.index > 0),
+  'Lookbehind: (?<!не\\s)крс пропускает "не крс", но ловит "крс" и "не   крс"',
+);
+
+// 4) Только если есть "не " сразу перед словом
+const lb4 = runMatch('(?<=не\\s)крс', full(), 'крс не крс вообще не   крс');
+assert(
+  !lb4.error && lb4.matches?.length === 1 && lb4.matches[0].index > 0,
+  'Lookbehind: (?<=не\\s)крс ловит только "не крс" с ровно одним пробелом',
+);
+
+// 5) Символ после / не после пробела
+const lb5 = runMatch('(?<=\\s)\\w', full(), 'a b\tc\nd');
+assert(
+  !lb5.error && lb5.matches?.length >= 3,
+  'Lookbehind: (?<=\\s)\\w находит буквы сразу после пробельных символов',
+);
+const lb6 = runMatch('(?<!\\s)\\w', full(), 'a b');
+assert(
+  !lb6.error && lb6.matches?.some((m) => m.index === 0),
+  'Lookbehind: (?<!\\s)\\w находит буквы, перед которыми нет пробела',
+);
+
+// 6) Символ после / не после цифры
+const lb7 = runMatch('(?<=\\d)\\w', full(), 'a1b 2c');
+assert(
+  !lb7.error && lb7.matches?.length === 2,
+  'Lookbehind: (?<=\\d)\\w находит буквы сразу после цифр',
+);
+const lb8 = runMatch('(?<!\\d)\\w', full(), 'a1b');
+assert(
+  !lb8.error && lb8.matches?.some((m) => m.fullMatch === 'a'),
+  'Lookbehind: (?<!\\d)\\w находит буквы, перед которыми не цифра',
+);
+
 console.log('\n--- validatePatternForUI (реал-тайм валидация) ---\n');
 const vEmpty = validatePatternForUI('', full());
 assert(vEmpty.valid === true, 'validatePatternForUI: пустой паттерн → valid');

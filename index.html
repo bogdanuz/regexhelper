@@ -147,16 +147,20 @@
                                 </div>
                                 <div class="editor-params-group">
                                     <span class="editor-params-group-title">Соединители</span>
-                                    <div class="editor-params-row editor-params-row-2">
+                                    <div class="editor-params-row editor-params-row-3">
                                         <button type="button" class="editor-param-btn" data-insert="|" title="Альтернация (ИЛИ)">|</button>
                                         <button type="button" class="editor-param-btn" data-insert="[\s\S]+" title="Любое расстояние">[\s\S]+</button>
+                                        <button type="button" class="editor-param-btn" data-insert=".{0,10}" title="Своё расстояние 0–10">.{0,10}</button>
                                     </div>
-                                    <div class="editor-params-row editor-params-row-2">
+                                    <div class="editor-params-row editor-params-row-3">
+                                        <button
+                                            type="button"
+                                            class="editor-param-btn"
+                                            id="editor-lookbehind-btn"
+                                            title="Шаблоны lookbehind: выбрать пресет для контекста слева (например, исключить «не слово»)"
+                                        >Lookbehind</button>
                                         <button type="button" class="editor-param-btn" data-insert=".+" title="В пределах абзаца">.+</button>
                                         <button type="button" class="editor-param-btn" data-insert="[^\\n]+" title="В пределах строки">[^\n]+</button>
-                                    </div>
-                                    <div class="editor-params-row editor-params-row-1">
-                                        <button type="button" class="editor-param-btn" data-insert=".{0,10}" title="Своё расстояние 0–10">.{0,10}</button>
                                     </div>
                                 </div>
                                 <div class="editor-params-group">

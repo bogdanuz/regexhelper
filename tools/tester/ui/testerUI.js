@@ -391,21 +391,27 @@ export function initTesterUI() {
     groupConnectors.appendChild(connectorsTitle);
 
     const connRow1 = document.createElement('div');
-    connRow1.className = 'editor-params-row editor-params-row-2';
+    connRow1.className = 'editor-params-row editor-params-row-3';
     connRow1.appendChild(createButton('|', '|', 'Альтернация (ИЛИ)'));
     connRow1.appendChild(createButton('[\\s\\S]+', '[\\s\\S]+', 'Любое расстояние'));
+    connRow1.appendChild(createButton('.{0,10}', '.{0,10}', 'Своё расстояние 0–10'));
     groupConnectors.appendChild(connRow1);
 
     const connRow2 = document.createElement('div');
-    connRow2.className = 'editor-params-row editor-params-row-2';
+    connRow2.className = 'editor-params-row editor-params-row-3';
+
+    const lbMain = document.createElement('button');
+    lbMain.type = 'button';
+    lbMain.className = 'editor-param-btn tester-editor-param-btn';
+    lbMain.id = 'tester-lookbehind-btn';
+    lbMain.title =
+      'Шаблоны lookbehind: выбрать пресет для контекста слева (например, исключить «не слово»)';
+    lbMain.textContent = 'Lookbehind';
+    connRow2.appendChild(lbMain);
+
     connRow2.appendChild(createButton('.+', '.+', 'В пределах абзаца'));
     connRow2.appendChild(createButton('[^\\n]+', '[^\\n]+', 'В пределах строки'));
     groupConnectors.appendChild(connRow2);
-
-    const connRow3 = document.createElement('div');
-    connRow3.className = 'editor-params-row editor-params-row-1';
-    connRow3.appendChild(createButton('.{0,10}', '.{0,10}', 'Своё расстояние 0–10'));
-    groupConnectors.appendChild(connRow3);
 
     // Скобки
     const groupBrackets = document.createElement('div');
@@ -436,6 +442,18 @@ export function initTesterUI() {
         'Поставьте курсор в поле TRUE или FALSE, куда нужно вставить параметр',
       showSuccessToast: true,
     });
+
+    let activeRegexTextarea = regexInput;
+    [regexInput, regexFalseInput].forEach((ta) => {
+      if (!ta) return;
+      ta.addEventListener('focus', () => {
+        activeRegexTextarea = ta;
+      });
+    });
+
+    if (lbMain) {
+      setupLookbehindPopupForTester(lbMain, () => activeRegexTextarea || regexInput);
+    }
   })();
 
   function updateSelectionStats() {
@@ -859,4 +877,155 @@ export function resetTesterLowercaseMode() {
   const stateEl = btn?.querySelector('.tester-lowercase-state');
   if (stateEl) stateEl.textContent = 'включен';
   if (btn) btn.classList.add('tester-lowercase-btn-on');
+}
+
+function setupLookbehindPopupForTester(triggerButton, getActiveTextarea) {
+  const presets = [
+    {
+      id: 'no-ne-word-before',
+      title: 'Нет слова «не» перед словом',
+      description:
+        'Исключает случаи, где перед словом есть отдельное слово «не». Ловит «крс», пропускает «не крс».',
+      template: '(?<!\\bне\\b)\\b{WORD}\\b',
+      code: '(?<!\\bне\\b)\\bСЛОВО\\b',
+    },
+    {
+      id: 'require-ne-word-before',
+      title: 'Только если перед словом есть «не»',
+      description: 'Ловит слово, только когда прямо перед ним отдельное слово «не» и пробел.',
+      template: '(?<=\\bне\\s)\\b{WORD}\\b',
+      code: '(?<=\\bне\\s)\\bСЛОВО\\b',
+    },
+    {
+      id: 'no-ne-space-before',
+      title: 'Нет «не » сразу перед словом',
+      description: 'Исключает точную последовательность «не » перед словом. Подходит для конструкции «не крс».',
+      template: '(?<!не\\s){WORD}',
+      code: '(?<!не\\s)СЛОВО',
+    },
+    {
+      id: 'require-ne-space-before',
+      title: 'Только если есть «не » сразу перед словом',
+      description: 'Ловит слово, только если перед ним ровно «не» и один пробел.',
+      template: '(?<=не\\s){WORD}',
+      code: '(?<=не\\s)СЛОВО',
+    },
+    {
+      id: 'after-space',
+      title: 'Символ после пробела',
+      description:
+        'Ищет символ, который сразу следует за любым пробельным символом (пробел, таб, перенос строки).',
+      template: '(?<=\\s){CHAR}',
+      code: '(?<=\\s)СИМВОЛ',
+    },
+    {
+      id: 'not-after-space',
+      title: 'Символ не после пробела',
+      description: 'Ищет символ, перед которым нет пробела или другого пробельного символа.',
+      template: '(?<!\\s){CHAR}',
+      code: '(?<!\\s)СИМВОЛ',
+    },
+    {
+      id: 'after-digit',
+      title: 'Символ после цифры',
+      description: 'Ищет символ, который сразу следует за цифрой слева.',
+      template: '(?<=\\d){CHAR}',
+      code: '(?<=\\d)СИМВОЛ',
+    },
+    {
+      id: 'not-after-digit',
+      title: 'Символ не после цифры',
+      description: 'Ищет символ, перед которым не стоит цифра.',
+      template: '(?<!\\d){CHAR}',
+      code: '(?<!\\d)СИМВОЛ',
+    },
+  ];
+
+  let popupEl = null;
+
+  function closePopup() {
+    if (popupEl) {
+      popupEl.remove();
+      popupEl = null;
+      document.removeEventListener('click', handleDocumentClick, true);
+    }
+  }
+
+  function handleDocumentClick(e) {
+    if (!popupEl) return;
+    if (popupEl.contains(e.target) || e.target === triggerButton) return;
+    closePopup();
+  }
+
+  function insertTemplate(template, useCharPlaceholder = false) {
+    const ta = getActiveTextarea();
+    if (!ta) return;
+    const start = ta.selectionStart ?? 0;
+    const end = ta.selectionEnd ?? start;
+    const value = ta.value || '';
+    const selected = value.slice(start, end);
+    const placeholder = useCharPlaceholder ? '{CHAR}' : '{WORD}';
+    const fallback = useCharPlaceholder ? 'СИМВОЛ' : 'СЛОВО';
+    const insertText = template.replace(placeholder, selected || fallback);
+    const before = value.slice(0, start);
+    const after = value.slice(end);
+    ta.value = before + insertText + after;
+    const newPos = start + insertText.length;
+    ta.selectionStart = ta.selectionEnd = newPos;
+    ta.focus();
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function openPopup() {
+    closePopup();
+    const rect = triggerButton.getBoundingClientRect();
+    popupEl = document.createElement('div');
+    popupEl.className = 'lb-popup';
+    popupEl.innerHTML = `
+      <div class="lb-popup-header">Lookbehind — контекст слева</div>
+      <div class="lb-popup-list"></div>
+    `;
+    const listEl = popupEl.querySelector('.lb-popup-list');
+    presets.forEach((p) => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'lb-popup-item';
+      item.title = p.description;
+      item.innerHTML = `
+        <div class="lb-popup-item-title">${escapeHtml(p.title)}</div>
+        <div class="lb-popup-item-code"><code>${escapeHtml(p.code)}</code></div>
+      `;
+      item.addEventListener('click', () => {
+        const useChar = p.template.includes('{CHAR}');
+        insertTemplate(p.template, useChar);
+        closePopup();
+      });
+      listEl.appendChild(item);
+    });
+
+    document.body.appendChild(popupEl);
+    const popupRect = popupEl.getBoundingClientRect();
+    const top = rect.bottom + window.scrollY + 8;
+    let left = rect.left + window.scrollX;
+    const maxRight = left + popupRect.width;
+    const viewportWidth = document.documentElement.clientWidth;
+    if (maxRight > viewportWidth - 12) {
+      left = Math.max(12, viewportWidth - popupRect.width - 12);
+    }
+    popupEl.style.top = `${top}px`;
+    popupEl.style.left = `${left}px`;
+
+    window.setTimeout(() => {
+      document.addEventListener('click', handleDocumentClick, true);
+    }, 0);
+  }
+
+  triggerButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (popupEl) {
+      closePopup();
+    } else {
+      openPopup();
+    }
+  });
 }
