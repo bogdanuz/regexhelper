@@ -2,9 +2,9 @@
  * Сравнитель — точка входа
  */
 
-import { initComparatorUI, openComparatorModal } from './ui/comparatorUI.js';
+import { initComparatorUI, openComparatorModal, clearComparatorPanel } from './ui/comparatorUI.js';
 
-export { initComparatorUI, openComparatorModal };
+export { initComparatorUI, openComparatorModal, clearComparatorPanel };
 
 export function initComparator() {
   initComparatorUI();

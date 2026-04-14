@@ -7,6 +7,7 @@
 - Поля **Было** / **Стало** — редактируемые `textarea`.
 - **Превью** — обновляется с debounce (~280 ms); diff через алгоритм из vendored **fast-diff** (на базе Google diff-match-patch, Apache 2.0): `tools/comparator/vendor/fastDiff.js`.
 - **Копировать для Confluence** — одна кнопка; `ClipboardItem` с `text/html` (обёртка `<div>` + моноширинный стиль) и `text/plain` (склееный текст).
+- **Очистить** (`#comparator-clear-btn`) — обнуляет оба поля и превью; то же выполняет **`clearComparatorPanel()`** при подтверждении **«Сбросить все»** в шапке (`tools/converter/app.js` → `resetAll`).
 
 ## Структура
 

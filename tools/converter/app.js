@@ -22,6 +22,7 @@ import { createWildcardPopup, createDeclensionsPopup, createOptionalCharsPopup, 
 import { initLinkedBuilder, getBuilderData, setBuilderData } from './ui/linkedBuilder.js';
 import { convertLinkedBuilder } from './logic/linkedBuilderConverter.js';
 import { resetEditorPanel } from '../editor/app.js';
+import { clearComparatorPanel } from '../comparator/app.js';
 
 // Логика
 import { convert } from './logic/conversionManager.js';
@@ -1072,6 +1073,9 @@ function resetAll() {
 
       // Сброс панели «Тестер»
       resetTesterPanel();
+
+      // Сравнитель (модалка)
+      clearComparatorPanel();
 
       showSuccess('Все инструменты сброшены');
     }

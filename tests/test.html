@@ -1008,9 +1008,10 @@
             const pb = document.getElementById('comparator-preview-before');
             const pa = document.getElementById('comparator-preview-after');
             const copyBtn = document.getElementById('comparator-copy-btn');
+            const clearBtn = document.getElementById('comparator-clear-btn');
             const swapBtn = document.getElementById('comparator-swap-btn');
             if (!overlay && !btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
-            const ok = !!(overlay && btn && bef && aft && pb && pa && copyBtn && swapBtn);
+            const ok = !!(overlay && btn && bef && aft && pb && pa && copyBtn && clearBtn && swapBtn);
             return { pass: ok, msg: ok ? 'Found' : 'missing comparator DOM' };
         });
 

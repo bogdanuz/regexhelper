@@ -31,11 +31,13 @@ export function initComparatorUI() {
 
   const closeBtn = document.getElementById('comparator-modal-close');
   const closeFooter = document.getElementById('comparator-modal-close-footer');
+  const clearBtn = document.getElementById('comparator-clear-btn');
   const copyBtn = document.getElementById('comparator-copy-btn');
   const swapBtn = document.getElementById('comparator-swap-btn');
 
   closeBtn?.addEventListener('click', closeComparatorModal);
   closeFooter?.addEventListener('click', closeComparatorModal);
+  clearBtn?.addEventListener('click', clearComparatorPanel);
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) closeComparatorModal();
   });
@@ -66,6 +68,19 @@ export function closeComparatorModal() {
     overlay.classList.remove('active', 'closing');
     overlay.setAttribute('aria-hidden', 'true');
   }, 200);
+}
+
+/**
+ * Очистка полей «Было»/«Стало» и превью (кнопка в модалке и сброс всех панелей в шапке).
+ */
+export function clearComparatorPanel() {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+  if (beforeEl) beforeEl.value = '';
+  if (afterEl) afterEl.value = '';
+  updatePreviewImmediate();
 }
 
 function handleSwap() {
