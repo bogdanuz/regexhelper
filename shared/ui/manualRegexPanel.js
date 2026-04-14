@@ -83,6 +83,24 @@ export function initManualRegexPanel(options) {
     return invertButtonId ? document.getElementById(invertButtonId) : null;
   }
 
+  function setInvertButtonVisuallyHidden(hidden) {
+    const btn = getInvertButton();
+    if (!btn) return;
+    if (hidden) {
+      btn.style.visibility = 'hidden';
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0';
+      btn.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('tabindex', '-1');
+    } else {
+      btn.style.visibility = '';
+      btn.style.pointerEvents = '';
+      btn.style.opacity = '';
+      btn.removeAttribute('aria-hidden');
+      btn.removeAttribute('tabindex');
+    }
+  }
+
   function updateInvertButtonVisibility() {
     const btn = getInvertButton();
     if (!btn || !activeTextarea) return;
@@ -90,7 +108,7 @@ export function initManualRegexPanel(options) {
       typeof activeTextarea.selectionStart === 'number' &&
       typeof activeTextarea.selectionEnd === 'number' &&
       activeTextarea.selectionStart !== activeTextarea.selectionEnd;
-    btn.style.display = hasSelection ? '' : 'none';
+    setInvertButtonVisuallyHidden(!hasSelection);
   }
 
   function insertAtStoredPosition(text) {
@@ -178,8 +196,8 @@ export function initManualRegexPanel(options) {
 
   const invertBtn = getInvertButton();
   if (invertBtn) {
-    // По умолчанию кнопка скрыта, пока нет выделения в активном поле
-    invertBtn.style.display = 'none';
+    // Место в разметке резервируется: скрыто через visibility, без display:none (нет «прыжка» шапки)
+    setInvertButtonVisuallyHidden(true);
     invertBtn.addEventListener('click', handleInvertSelectionClick);
     updateInvertButtonVisibility();
   }

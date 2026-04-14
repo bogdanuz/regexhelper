@@ -426,10 +426,10 @@ export function initTesterUI() {
     const brRow = document.createElement('div');
     brRow.className = 'editor-params-row editor-params-row-2';
     brRow.appendChild(
-      createButton('Откр. скобка (', '(', 'Открывающая скобка', 'editor-param-btn-label'),
+      createButton('Откр. скобка [', '[', 'Открывающая квадратная скобка (символьный класс)', 'editor-param-btn-label'),
     );
     brRow.appendChild(
-      createButton('Закр. скобка )', ')', 'Закрывающая скобка', 'editor-param-btn-label'),
+      createButton('Закр. скобка ]', ']', 'Закрывающая квадратная скобка', 'editor-param-btn-label'),
     );
     groupBrackets.appendChild(brRow);
 
@@ -761,6 +761,10 @@ export function initTesterUI() {
   } else {
     if (regexInput) regexInput.addEventListener('input', schedule);
     if (regexInput) regexInput.addEventListener('change', schedule);
+  }
+  if (regexFalseInput) {
+    regexFalseInput.addEventListener('input', schedule);
+    regexFalseInput.addEventListener('change', schedule);
   }
   if (testInput) {
     testInput.addEventListener('input', () => {

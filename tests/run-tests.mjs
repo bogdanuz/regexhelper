@@ -300,6 +300,37 @@ async function runBrowserTests(which) {
           }
         }
 
+        // FALSE поле: пересчёт без повторного ввода тестового текста (реал-тайм)
+        await testerPage.evaluate(() => {
+          const trueInput = document.getElementById('tester-regex-input');
+          const falseInput = document.getElementById('tester-regex-false-input');
+          const testInput = document.getElementById('tester-test-input');
+          if (trueInput) trueInput.value = String.raw`\w+`;
+          if (falseInput) falseInput.value = '';
+          if (testInput) testInput.value = 'foo bar';
+          trueInput?.dispatchEvent(new Event('input', { bubbles: true }));
+          testInput?.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        await testerPage.waitForTimeout(400);
+        const matchInfoBeforeFalse = await testerPage.$eval('#tester-match-info', (el) => el.innerHTML);
+        await testerPage.evaluate(() => {
+          const falseInput = document.getElementById('tester-regex-false-input');
+          if (falseInput) {
+            falseInput.value = 'foo';
+            falseInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        });
+        await testerPage.waitForTimeout(400);
+        const matchInfoAfterFalse = await testerPage.$eval('#tester-match-info', (el) => el.innerHTML);
+        if (matchInfoBeforeFalse === matchInfoAfterFalse) {
+          console.error(
+            'Tester UI: match info should update when only FALSE regex changes (realtime)',
+          );
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: FALSE field triggers realtime match update OK');
+        }
+
         // Инверсия выделенного: кнопка скрыта без выделения и появляется при выделении
         const hasInvertBtnTester = await testerPage.$('#tester-invert-selection-btn');
         if (!hasInvertBtnTester) {
@@ -308,7 +339,7 @@ async function runBrowserTests(which) {
         } else {
           const hiddenNoSelection = await testerPage.$eval(
             '#tester-invert-selection-btn',
-            (el) => el.style.display === 'none',
+            (el) => el.style.visibility === 'hidden',
           );
           if (!hiddenNoSelection) {
             console.error('Tester UI: invert button should be hidden when no selection');
@@ -329,7 +360,7 @@ async function runBrowserTests(which) {
           await testerPage.waitForTimeout(120);
           const visibleWithSelectionTrue = await testerPage.$eval(
             '#tester-invert-selection-btn',
-            (el) => el.style.display !== 'none',
+            (el) => el.style.visibility !== 'hidden',
           );
           if (!visibleWithSelectionTrue) {
             console.error('Tester UI: invert button should be visible when TRUE selection exists');
@@ -360,7 +391,7 @@ async function runBrowserTests(which) {
           await testerPage.waitForTimeout(120);
           const visibleWithSelectionFalse = await testerPage.$eval(
             '#tester-invert-selection-btn',
-            (el) => el.style.display !== 'none',
+            (el) => el.style.visibility !== 'hidden',
           );
           if (!visibleWithSelectionFalse) {
             console.error('Tester UI: invert button should be visible when FALSE selection exists');
@@ -524,7 +555,7 @@ async function runBrowserTests(which) {
             ta.dispatchEvent(new Event('select', { bubbles: true }));
           });
           await editorPage.waitForTimeout(50);
-          const hiddenWhenEmpty = await editorPage.$eval('#editor-invert-selection-btn', (el) => el.style.display === 'none');
+          const hiddenWhenEmpty = await editorPage.$eval('#editor-invert-selection-btn', (el) => el.style.visibility === 'hidden');
           if (!hiddenWhenEmpty) {
             console.error('Editor browser tests: invert button should be hidden when no selection');
             anyFailed = true;
@@ -540,7 +571,7 @@ async function runBrowserTests(which) {
             ta.dispatchEvent(new Event('select', { bubbles: true }));
           });
           await editorPage.waitForTimeout(100);
-          const visibleWithSelection = await editorPage.$eval('#editor-invert-selection-btn', (el) => el.style.display !== 'none');
+          const visibleWithSelection = await editorPage.$eval('#editor-invert-selection-btn', (el) => el.style.visibility !== 'hidden');
           if (!visibleWithSelection) {
             console.error('Editor browser tests: invert button should be visible when text selected');
             anyFailed = true;
