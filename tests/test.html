@@ -902,6 +902,132 @@
             return { pass: !!input && !!output, msg: input && output ? 'Found' : 'missing input/output' };
         });
 
+        // Сравнитель (модалка в шапке рядом с текстовым помощником)
+        testCase('Текст-помощник', 'Сравнитель: getDiffTuples + buildAfterHtml (хвост |c)', async () => {
+            const D = (await import('../tools/comparator/vendor/fastDiff.js')).default;
+            const { getDiffTuples, buildAfterHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('a|b', 'a|b|c');
+            const ok = t.some((x) => x[0] === D.INSERT && x[1] === '|c');
+            const html = buildAfterHtml(t);
+            return { pass: ok && html.includes('comparator-mark-add'), msg: ok ? 'OK' : JSON.stringify(t) };
+        });
+        testCase('Текст-помощник', 'Сравнитель: удаление фрагмента в buildBeforeHtml', async () => {
+            const { getDiffTuples, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('foo|XTRA|baz', 'foo|baz');
+            const html = buildBeforeHtml(t);
+            const del = html.includes('comparator-mark-del');
+            const showsRemoved = html.includes('XTRA');
+            return { pass: del && showsRemoved, msg: del ? 'OK' : html.slice(0, 120) };
+        });
+        testCase('Текст-помощник', 'Сравнитель: замена в середине (b → d)', async () => {
+            const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const before = '(a|b)c';
+            const after = '(a|d)c';
+            const t = getDiffTuples(before, after);
+            const hAfter = buildAfterHtml(t);
+            const hBefore = buildBeforeHtml(t);
+            const hasAdd = hAfter.includes('comparator-mark-add');
+            const hasDel = hBefore.includes('comparator-mark-del');
+            return { pass: hasAdd && hasDel, msg: 'add=' + hasAdd + ' del=' + hasDel };
+        });
+        testCase('Текст-помощник', 'Сравнитель: многострочный паттерн', async () => {
+            const { getDiffTuples, buildAfterHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const nl = String.fromCharCode(10);
+            const b = 'line1' + nl + 'common' + nl + 'line3';
+            const a = b + nl + 'line4';
+            const t = getDiffTuples(b, a);
+            const html = buildAfterHtml(t);
+            return { pass: html.includes('comparator-mark-add') && html.includes('line4'), msg: 'OK' };
+        });
+        testCase('Текст-помощник', 'Сравнитель: длинная «модель» (альтернации)', async () => {
+            const { getDiffTuples, buildAfterHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const oldPart = 'опал и рубин|плод познания';
+            const newPart = oldPart + '|солнечный корт|золотой ворон';
+            const t = getDiffTuples(oldPart, newPart);
+            const html = buildAfterHtml(t);
+            return {
+                pass: html.includes('comparator-mark-add') && html.includes('солнечный корт'),
+                msg: html.includes('солнечный') ? 'OK' : 'no highlight'
+            };
+        });
+        testCase('Текст-помощник', 'Сравнитель: escapeHtml кавычек во вставке', async () => {
+            const { getDiffTuples, buildAfterHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('x', 'x"y"');
+            const html = buildAfterHtml(t);
+            const safe = html.includes('&quot;') && html.includes('comparator-mark-add');
+            return { pass: safe, msg: safe ? 'OK' : html };
+        });
+        testCase('Текст-помощник', 'Сравнитель: buildClipboardTableFragment стили Confluence', async () => {
+            const { getDiffTuples, buildClipboardTableFragment } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('a', 'b');
+            const frag = buildClipboardTableFragment('a', 'b', t);
+            const ok =
+                frag.includes('<table') &&
+                frag.includes('Было') &&
+                frag.includes('Стало') &&
+                frag.includes('#15803d') &&
+                frag.includes('#b91c1c') &&
+                frag.includes('font-weight:700');
+            return { pass: ok, msg: ok ? 'table+colors+bold' : frag.slice(0, 120) };
+        });
+        testCase('Текст-помощник', 'Сравнитель: buildClipboardAfterOnlyFragment только «Стало»', async () => {
+            const { getDiffTuples, buildClipboardAfterOnlyFragment } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('u', 'uv');
+            const frag = buildClipboardAfterOnlyFragment(t);
+            const ok =
+                frag.includes('<table') &&
+                frag.includes('Стало') &&
+                !frag.includes('>Было</th>') &&
+                (frag.match(/<tr/g) || []).length === 1 &&
+                frag.includes('#15803d');
+            return { pass: ok, msg: ok ? 'one row, after highlight' : frag.slice(0, 160) };
+        });
+        testCase('Текст-помощник', 'Сравнитель: пустое «Было», только вставки', async () => {
+            const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('', 'abc');
+            const ha = buildAfterHtml(t);
+            const hb = buildBeforeHtml(t);
+            return {
+                pass: ha.includes('comparator-mark-add') && !hb.includes('comparator-mark-del'),
+                msg: 'after=' + ha.length + ' before=' + hb.length
+            };
+        });
+        testCase('Текст-помощник', 'Сравнитель: пустое «Стало», только удаления', async () => {
+            const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('xyz', '');
+            const ha = buildAfterHtml(t);
+            const hb = buildBeforeHtml(t);
+            return {
+                pass: hb.includes('comparator-mark-del') && ha.trim() === '',
+                msg: hb.includes('del') ? 'OK' : ha + '|' + hb
+            };
+        });
+        testCase('Текст-помощник', 'Сравнитель: равные строки без подсветки', async () => {
+            const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('same|regex', 'same|regex');
+            const ha = buildAfterHtml(t);
+            const hb = buildBeforeHtml(t);
+            return {
+                pass: !ha.includes('comparator-mark') && !hb.includes('comparator-mark'),
+                msg: 'plain OK'
+            };
+        });
+        testCase('Текст-помощник', 'Сравнитель: DOM модалка, поля, превью, копирование, swap', () => {
+            const overlay = document.getElementById('comparator-modal-overlay');
+            const btn = document.getElementById('comparator-btn');
+            const bef = document.getElementById('comparator-before');
+            const aft = document.getElementById('comparator-after');
+            const pb = document.getElementById('comparator-preview-before');
+            const pa = document.getElementById('comparator-preview-after');
+            const copyBtn = document.getElementById('comparator-copy-btn');
+            const copyInc = document.getElementById('comparator-copy-include-before');
+            const swapBtn = document.getElementById('comparator-swap-btn');
+            if (!overlay && !btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
+            const ok = !!(overlay && btn && bef && aft && pb && pa && copyBtn && copyInc && swapBtn);
+            return { pass: ok, msg: ok ? 'Found' : 'missing comparator DOM' };
+        });
+
+
         // ═══════════════════════════════════════════════════════════════
         // QA FIXES (логика после аудита)
         // ═══════════════════════════════════════════════════════════════

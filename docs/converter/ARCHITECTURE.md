@@ -9,7 +9,7 @@
 ## Точка входа
 
 - **index.html** загружает **main.js** (ES-модуль).
-- **main.js** импортирует **tools/converter/app.js**, **tools/editor/app.js**, **tools/visualizer/app.js**, **tools/tester/app.js**, **tools/texthelper/app.js**, а также общие модули (`feedback`, `versionChecker`) и вызывает `initApp()`, `initEditor()`, `initVisualizer()`, `initTester()`, `initTexthelper()` и `initFeedback()`.
+- **main.js** импортирует **tools/converter/app.js**, **tools/editor/app.js**, **tools/visualizer/app.js**, **tools/tester/app.js**, **tools/texthelper/app.js**, **tools/comparator/app.js**, а также общие модули (`feedback`, `versionChecker`) и вызывает `initApp()`, `initEditor()`, `initVisualizer()`, `initTester()`, `initTexthelper()`, `initComparator()` и `initFeedback()`.
 - **app.js** подключает UI (модалки, настройки, панель результата, историю, переключаемую панель триггеров) и логику конвертации.
 
 ## Переключаемая панель триггеров

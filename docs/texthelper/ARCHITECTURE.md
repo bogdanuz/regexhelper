@@ -55,7 +55,8 @@ tools/texthelper/
 ## Тесты
 
 - **tests/texthelper-test.mjs** — Node тесты всех инструментов (60 тестов)
-- **tests/test.html** — браузерные тесты (вкладка «Текст-помощник», 20 тестов)
+- **tests/comparator-test.mjs** — Node тесты **Сравнителя** (diff, HTML, буфер): см. **docs/comparator/ARCHITECTURE.md**
+- **tests/test.html** — браузерные тесты категории «Текст-помощник»: утилиты текстового помощника плюс **Сравнитель** (те же отчётные группы `testCase('Текст-помощник', …)`)
 
 Запуск Node тестов:
 ```bash

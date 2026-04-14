@@ -31,6 +31,7 @@
     <!-- Восстановление глобальных стилей после reset внутри regexper.css -->
     <link rel="stylesheet" href="tools/visualizer/css/regexper-reset.css">
     <link rel="stylesheet" href="tools/texthelper/css/texthelper.css">
+    <link rel="stylesheet" href="tools/comparator/css/comparator.css">
     <link rel="stylesheet" href="tools/tester/css/tester.css">
     <link rel="stylesheet" href="tools/editor/css/editor.css">
 </head>
@@ -59,6 +60,7 @@
                 <a href="#visualizer" class="nav-link">Визуализатор</a>
                 <a href="#history-section" class="nav-link">История</a>
                 <button type="button" class="nav-link nav-link-button" id="texthelper-btn" title="Открыть «Текстовый помощник»">Текстовый помощник</button>
+                <button type="button" class="nav-link nav-link-button" id="comparator-btn" title="Сравнить две версии регулярного выражения и скопировать с форматированием">Сравнитель</button>
             </nav>
 
             <!-- Кнопки действий -->
@@ -706,6 +708,78 @@
             <div class="modal-footer texthelper-modal-footer">
                 <button type="button" class="btn-secondary btn-danger btn-clear" id="texthelper-clear-btn">Очистить</button>
                 <button type="button" class="btn-secondary btn-modal-close" id="texthelper-modal-close-footer">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно: Сравнитель -->
+    <div class="modal-overlay" id="comparator-modal-overlay" aria-hidden="true">
+        <div class="modal modal-texthelper modal-comparator" id="comparator-modal" role="dialog" aria-modal="true" aria-labelledby="comparator-modal-title">
+            <div class="modal-header">
+                <h3 class="modal-title" id="comparator-modal-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"/>
+                        <line x1="8" y1="12" x2="21" y2="12"/>
+                        <line x1="8" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="3.01" y2="6"/>
+                        <line x1="3" y1="12" x2="3.01" y2="12"/>
+                        <line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                    Сравнитель
+                </h3>
+                <button type="button" class="btn-icon btn-close-modal" id="comparator-modal-close" title="Закрыть" aria-label="Закрыть">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body comparator-content">
+                <div class="comparator-workspace">
+                    <div class="comparator-field-wrap">
+                        <div class="comparator-field-header">
+                            <span class="comparator-field-title">Было</span>
+                        </div>
+                        <textarea class="comparator-textarea" id="comparator-before" placeholder="Исходное регулярное выражение…" spellcheck="false"></textarea>
+                    </div>
+                    <div class="comparator-swap-wrap">
+                        <button type="button" class="comparator-swap-btn" id="comparator-swap-btn" title="Поменять «Было» и «Стало» местами">&#x2194;</button>
+                    </div>
+                    <div class="comparator-field-wrap">
+                        <div class="comparator-field-header">
+                            <span class="comparator-field-title">Стало</span>
+                        </div>
+                        <textarea class="comparator-textarea" id="comparator-after" placeholder="Новая версия выражения…" spellcheck="false"></textarea>
+                    </div>
+                </div>
+                <div class="comparator-preview-block">
+                    <div class="comparator-preview-title">Превью</div>
+                    <div class="comparator-preview-scroll">
+                        <table class="comparator-preview-table">
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Было</th>
+                                    <td><div class="comparator-preview-cell" id="comparator-preview-before"></div></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Стало</th>
+                                    <td><div class="comparator-preview-cell" id="comparator-preview-after"></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer comparator-modal-footer">
+                <button type="button" class="btn-secondary btn-modal-close" id="comparator-modal-close-footer">Закрыть</button>
+                <label class="comparator-copy-include-label th-checkbox">
+                    <input type="checkbox" id="comparator-copy-include-before" />
+                    <span>Копировать также строку «Было»</span>
+                </label>
+                <button type="button" class="btn-primary" id="comparator-copy-btn" title="По умолчанию только «Стало»">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Копировать для Confluence
+                </button>
             </div>
         </div>
     </div>

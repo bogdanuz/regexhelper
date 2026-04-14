@@ -23,6 +23,7 @@ const NODE_TESTS = [
   'tests/converter-reference-test.mjs',
   'tests/visualizer-test.mjs',
   'tests/texthelper-test.mjs',
+  'tests/comparator-test.mjs',
   'tests/tester-test.mjs',
   'tests/editor-test.mjs'
 ];

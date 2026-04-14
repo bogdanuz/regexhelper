@@ -1,0 +1,246 @@
+/**
+ * Сравнитель — модалка в стиле текстового помощника
+ */
+
+.modal-comparator.modal-texthelper .modal-body.comparator-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.comparator-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 0 0;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.comparator-workspace {
+  display: grid;
+  grid-template-columns: 1fr 44px 1fr;
+  gap: 16px;
+  padding: 0 36px;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.comparator-field-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+}
+
+.comparator-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.comparator-field-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.comparator-textarea {
+  flex: 1;
+  min-height: 200px;
+  max-height: 320px;
+  padding: 14px 16px;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  line-height: 1.55;
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.comparator-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.comparator-textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.comparator-swap-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 36px;
+}
+
+.comparator-swap-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.comparator-swap-btn:hover {
+  background: rgba(var(--color-primary-rgb), 0.1);
+  transform: scale(1.06);
+}
+
+.comparator-preview-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 36px 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.comparator-preview-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+.comparator-preview-scroll {
+  flex: 1;
+  min-height: 140px;
+  max-height: 36vh;
+  overflow: auto;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  background: var(--color-bg-input);
+}
+
+.comparator-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.comparator-preview-table th {
+  width: 72px;
+  vertical-align: top;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border-default);
+  border-right: 1px solid var(--color-border-default);
+}
+
+.comparator-preview-table tr:last-child th,
+.comparator-preview-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comparator-preview-table td {
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.comparator-preview-cell {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comparator-mark {
+  border-radius: var(--radius-small);
+  padding: 0 1px;
+}
+
+.comparator-mark-del {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.comparator-mark-add {
+  color: var(--color-success);
+  font-weight: 700;
+  background: rgba(52, 211, 153, 0.12);
+}
+
+.comparator-preview-empty {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.comparator-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 36px;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.comparator-modal-footer .btn-modal-close {
+  margin-right: auto;
+}
+
+/* Тот же визуальный язык, что у .th-checkbox (texthelper.css); здесь только подстройка под футер модалки */
+.comparator-copy-include-label.th-checkbox {
+  max-width: min(320px, 100%);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1000px) {
+  .comparator-workspace {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .comparator-swap-wrap {
+    padding: 4px 0;
+    order: 2;
+  }
+
+  .comparator-field-wrap:first-child {
+    order: 1;
+  }
+
+  .comparator-field-wrap:last-child {
+    order: 3;
+  }
+
+  .comparator-swap-btn {
+    transform: rotate(90deg);
+  }
+
+  .comparator-swap-btn:hover {
+    transform: rotate(90deg) scale(1.06);
+  }
+}
+
+@media (max-width: 700px) {
+  .comparator-workspace,
+  .comparator-preview-block,
+  .comparator-modal-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}

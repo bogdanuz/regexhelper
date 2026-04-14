@@ -296,20 +296,24 @@ function initWikiNavigation() {
   const modalBody = modal.querySelector('.modal-body');
   if (!modalBody) return;
 
-  // Навигация по оглавлению
+  // Навигация по оглавлению (позиция относительно .modal-body, не offsetParent цели)
   const navLinks = modal.querySelectorAll('.wiki-nav a');
+  const wikiScrollPadding = 12;
   navLinks.forEach((link) => {
     link.onclick = (e) => {
       e.preventDefault();
-      const targetId = link.getAttribute('href')?.substring(1);
-      if (!targetId) return;
-      const targetSection = modal.querySelector(`#${targetId}`);
-      if (targetSection) {
-        modalBody.scrollTo({
-          top: targetSection.offsetTop - 20,
-          behavior: 'smooth'
-        });
-      }
+      const raw = link.getAttribute('href')?.substring(1);
+      if (!raw) return;
+      const targetSection = modal.querySelector(`#${CSS.escape(raw)}`);
+      if (!targetSection) return;
+      const bodyRect = modalBody.getBoundingClientRect();
+      const elRect = targetSection.getBoundingClientRect();
+      const nextTop =
+        modalBody.scrollTop + (elRect.top - bodyRect.top) - wikiScrollPadding;
+      modalBody.scrollTo({
+        top: Math.max(0, nextTop),
+        behavior: 'smooth'
+      });
     };
   });
 }

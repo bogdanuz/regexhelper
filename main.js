@@ -8,6 +8,7 @@ import { initEditor } from './tools/editor/app.js';
 import { initVisualizer } from './tools/visualizer/app.js';
 import { initTester } from './tools/tester/app.js';
 import { initTexthelper } from './tools/texthelper/app.js';
+import { initComparator } from './tools/comparator/app.js';
 import { initFeedback } from './shared/ui/feedback.js';
 import { initVersionChecker } from './shared/utils/versionChecker.js';
 
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initVisualizer();
     initTester();
     initTexthelper();
+    initComparator();
     initFeedback();
     
     // Проверка обновлений (раз в час)

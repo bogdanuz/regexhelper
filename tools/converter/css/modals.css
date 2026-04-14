@@ -1389,6 +1389,60 @@ body > .inline-popup {
     text-decoration: underline;
 }
 
+/* WIKI: структурированное оглавление */
+.wiki-content .wiki-nav .wiki-toc-title {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 15px;
+}
+
+.wiki-content .wiki-nav .wiki-toc-root {
+    margin: 0;
+    padding: 0;
+}
+
+.wiki-content .wiki-nav .wiki-toc-group {
+    list-style: none;
+    margin-top: 16px;
+}
+
+.wiki-content .wiki-nav .wiki-toc-group:first-child {
+    margin-top: 0;
+}
+
+.wiki-content .wiki-nav .wiki-toc-heading {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+    margin-bottom: 8px;
+}
+
+.wiki-content .wiki-nav .wiki-toc-group > ul {
+    margin: 0;
+    padding-left: 0;
+    border-left: 2px solid var(--color-border-subtle);
+    padding-left: 14px;
+    margin-left: 2px;
+}
+
+.wiki-content .wiki-nav .wiki-toc-group-single {
+    list-style: none;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--color-border-default);
+}
+
+.wiki-content .wiki-nav .wiki-toc-top-link {
+    font-weight: 600;
+}
+
+#wiki-modal .modal-body .wiki-content [id] {
+    scroll-margin-top: 12px;
+}
+
 .wiki-content strong,
 .reglament-content strong {
     color: var(--color-text-primary);
