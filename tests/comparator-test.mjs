@@ -87,7 +87,7 @@ test('buildClipboardUnifiedFragment: не таблица, span + цвета ка
   const frag = buildClipboardUnifiedFragment(t);
   if (frag.includes('<table')) throw new Error('no table');
   if (!frag.includes('<div')) throw new Error('wrapper');
-  if (!frag.includes('font-weight:700')) throw new Error('bold');
+   if (!frag.includes('<strong>')) throw new Error('strong');
   if (!frag.includes('#b91c1c') || !frag.includes('#15803d')) throw new Error('text colors');
   if (!frag.includes('#fef2f2') || !frag.includes('#f0fdf4')) throw new Error('backgrounds');
   if (!frag.includes('<span style=')) throw new Error('span');
@@ -141,6 +141,7 @@ test('равные строки: unified без span-меток', () => {
   const t = getDiffTuples('uv', 'uv');
   const frag = buildClipboardUnifiedFragment(t);
   if (frag.includes('#b91c1c') || frag.includes('#15803d')) throw new Error('no marks when equal');
+  if (frag.includes('<strong>')) throw new Error('no strong when equal');
   if (!frag.includes('uv')) throw new Error('content');
 });
 
