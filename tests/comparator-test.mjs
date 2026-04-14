@@ -82,16 +82,15 @@ test('buildAfterHtml: экранирование < в вставке', () => {
   if (html.includes('<b>') || !html.includes('&lt;b&gt;')) throw new Error(html);
 });
 
-test('buildClipboardUnifiedFragment: не таблица, жирные метки и фоны', () => {
+test('buildClipboardUnifiedFragment: не таблица, span + цвета как у старого clipboard', () => {
   const t = getDiffTuples('a', 'b');
   const frag = buildClipboardUnifiedFragment(t);
   if (frag.includes('<table')) throw new Error('no table');
   if (!frag.includes('<div')) throw new Error('wrapper');
   if (!frag.includes('font-weight:700')) throw new Error('bold');
-  const hasDelBg = frag.includes('#fecaca');
-  const hasInsBg = frag.includes('#bbf7d0');
-  if (!(hasDelBg && hasInsBg)) throw new Error('expected del+ins backgrounds');
-  if (!frag.includes('<strong')) throw new Error('strong');
+  if (!frag.includes('#b91c1c') || !frag.includes('#15803d')) throw new Error('text colors');
+  if (!frag.includes('#fef2f2') || !frag.includes('#f0fdf4')) throw new Error('backgrounds');
+  if (!frag.includes('<span style=')) throw new Error('span');
 });
 
 test('buildClipboardUnifiedFragment: экранирование вставки', () => {
@@ -138,10 +137,10 @@ test('escapeHtml амперсанд', () => {
   if (!ha.includes('&amp;')) throw new Error(ha);
 });
 
-test('равные строки: unified без strong', () => {
+test('равные строки: unified без span-меток', () => {
   const t = getDiffTuples('uv', 'uv');
   const frag = buildClipboardUnifiedFragment(t);
-  if (frag.includes('<strong')) throw new Error('no marks when equal');
+  if (frag.includes('#b91c1c') || frag.includes('#15803d')) throw new Error('no marks when equal');
   if (!frag.includes('uv')) throw new Error('content');
 });
 

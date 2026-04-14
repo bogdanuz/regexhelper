@@ -65,13 +65,15 @@ export function buildAfterHtml(tuples, esc = escapeHtml) {
   return parts.join('');
 }
 
-/** Удаления: жирный + контрастный фон (Confluence часто сохраняет &lt;strong&gt; + инлайн-стили). */
+/**
+ * Те же инлайн-стили, что у табличного копирования до склейки (Confluence сохранял цвет через &lt;span&gt;).
+ * Удаления раньше были font-weight:400 — ставим 700, чтобы и красное/зелёное, и жирность совпадали с ожиданием.
+ */
 const CLIP_MERGED_DEL_OPEN =
-  '<strong style="font-weight:700;color:#991b1b;background-color:#fecaca;padding:2px 5px;border-radius:4px;display:inline;">';
-/** Вставки */
+  '<span style="color:#b91c1c;font-weight:700;background-color:#fef2f2;border-radius:2px;">';
 const CLIP_MERGED_INS_OPEN =
-  '<strong style="font-weight:700;color:#166534;background-color:#bbf7d0;padding:2px 5px;border-radius:4px;display:inline;">';
-const CLIP_MERGED_MARK_CLOSE = '</strong>';
+  '<span style="color:#15803d;font-weight:700;background-color:#f0fdf4;border-radius:2px;">';
+const CLIP_MERGED_MARK_CLOSE = '</span>';
 
 /**
  * Один поток HTML: порядок сегментов как в diff, без дублирования «Было»/«Стало».

@@ -965,10 +965,10 @@
                 !frag.includes('<table') &&
                 frag.includes('<div') &&
                 frag.includes('font-weight:700') &&
-                frag.includes('<strong') &&
-                frag.includes('#fecaca') &&
-                frag.includes('#bbf7d0');
-            return { pass: ok, msg: ok ? 'unified+bold+bg' : frag.slice(0, 120) };
+                frag.includes('<span style=') &&
+                frag.includes('#b91c1c') &&
+                frag.includes('#15803d');
+            return { pass: ok, msg: ok ? 'unified+span+colors' : frag.slice(0, 120) };
         });
         testCase('Текст-помощник', 'Сравнитель: пустое «Было», только вставки', async () => {
             const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
