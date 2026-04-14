@@ -201,13 +201,6 @@
   margin-right: auto;
 }
 
-/* Тот же визуальный язык, что у .th-checkbox (texthelper.css); здесь только подстройка под футер модалки */
-.comparator-copy-include-label.th-checkbox {
-  max-width: min(320px, 100%);
-  margin: 0;
-  flex-shrink: 0;
-}
-
 @media (max-width: 1000px) {
   .comparator-workspace {
     grid-template-columns: 1fr;

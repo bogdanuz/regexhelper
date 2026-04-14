@@ -1,14 +1,12 @@
 # Сравнитель — архитектура
 
-Инструмент для **посимвольного сравнения двух версий одного regex**: подсветка удалённого (строка «Было») и добавленного (строка «Стало»), превью в виде таблицы и копирование **HTML-таблицы** с инлайн-стилями для вставки в Confluence (визуальный редактор). В буфер по умолчанию уходит **одна строка «Стало»**; полная двухстрочная таблица — при включённом чекбоксе в подвале модалки (`#comparator-copy-include-before`).
+Инструмент для **посимвольного сравнения двух версий одного regex**: в **превью** — таблица с двумя строками «Было» и «Стало» (подсветка удалённого и добавленного). В **буфер обмена** для Confluence попадает **один склееный блок** (не таблица): порядок сегментов как в diff, общий текст без дублирования целых полей; удалённые фрагменты — `<strong>` + красноватый текст и фон, вставки — `<strong>` + зелёный текст и фон, неизменённое — обычный текст. Plain — те же сегменты подряд (`buildMergedPlain`).
 
 ## Назначение
 
 - Поля **Было** / **Стало** — редактируемые `textarea`.
 - **Превью** — обновляется с debounce (~280 ms); diff через алгоритм из vendored **fast-diff** (на базе Google diff-match-patch, Apache 2.0): `tools/comparator/vendor/fastDiff.js`.
-- **Копировать для Confluence** — `ClipboardItem` с `text/html` и `text/plain`.
-  - По умолчанию (чекбокс **«Копировать также строку „Было“»** снят): в HTML — однострочная таблица только с **«Стало»** и подсветкой вставок; в plain — только текст новой версии (`buildClipboardAfterOnlyFragment`, `buildPlainAfterOnly`).
-  - Если чекбокс **включён**: как раньше — две строки **«Было»** и **«Стало»** в таблице; plain — `Было:\n…\n\nСтало:\n…` (`buildClipboardTableFragment`, `buildPlainFallback`).
+- **Копировать для Confluence** — одна кнопка; `ClipboardItem` с `text/html` (обёртка `<div>` + моноширинный стиль) и `text/plain` (склееный текст).
 
 ## Структура
 
@@ -16,7 +14,7 @@
 tools/comparator/
 ├── app.js                 # initComparator(), кнопка #comparator-btn
 ├── logic/
-│   └── diffRender.js      # getDiffTuples, build*Html, buildClipboardTableFragment, buildClipboardAfterOnlyFragment, buildPlain*, escapeHtml
+│   └── diffRender.js      # getDiffTuples, buildBeforeHtml, buildAfterHtml, buildClipboardUnifiedFragment, buildMergedPlain, buildMergedClipboardInnerHtml, escapeHtml
 ├── ui/
 │   └── comparatorUI.js    # модалка, swap, превью, копирование
 ├── css/
@@ -35,4 +33,4 @@ tools/comparator/
 ## Разметка превью и буфера
 
 - В превью классы: `comparator-mark-del`, `comparator-mark-add` (цвета темы сайта).
-- В буфере для светлого фона: инлайн `color` / `background-color` / для вставок `font-weight:700`.
+- В буфере: инлайн-стили на `<strong>` — `font-weight:700`, контрастные `color` и `background-color` для лучшей совместимости с визуальным редактором Confluence.

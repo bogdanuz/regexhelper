@@ -1,6 +1,6 @@
 /**
  * Diff двух строк и HTML для превью / буфера обмена (Confluence).
- * Полная таблица «Было»+«Стало» или только «Стало» — см. buildClipboardTableFragment / buildClipboardAfterOnlyFragment.
+ * Превью — две строки «Было»/«Стало»; копирование — один склееный поток с подсветкой (buildClipboardUnifiedFragment).
  */
 
 import diff from '../vendor/fastDiff.js';
@@ -65,30 +65,26 @@ export function buildAfterHtml(tuples, esc = escapeHtml) {
   return parts.join('');
 }
 
-/** Инлайн-стили для вставки на светлый фон (Confluence). */
-const CLIP_DEL_OPEN =
-  '<span style="color:#b91c1c;font-weight:400;background-color:#fef2f2;border-radius:2px;">';
-const CLIP_ADD_OPEN =
-  '<span style="color:#15803d;font-weight:700;background-color:#f0fdf4;border-radius:2px;">';
-const CLIP_SPAN_CLOSE = '</span>';
+/** Удаления: жирный + контрастный фон (Confluence часто сохраняет &lt;strong&gt; + инлайн-стили). */
+const CLIP_MERGED_DEL_OPEN =
+  '<strong style="font-weight:700;color:#991b1b;background-color:#fecaca;padding:2px 5px;border-radius:4px;display:inline;">';
+/** Вставки */
+const CLIP_MERGED_INS_OPEN =
+  '<strong style="font-weight:700;color:#166534;background-color:#bbf7d0;padding:2px 5px;border-radius:4px;display:inline;">';
+const CLIP_MERGED_MARK_CLOSE = '</strong>';
 
-function getClipboardTableStyles() {
-  const mono =
-    "font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;";
-  const thStyle =
-    'vertical-align:top;padding:10px 12px;background:#f3f4f6;border:1px solid #e5e7eb;font-weight:600;color:#111827;width:88px;';
-  const tdStyle = `vertical-align:top;padding:10px 12px;border:1px solid #e5e7eb;background:#ffffff;color:#111827;${mono}`;
-  const tableStyle = 'border-collapse:collapse;width:100%;max-width:100%;table-layout:fixed;';
-  return { thStyle, tdStyle, tableStyle };
-}
-
-export function buildBeforeClipboardHtml(tuples, esc = escapeHtml) {
+/**
+ * Один поток HTML: порядок сегментов как в diff, без дублирования «Было»/«Стало».
+ * @param {Array<[number, string]>} tuples
+ */
+export function buildMergedClipboardInnerHtml(tuples, esc = escapeHtml) {
   const parts = [];
   for (const [op, text] of tuples) {
     if (!text) continue;
-    if (op === diff.INSERT) continue;
     if (op === diff.DELETE) {
-      parts.push(`${CLIP_DEL_OPEN}${esc(text)}${CLIP_SPAN_CLOSE}`);
+      parts.push(`${CLIP_MERGED_DEL_OPEN}${esc(text)}${CLIP_MERGED_MARK_CLOSE}`);
+    } else if (op === diff.INSERT) {
+      parts.push(`${CLIP_MERGED_INS_OPEN}${esc(text)}${CLIP_MERGED_MARK_CLOSE}`);
     } else {
       parts.push(esc(text));
     }
@@ -96,55 +92,23 @@ export function buildBeforeClipboardHtml(tuples, esc = escapeHtml) {
   return parts.join('');
 }
 
-export function buildAfterClipboardHtml(tuples, esc = escapeHtml) {
+/**
+ * Фрагмент для rich paste: моноширинный блок, без таблицы.
+ */
+export function buildClipboardUnifiedFragment(tuples, esc = escapeHtml) {
+  const mono =
+    "font-family:Consolas,'Courier New',monospace;font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:#111827;";
+  const inner = buildMergedClipboardInnerHtml(tuples, esc);
+  return `<div style="${mono}">${inner}</div>`;
+}
+
+/**
+ * Plain: те же сегменты подряд (удалённое и добавленное оба видны в одной строке символов).
+ */
+export function buildMergedPlain(tuples) {
   const parts = [];
-  for (const [op, text] of tuples) {
-    if (!text) continue;
-    if (op === diff.DELETE) continue;
-    if (op === diff.INSERT) {
-      parts.push(`${CLIP_ADD_OPEN}${esc(text)}${CLIP_SPAN_CLOSE}`);
-    } else {
-      parts.push(esc(text));
-    }
+  for (const [, text] of tuples) {
+    if (text) parts.push(text);
   }
   return parts.join('');
-}
-
-/**
- * Полный HTML-фрагмент: таблица для rich paste.
- * @param {string} beforePlain
- * @param {string} afterPlain
- * @param {Array<[number, string]>} tuples
- */
-export function buildClipboardTableFragment(beforePlain, afterPlain, tuples) {
-  const cellInnerBefore = buildBeforeClipboardHtml(tuples);
-  const cellInnerAfter = buildAfterClipboardHtml(tuples);
-  const { thStyle, tdStyle, tableStyle } = getClipboardTableStyles();
-
-  return `<table style="${tableStyle}" cellpadding="0" cellspacing="0"><tbody>
-<tr><th style="${thStyle}">Было</th><td style="${tdStyle}">${cellInnerBefore}</td></tr>
-<tr><th style="${thStyle}">Стало</th><td style="${tdStyle}">${cellInnerAfter}</td></tr>
-</tbody></table>`;
-}
-
-/**
- * Таблица для Confluence: только строка «Стало» (подсветка вставок как в полной таблице).
- * @param {Array<[number, string]>} tuples
- */
-export function buildClipboardAfterOnlyFragment(tuples) {
-  const cellInnerAfter = buildAfterClipboardHtml(tuples);
-  const { thStyle, tdStyle, tableStyle } = getClipboardTableStyles();
-
-  return `<table style="${tableStyle}" cellpadding="0" cellspacing="0"><tbody>
-<tr><th style="${thStyle}">Стало</th><td style="${tdStyle}">${cellInnerAfter}</td></tr>
-</tbody></table>`;
-}
-
-export function buildPlainFallback(beforePlain, afterPlain) {
-  return `Было:\n${beforePlain ?? ''}\n\nСтало:\n${afterPlain ?? ''}`;
-}
-
-/** Plain при копировании только «Стало» — без блока «Было:». */
-export function buildPlainAfterOnly(afterPlain) {
-  return afterPlain ?? '';
 }

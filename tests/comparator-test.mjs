@@ -5,12 +5,11 @@
 import diff from '../tools/comparator/vendor/fastDiff.js';
 import {
   getDiffTuples,
-  buildPlainFallback,
-  buildPlainAfterOnly,
+  buildMergedPlain,
   buildBeforeHtml,
   buildAfterHtml,
-  buildClipboardTableFragment,
-  buildClipboardAfterOnlyFragment,
+  buildClipboardUnifiedFragment,
+  buildMergedClipboardInnerHtml,
   escapeHtml
 } from '../tools/comparator/logic/diffRender.js';
 
@@ -43,18 +42,15 @@ test('getDiffTuples: обе пустые', () => {
   if (t.length !== 0) throw new Error(String(t.length));
 });
 
-test('buildPlainFallback', () => {
-  const plain = buildPlainFallback('old', 'new');
-  if (!plain.includes('Было:') || !plain.includes('old') || !plain.includes('Стало:') || !plain.includes('new')) {
-    throw new Error(plain);
-  }
+test('buildMergedPlain: порядок сегментов без дублирования', () => {
+  const t = getDiffTuples('old', 'new');
+  const p = buildMergedPlain(t);
+  if (!p.includes('old') || !p.includes('new')) throw new Error(p);
+  if (p.includes('Было:') || p.includes('Стало:')) throw new Error('no labels');
 });
 
-test('buildPlainAfterOnly: без блока «Было»', () => {
-  if (buildPlainAfterOnly('pat') !== 'pat') throw new Error('text');
-  if (buildPlainAfterOnly('') !== '') throw new Error('empty');
-  if (buildPlainAfterOnly(null) !== '') throw new Error('null');
-  if (buildPlainAfterOnly('x').includes('Было')) throw new Error('no label');
+test('buildMergedPlain: пустые строки', () => {
+  if (buildMergedPlain([]) !== '') throw new Error('empty tuples');
 });
 
 test('escapeHtml', () => {
@@ -86,30 +82,31 @@ test('buildAfterHtml: экранирование < в вставке', () => {
   if (html.includes('<b>') || !html.includes('&lt;b&gt;')) throw new Error(html);
 });
 
-test('buildClipboardTableFragment: таблица и светлые стили', () => {
+test('buildClipboardUnifiedFragment: не таблица, жирные метки и фоны', () => {
   const t = getDiffTuples('a', 'b');
-  const frag = buildClipboardTableFragment('a', 'b', t);
-  if (!frag.includes('<table') || !frag.includes('Было') || !frag.includes('Стало')) throw new Error('structure');
-  if (!frag.includes('#15803d') || !frag.includes('#b91c1c')) throw new Error('clipboard colors');
+  const frag = buildClipboardUnifiedFragment(t);
+  if (frag.includes('<table')) throw new Error('no table');
+  if (!frag.includes('<div')) throw new Error('wrapper');
+  if (!frag.includes('font-weight:700')) throw new Error('bold');
+  const hasDelBg = frag.includes('#fecaca');
+  const hasInsBg = frag.includes('#bbf7d0');
+  if (!(hasDelBg && hasInsBg)) throw new Error('expected del+ins backgrounds');
+  if (!frag.includes('<strong')) throw new Error('strong');
 });
 
-test('buildClipboardTableFragment: экранирование вставки', () => {
+test('buildClipboardUnifiedFragment: экранирование вставки', () => {
   const tuples = [
     [diff.EQUAL, 'ok'],
     [diff.INSERT, '<tag>']
   ];
-  const frag = buildClipboardTableFragment('ok', 'ok<tag>', tuples);
+  const frag = buildClipboardUnifiedFragment(tuples);
   if (!frag.includes('&lt;tag&gt;')) throw new Error('expected escaped insert');
 });
 
-test('buildClipboardAfterOnlyFragment: одна строка «Стало», без «Было»', () => {
-  const t = getDiffTuples('a', 'ab');
-  const frag = buildClipboardAfterOnlyFragment(t);
-  if (frag.includes('>Было</th>')) throw new Error('must not include Было row');
-  if (!frag.includes('>Стало</th>')) throw new Error('Стало header');
-  const trCount = (frag.match(/<tr/g) || []).length;
-  if (trCount !== 1) throw new Error(`expected 1 tr, got ${trCount}`);
-  if (!frag.includes('#15803d')) throw new Error('insert highlight color');
+test('buildMergedClipboardInnerHtml: нет подписей Было/Стало', () => {
+  const t = getDiffTuples('x', 'y');
+  const inner = buildMergedClipboardInnerHtml(t);
+  if (inner.includes('Было') || inner.includes('Стало')) throw new Error(inner);
 });
 
 test('замена в середине: и del и add', () => {
@@ -141,10 +138,11 @@ test('escapeHtml амперсанд', () => {
   if (!ha.includes('&amp;')) throw new Error(ha);
 });
 
-test('buildClipboard: жирный для вставок', () => {
-  const t = getDiffTuples('u', 'uv');
-  const frag = buildClipboardTableFragment('u', 'uv', t);
-  if (!frag.includes('font-weight:700')) throw new Error('bold');
+test('равные строки: unified без strong', () => {
+  const t = getDiffTuples('uv', 'uv');
+  const frag = buildClipboardUnifiedFragment(t);
+  if (frag.includes('<strong')) throw new Error('no marks when equal');
+  if (!frag.includes('uv')) throw new Error('content');
 });
 
 console.log(`Сравнитель (Node): ${passed} passed, ${failed} failed`);

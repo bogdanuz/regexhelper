@@ -957,30 +957,18 @@
             const safe = html.includes('&quot;') && html.includes('comparator-mark-add');
             return { pass: safe, msg: safe ? 'OK' : html };
         });
-        testCase('Текст-помощник', 'Сравнитель: buildClipboardTableFragment стили Confluence', async () => {
-            const { getDiffTuples, buildClipboardTableFragment } = await import('../tools/comparator/logic/diffRender.js');
+        testCase('Текст-помощник', 'Сравнитель: buildClipboardUnifiedFragment склейка + bold', async () => {
+            const { getDiffTuples, buildClipboardUnifiedFragment } = await import('../tools/comparator/logic/diffRender.js');
             const t = getDiffTuples('a', 'b');
-            const frag = buildClipboardTableFragment('a', 'b', t);
+            const frag = buildClipboardUnifiedFragment(t);
             const ok =
-                frag.includes('<table') &&
-                frag.includes('Было') &&
-                frag.includes('Стало') &&
-                frag.includes('#15803d') &&
-                frag.includes('#b91c1c') &&
-                frag.includes('font-weight:700');
-            return { pass: ok, msg: ok ? 'table+colors+bold' : frag.slice(0, 120) };
-        });
-        testCase('Текст-помощник', 'Сравнитель: buildClipboardAfterOnlyFragment только «Стало»', async () => {
-            const { getDiffTuples, buildClipboardAfterOnlyFragment } = await import('../tools/comparator/logic/diffRender.js');
-            const t = getDiffTuples('u', 'uv');
-            const frag = buildClipboardAfterOnlyFragment(t);
-            const ok =
-                frag.includes('<table') &&
-                frag.includes('Стало') &&
-                !frag.includes('>Было</th>') &&
-                (frag.match(/<tr/g) || []).length === 1 &&
-                frag.includes('#15803d');
-            return { pass: ok, msg: ok ? 'one row, after highlight' : frag.slice(0, 160) };
+                !frag.includes('<table') &&
+                frag.includes('<div') &&
+                frag.includes('font-weight:700') &&
+                frag.includes('<strong') &&
+                frag.includes('#fecaca') &&
+                frag.includes('#bbf7d0');
+            return { pass: ok, msg: ok ? 'unified+bold+bg' : frag.slice(0, 120) };
         });
         testCase('Текст-помощник', 'Сравнитель: пустое «Было», только вставки', async () => {
             const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
@@ -1020,10 +1008,9 @@
             const pb = document.getElementById('comparator-preview-before');
             const pa = document.getElementById('comparator-preview-after');
             const copyBtn = document.getElementById('comparator-copy-btn');
-            const copyInc = document.getElementById('comparator-copy-include-before');
             const swapBtn = document.getElementById('comparator-swap-btn');
             if (!overlay && !btn) return { pass: true, msg: 'Skipped (open index.html for DOM)' };
-            const ok = !!(overlay && btn && bef && aft && pb && pa && copyBtn && copyInc && swapBtn);
+            const ok = !!(overlay && btn && bef && aft && pb && pa && copyBtn && swapBtn);
             return { pass: ok, msg: ok ? 'Found' : 'missing comparator DOM' };
         });
 

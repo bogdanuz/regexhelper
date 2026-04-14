@@ -1,15 +1,13 @@
 /**
- * Сравнитель: две версии regex, превью diff, копирование для Confluence (по умолчанию только «Стало», опционально с «Было»).
+ * Сравнитель: две версии regex, превью diff, копирование склееного diff для Confluence.
  */
 
 import {
   getDiffTuples,
   buildBeforeHtml,
   buildAfterHtml,
-  buildClipboardTableFragment,
-  buildClipboardAfterOnlyFragment,
-  buildPlainFallback,
-  buildPlainAfterOnly
+  buildClipboardUnifiedFragment,
+  buildMergedPlain
 } from '../logic/diffRender.js';
 import { showSuccess, showError } from '../../../shared/ui/notifications.js';
 
@@ -99,14 +97,9 @@ async function handleCopy() {
   const before = beforeEl?.value ?? '';
   const after = afterEl?.value ?? '';
   const tuples = getDiffTuples(before, after);
-  const includeBefore =
-    document.getElementById('comparator-copy-include-before')?.checked ?? false;
-
-  const htmlFragment = includeBefore
-    ? buildClipboardTableFragment(before, after, tuples)
-    : buildClipboardAfterOnlyFragment(tuples);
+  const htmlFragment = buildClipboardUnifiedFragment(tuples);
   const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${htmlFragment}</body></html>`;
-  const plain = includeBefore ? buildPlainFallback(before, after) : buildPlainAfterOnly(after);
+  const plain = buildMergedPlain(tuples);
 
   try {
     if (navigator.clipboard && window.ClipboardItem) {
@@ -116,11 +109,7 @@ async function handleCopy() {
           'text/plain': new Blob([plain], { type: 'text/plain' })
         })
       ]);
-      showSuccess(
-        includeBefore
-          ? 'Таблица «Было» и «Стало» скопирована'
-          : 'Скопировано только «Стало»'
-      );
+      showSuccess('Скопировано для Confluence');
       return;
     }
   } catch {
@@ -129,11 +118,7 @@ async function handleCopy() {
 
   try {
     await navigator.clipboard.writeText(plain);
-    showSuccess(
-      includeBefore
-        ? 'Скопирован только текст «Было» / «Стало» (HTML недоступен в этом браузере)'
-        : 'Скопирован только текст «Стало» (HTML недоступен в этом браузере)'
-    );
+    showSuccess('Скопирован только текст (HTML недоступен в этом браузере)');
   } catch {
     showError('Не удалось скопировать');
   }
