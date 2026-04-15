@@ -211,6 +211,7 @@ function applyResult(
       regexErrorEl.hidden = false;
     }
     if (regexWrap) regexWrap.classList.add('tester-has-error');
+    if (regexWrap) regexWrap.classList.add('tester-regex-show-overlay');
     if (showToast) showError(displayMessage);
   };
   /** Только под полем regex (не под тестовым текстом), одно сообщение. */
@@ -221,12 +222,14 @@ function applyResult(
       regexErrorEl.hidden = false;
     }
     if (regexWrap) regexWrap.classList.add('tester-has-error');
+    if (regexWrap) regexWrap.classList.add('tester-regex-show-overlay');
     if (showToast) showError(displayMessage);
   };
   const clearError = () => {
     if (errorEl) errorEl.hidden = true;
     if (regexErrorEl) regexErrorEl.hidden = true;
     if (regexWrap) regexWrap.classList.remove('tester-has-error');
+    if (regexWrap) regexWrap.classList.remove('tester-regex-show-overlay');
   };
   const setRegexOverlay = (html) => {
     if (regexOverlayLayer) regexOverlayLayer.innerHTML = html;
@@ -700,6 +703,7 @@ export function initTesterUI() {
         }
         if (errorEl) errorEl.hidden = true;
         if (regexWrap) regexWrap.classList.add('tester-has-error');
+        if (regexWrap) regexWrap.classList.add('tester-regex-show-overlay');
         if (regexOverlayLayer) {
           regexOverlayLayer.innerHTML = buildRegexOverlayHtml(pattern, validation.errorIndices);
         }
@@ -709,6 +713,7 @@ export function initTesterUI() {
       }
       if (regexErrorEl) regexErrorEl.hidden = true;
       if (regexWrap) regexWrap.classList.remove('tester-has-error');
+      if (regexWrap) regexWrap.classList.remove('tester-regex-show-overlay');
       if (regexOverlayLayer) regexOverlayLayer.innerHTML = escapeHtml(pattern);
 
       const falsePatternRaw = regexFalseInput?.value ?? '';
@@ -862,6 +867,7 @@ export function initTesterUI() {
       if (errorEl) errorEl.hidden = true;
       if (regexErrorEl) regexErrorEl.hidden = true;
       if (regexWrap) regexWrap.classList.remove('tester-has-error');
+      if (regexWrap) regexWrap.classList.remove('tester-regex-show-overlay');
       if (regexOverlayLayer) regexOverlayLayer.innerHTML = '';
       hideSelectionStats();
       showSuccess('Тестер очищен');

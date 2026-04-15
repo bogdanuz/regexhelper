@@ -332,6 +332,143 @@ async function runBrowserTests(which) {
           console.log('Tester UI: FALSE field triggers realtime match update OK');
         }
 
+        // Регрессия UX: длинная вставка в TRUE не должна ломать позиционирование каретки
+        const longTruePattern = [
+          'урцевел|урсофокус|метроксидин|метроксидин дента|дентадез|дентесгель|бетанехол|bethanechol|декспантель|',
+          'dexpantel|ивинак|ivinak|никофренон пластырь|nikofrenon пластырь|quit smoking пластырь|пластырь никофренон|пластырь nikofrenon|',
+          'пластырь quit smoking|никвитин пластырь|пластырь никвитин|пластырь niquitin|niquitin пластырь|breztri aerosphere|брезтри аэросфера|респикомб|respicomb|',
+          'айрсупра|airsupra|тримбоу|trimbow|депренил|deprenyl|элдеприл|eldepryl|блиссель|blissel|бацидерм|baciderm|',
+          'аклиф|',
+          'aklief|',
+          'акнетрент|',
+          'aknetrent|',
+          'трифаротен|',
+          'trifarotene|',
+          'лидест|',
+          'lidest|',
+          'эстет-а-тет|',
+          'estet-a-tet|',
+          'эстет а тет|',
+          'estet a tet|',
+          'анеста-а|',
+          'анеста а|',
+          'anesta a|',
+          'дабиксом|',
+          'dabixom|',
+          'семуглин|',
+          'semuglin|',
+          'инсудайв|',
+          'insudive|',
+          'амеглутар|',
+          'ameglutar|',
+          'сеглурия',
+          'segluriya||',
+          'селмиджи',
+          'selmiji|',
+          'семальтара',
+          'semaltara|',
+          'семвелика',
+          'semvelica',
+          'вилдарил',
+          'vildaril',
+          '|',
+        ].join('\n');
+
+        await testerPage.evaluate((value) => {
+          const ta = document.getElementById('tester-regex-input');
+          if (!ta) return;
+          ta.value = value;
+          ta.focus();
+          ta.setSelectionRange(value.length, value.length);
+          ta.dispatchEvent(new Event('input', { bubbles: true }));
+        }, longTruePattern);
+        await testerPage.waitForTimeout(120);
+
+        const endCaretState = await testerPage.$eval('#tester-regex-input', (ta) => ({
+          valueLength: ta.value.length,
+          start: ta.selectionStart,
+          end: ta.selectionEnd,
+        }));
+        if (
+          endCaretState.start !== endCaretState.valueLength ||
+          endCaretState.end !== endCaretState.valueLength
+        ) {
+          console.error('Tester UI: caret should stay at end after long TRUE paste/insert', endCaretState);
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: caret remains at end for long TRUE content OK');
+        }
+
+        const midCaretState = await testerPage.evaluate(() => {
+          const ta = document.getElementById('tester-regex-input');
+          if (!ta) return null;
+          const target = ta.value.indexOf('семуглин|') + 'семуглин|'.length;
+          ta.focus();
+          ta.setSelectionRange(target, target);
+          const start = Math.max(0, target - 'семуглин|'.length);
+          const end = target;
+          const selected = ta.value.slice(start, end);
+          return { target, start: ta.selectionStart, end: ta.selectionEnd, selected };
+        });
+        if (!midCaretState) {
+          console.error('Tester UI: unable to evaluate mid-caret state in TRUE input');
+          anyFailed = true;
+        } else if (midCaretState.start !== midCaretState.target || midCaretState.end !== midCaretState.target) {
+          console.error('Tester UI: caret should stay at requested middle position in long TRUE input', midCaretState);
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: caret remains at requested middle position in long TRUE input OK');
+        }
+
+        // Регрессия UX: выделение кириллицы в TRUE должно возвращать ожидаемый фрагмент
+        const cyrillicSelectionState = await testerPage.evaluate(() => {
+          const ta = document.getElementById('tester-regex-input');
+          if (!ta) return null;
+          const chunk = 'семуглин|';
+          const start = ta.value.indexOf(chunk);
+          if (start < 0) return { found: false };
+          const end = start + chunk.length;
+          ta.focus();
+          ta.setSelectionRange(start, end);
+          return {
+            found: true,
+            selectedText: ta.value.slice(ta.selectionStart, ta.selectionEnd),
+            selectedLength: ta.selectionEnd - ta.selectionStart,
+            expectedLength: chunk.length,
+          };
+        });
+        if (!cyrillicSelectionState || !cyrillicSelectionState.found) {
+          console.error('Tester UI: unable to locate кириллический фрагмент для selection regression');
+          anyFailed = true;
+        } else if (
+          cyrillicSelectionState.selectedText !== 'семуглин|' ||
+          cyrillicSelectionState.selectedLength !== cyrillicSelectionState.expectedLength
+        ) {
+          console.error('Tester UI: cyrillic selection regression in TRUE input', cyrillicSelectionState);
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: cyrillic selection in TRUE input remains stable OK');
+        }
+
+        // Проверка сохранения inline-подсветки в тестовом тексте после изменений TRUE режима
+        await testerPage.evaluate(() => {
+          const trueInput = document.getElementById('tester-regex-input');
+          const testInput = document.getElementById('tester-test-input');
+          if (!trueInput || !testInput) return;
+          trueInput.value = 'семуглин|semuglin';
+          testInput.value = 'семуглин semuglin';
+          trueInput.dispatchEvent(new Event('input', { bubbles: true }));
+          testInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        await testerPage.waitForTimeout(350);
+        const highlightHtml = await testerPage.$eval('#tester-highlight-layer', (el) => el.innerHTML || '');
+        if (!highlightHtml.includes('tester-hl-full')) {
+          console.error('Tester UI: inline highlight in test text should remain active');
+          anyFailed = true;
+        } else {
+          console.log('Tester UI: inline highlight in test text remains active OK');
+        }
+
         // Инверсия выделенного: кнопка скрыта без выделения и появляется при выделении
         const hasInvertBtnTester = await testerPage.$('#tester-invert-selection-btn');
         if (!hasInvertBtnTester) {
