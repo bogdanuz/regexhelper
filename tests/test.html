@@ -970,6 +970,21 @@
                 frag.includes('#15803d');
             return { pass: ok, msg: ok ? 'unified+span+colors' : frag.slice(0, 120) };
         });
+        testCase('Текст-помощник', 'Сравнитель: buildMergedPlain без лишнего пробела (DEL+INS)', async () => {
+            const { getDiffTuples, buildMergedPlain } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('ручная кладь|x', 'ручн.{0,3}кладь|x');
+            const p = buildMergedPlain(t);
+            const ok = !p.includes('ручная .{0,3}') && p.includes('ручная.{0,3}');
+            return { pass: ok, msg: ok ? 'OK' : p.slice(0, 80) };
+        });
+        testCase('Текст-помощник', 'Сравнитель: buildClipboardUnifiedFragment — удаление без пробела перед вставкой', async () => {
+            const { getDiffTuples, buildClipboardUnifiedFragment } = await import('../tools/comparator/logic/diffRender.js');
+            const t = getDiffTuples('ручная кладь|x', 'ручн.{0,3}кладь|x');
+            const frag = buildClipboardUnifiedFragment(t);
+            const badSpaceInDel = frag.includes('ая </strong>');
+            const hasInsert = frag.includes('.{0,3}</strong>');
+            return { pass: !badSpaceInDel && hasInsert, msg: badSpaceInDel ? frag.slice(0, 220) : 'OK' };
+        });
         testCase('Текст-помощник', 'Сравнитель: пустое «Было», только вставки', async () => {
             const { getDiffTuples, buildAfterHtml, buildBeforeHtml } = await import('../tools/comparator/logic/diffRender.js');
             const t = getDiffTuples('', 'abc');

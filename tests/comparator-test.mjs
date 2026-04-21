@@ -5,6 +5,7 @@
 import diff from '../tools/comparator/vendor/fastDiff.js';
 import {
   getDiffTuples,
+  normalizeTuplesForClipboardMerge,
   buildMergedPlain,
   buildBeforeHtml,
   buildAfterHtml,
@@ -53,6 +54,68 @@ test('buildMergedPlain: пустые строки', () => {
   if (buildMergedPlain([]) !== '') throw new Error('empty tuples');
 });
 
+test('buildMergedPlain: нет лишнего пробела между DELETE и INSERT (слова + regex)', () => {
+  const t = getDiffTuples('ручная кладь|x', 'ручн.{0,3}кладь|x');
+  const p = buildMergedPlain(t);
+  if (p.includes('ручная .{0,3}')) throw new Error(p);
+  if (!p.includes('ручная.{0,3}')) throw new Error(p);
+});
+
+test('buildMergedPlain: пробел между токенами не дублируется (abc def → abc.def)', () => {
+  const t = getDiffTuples('abc def', 'abc.def');
+  if (buildMergedPlain(t) !== 'abc.def') throw new Error(buildMergedPlain(t));
+});
+
+test('normalizeTuplesForClipboardMerge: только пробел в DELETE перед INSERT', () => {
+  const raw = getDiffTuples('abc def', 'abc.def');
+  const n = normalizeTuplesForClipboardMerge(raw);
+  if (n.some((x) => x[0] === diff.DELETE && x[1] === ' ')) throw new Error(JSON.stringify(n));
+});
+
+test('normalizeTuplesForClipboardMerge: пустой массив', () => {
+  const n = normalizeTuplesForClipboardMerge([]);
+  if (!Array.isArray(n) || n.length !== 0) throw new Error(String(n));
+});
+
+test('normalizeTuplesForClipboardMerge: не мутирует исходные кортежи', () => {
+  const raw = getDiffTuples('abc def', 'abc.def');
+  const frozen = JSON.stringify(raw);
+  normalizeTuplesForClipboardMerge(raw);
+  if (JSON.stringify(raw) !== frozen) throw new Error('исходный массив изменён');
+});
+
+test('buildMergedPlain: несколько замен с пробелом между токенами', () => {
+  const t = getDiffTuples('foo bar|baz qux', 'foo.{0,3}bar|baz.{0,3}qux');
+  const p = buildMergedPlain(t);
+  if (p !== 'foo.{0,3}bar|baz.{0,3}qux') throw new Error(p);
+});
+
+test('buildMergedPlain: вставка с ведущим пробелом не ломается (нет пары DEL+INS)', () => {
+  const t = getDiffTuples('hello', 'hello world');
+  if (buildMergedPlain(t) !== 'hello world') throw new Error(buildMergedPlain(t));
+});
+
+test('buildMergedPlain: замена одного символа (b→d), без пробелов', () => {
+  const t = getDiffTuples('(a|b)c', '(a|d)c');
+  const p = buildMergedPlain(t);
+  if (p !== '(a|bd)c') throw new Error(p);
+  if (p.includes(' ')) throw new Error('unexpected space: ' + p);
+});
+
+test('buildMergedClipboardInnerHtml: нет лишнего пробела в удалённом сегменте перед вставкой', () => {
+  const t = getDiffTuples('ручная кладь', 'ручн.{0,3}кладь');
+  const inner = buildMergedClipboardInnerHtml(t);
+  if (inner.includes('ая </strong>')) throw new Error('пробел перед </strong> в удалении');
+  if (!inner.includes('ая</strong>')) throw new Error(inner.slice(0, 240));
+});
+
+test('buildClipboardUnifiedFragment: нормализация в HTML (нет пробела в конце удаления)', () => {
+  const t = getDiffTuples('ручная кладь|лыж', 'ручн.{0,3}кладь|лыж');
+  const frag = buildClipboardUnifiedFragment(t);
+  if (frag.includes('ая </strong>')) throw new Error('артефакт пробела в HTML-склейке');
+  if (!frag.includes('.{0,3}</strong>')) throw new Error('ожидалась вставка');
+});
+
 test('escapeHtml', () => {
   if (escapeHtml('<a>') !== '&lt;a&gt;') throw new Error(escapeHtml('<a>'));
   if (!escapeHtml('&').includes('amp')) throw new Error(escapeHtml('&'));
@@ -87,7 +150,7 @@ test('buildClipboardUnifiedFragment: не таблица, span + цвета ка
   const frag = buildClipboardUnifiedFragment(t);
   if (frag.includes('<table')) throw new Error('no table');
   if (!frag.includes('<div')) throw new Error('wrapper');
-   if (!frag.includes('<strong>')) throw new Error('strong');
+  if (!frag.includes('<strong>')) throw new Error('strong');
   if (!frag.includes('#b91c1c') || !frag.includes('#15803d')) throw new Error('text colors');
   if (!frag.includes('#fef2f2') || !frag.includes('#f0fdf4')) throw new Error('backgrounds');
   if (!frag.includes('<span style=')) throw new Error('span');

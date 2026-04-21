@@ -30,6 +30,31 @@ export function getDiffTuples(before, after) {
 }
 
 /**
+ * Для склейки в один поток (Confluence): если сразу после DELETE идёт INSERT,
+ * хвостовые пробельные символы в DELETE иначе оказываются между удалённым
+ * фрагментом и вставкой (например «ручная .{0,3}» вместо «ручная.{0,3}»).
+ * @param {Array<[number, string]>} tuples
+ * @returns {Array<[number, string]>}
+ */
+export function normalizeTuplesForClipboardMerge(tuples) {
+  if (!tuples?.length) return tuples ? [...tuples] : [];
+  const out = [];
+  for (let i = 0; i < tuples.length; i++) {
+    const cur = tuples[i];
+    const op = cur[0];
+    const text = cur[1];
+    const next = tuples[i + 1];
+    let chunk = text;
+    if (op === diff.DELETE && next && next[0] === diff.INSERT && chunk) {
+      chunk = String(chunk).replace(/\s+$/, '');
+      if (!chunk) continue;
+    }
+    out.push([op, chunk]);
+  }
+  return out;
+}
+
+/**
  * HTML строки «Было»: удалённые фрагменты подсвечены.
  * @param {Array<[number, string]>} tuples
  * @param {(text: string) => string} esc
@@ -80,8 +105,9 @@ const CLIP_MERGED_MARK_CLOSE = '</strong></span>';
  * @param {Array<[number, string]>} tuples
  */
 export function buildMergedClipboardInnerHtml(tuples, esc = escapeHtml) {
+  const mergedTuples = normalizeTuplesForClipboardMerge(tuples);
   const parts = [];
-  for (const [op, text] of tuples) {
+  for (const [op, text] of mergedTuples) {
     if (!text) continue;
     if (op === diff.DELETE) {
       parts.push(`${CLIP_MERGED_DEL_OPEN}${esc(text)}${CLIP_MERGED_MARK_CLOSE}`);
@@ -108,8 +134,9 @@ export function buildClipboardUnifiedFragment(tuples, esc = escapeHtml) {
  * Plain: те же сегменты подряд (удалённое и добавленное оба видны в одной строке символов).
  */
 export function buildMergedPlain(tuples) {
+  const mergedTuples = normalizeTuplesForClipboardMerge(tuples);
   const parts = [];
-  for (const [, text] of tuples) {
+  for (const [, text] of mergedTuples) {
     if (text) parts.push(text);
   }
   return parts.join('');
